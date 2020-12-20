@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Flink JobManager · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink JobManager</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink JobManager
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Runtime">Runtime</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">1.2k</span>Reading time: <span class="post-count reading-time">6 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/08/23</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="JobManager"><a href="#JobManager" class="headerlink" title="JobManager"></a>JobManager</h2><p>JobManager负责从客户端接收Flink作业，调度作业执行并且收集作业的执行状态并管理对应的TaskManager。JobManager采用Ak ka模式，实现了Actor，能够接收并能处理的事件为：</p>
+<ul>
+<li>RegisterTaskManager：由TaskManager发送的用于注册TaskManager到JobManager信息，如果注册成功，返回AcknowledgeRegistration给TaskManager</li>
+<li>SubmitJob：由用户发送的提交作业的信息，在SubJob中包含了JobGraph。 JobGraph将会转换为ExecutionGraph，并由TaskManager调度对应的ExecutionJobVertices去执行</li>
+<li>CancelJob：由用户发送的取消作业的信息，如果成功取消，回复CancellationSuccess；否则，回复CancellationFailure</li>
+<li>UpdateTaskExecutionState：由TaskManager发送的用于更新ExecutionGraph中的ExecutionVertex执行状态的信息</li>
+<li>RequestNextInputSplit：由TaskManger上正在运行的任务发送的用于请求下一个input split的消息，JobManager将会恢复给该Task NextInputSplit</li>
+<li>JobStatusChanged：由ExecutionGraph发送的作业状态改变的消息（RUNNING，CANCELING，FINISHED等）</li>
+</ul>
+<p>JobManager的定义如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JobManager</span>(<span class="params"></span></span></span><br><span class="line"><span class="class"><span class="params">    protected val flinkConfiguration: <span class="type">Configuration</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val futureExecutor: <span class="type">ScheduledExecutorService</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val ioExecutor: <span class="type">Executor</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val instanceManager: <span class="type">InstanceManager</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val scheduler: <span class="type">FlinkScheduler</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val blobServer: <span class="type">BlobServer</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val libraryCacheManager: <span class="type">BlobLibraryCacheManager</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val archive: <span class="type">ActorRef</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val restartStrategyFactory: <span class="type">RestartStrategyFactory</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val timeout: <span class="type">FiniteDuration</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val leaderElectionService: <span class="type">LeaderElectionService</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val submittedJobGraphs : <span class="type">SubmittedJobGraphStore</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val checkpointRecoveryFactory : <span class="type">CheckpointRecoveryFactory</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val jobRecoveryTimeout: <span class="type">FiniteDuration</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val jobManagerMetricGroup: <span class="type">JobManagerMetricGroup</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    protected val optRestAddress: <span class="type">Option</span>[<span class="type">String</span>]</span>)</span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">FlinkActor</span> <span class="title">//</span> <span class="title">implement</span> <span class="title">the</span> <span class="title">FlinkActor</span></span></span><br><span class="line"><span class="class">  <span class="keyword">with</span> <span class="title">LeaderSessionMessageFilter</span> <span class="title">//</span> <span class="title">mixin</span> <span class="title">oder</span> <span class="title">is</span> <span class="title">important</span>, <span class="title">we</span> <span class="title">want</span> <span class="title">filtering</span> <span class="title">after</span> <span class="title">logging</span></span></span><br><span class="line"><span class="class">  <span class="keyword">with</span> <span class="title">LogMessages</span> <span class="title">//</span> <span class="title">mixin</span> <span class="title">order</span> <span class="title">is</span> <span class="title">important</span>, <span class="title">we</span> <span class="title">want</span> <span class="title">first</span> <span class="title">logging</span></span></span><br><span class="line"><span class="class">  <span class="keyword">with</span> <span class="title">LeaderContender</span></span></span><br><span class="line"><span class="class">  <span class="keyword">with</span> <span class="title">SubmittedJobGraphListener</span></span></span><br></pre></td></tr></table></figure>
+
+<p>核心成员变量：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HA mode</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">val</span> haMode = <span class="type">HighAvailabilityMode</span>.fromConfig(flinkConfiguration)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Either running or not yet archived jobs (session hasn't been ended).</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">val</span> currentJobs = scala.collection.mutable.<span class="type">HashMap</span>[<span class="type">JobID</span>, (<span class="type">ExecutionGraph</span>, <span class="type">JobInfo</span>)]()</span><br><span class="line"></span><br><span class="line"><span class="comment">// TaskManagers</span></span><br><span class="line"><span class="keyword">val</span> taskManagerMap = mutable.<span class="type">Map</span>[<span class="type">ActorRef</span>, <span class="type">InstanceID</span>]()</span><br><span class="line"></span><br><span class="line"><span class="comment">/** The resource manager actor responsible for allocating and managing task manager resources. */</span></span><br><span class="line"><span class="keyword">var</span> currentResourceManager: <span class="type">Option</span>[<span class="type">ActorRef</span>] = <span class="type">None</span></span><br><span class="line"><span class="keyword">var</span> currentResourceManagerConnectionId: <span class="type">Long</span> = <span class="number">0</span></span><br><span class="line"><span class="keyword">val</span> triggerResourceManagerReconnectInterval = <span class="keyword">new</span> <span class="type">FiniteDuration</span>(</span><br><span class="line"> flinkConfiguration.getLong(<span class="type">JobManagerOptions</span>.<span class="type">RESOURCE_MANAGER_RECONNECT_INTERVAL</span>),</span><br><span class="line">  <span class="type">TimeUnit</span>.<span class="type">MILLISECONDS</span>)</span><br></pre></td></tr></table></figure>
+
+<p>JobMaster的核心逻辑在重写的FlinkActor.handleMessage()中，用于处理各种信息，并采取相应的动作。</p>
+<h3 id="High-Availabiltiy"><a href="#High-Availabiltiy" class="headerlink" title="High Availabiltiy"></a>High Availabiltiy</h3><p>LeaderElectionService</p>
+<p>SubmittedJobGraphStore-&gt;ZooKeeperSubmittedJobGraphStore</p>
+<h3 id="Resource-Manager"><a href="#Resource-Manager" class="headerlink" title="Resource Manager"></a>Resource Manager</h3><p>JobManager处理：RegisterResourceManager和ReconnectResourceManager两种信息，前者用于注册ResourceManager，后者用于向ResourceManager发送重连信息，通知ResourceManager进行重连。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> msg: <span class="type">RegisterResourceManager</span> =&gt;</span><br><span class="line">  <span class="comment">// ditch current resource manager (if any)</span></span><br><span class="line">  currentResourceManager = <span class="type">Option</span>(msg.resourceManager())</span><br><span class="line">  currentResourceManagerConnectionId += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> taskManagerResources = instanceManager.getAllRegisteredInstances.asScala.map(</span><br><span class="line">    instance =&gt; instance.getTaskManagerID).toList.asJava</span><br><span class="line"></span><br><span class="line">  <span class="comment">// confirm registration and send known task managers with their resource ids</span></span><br><span class="line">  sender ! decorateMessage(<span class="keyword">new</span> <span class="type">RegisterResourceManagerSuccessful</span>(self, taskManagerResources))</span><br></pre></td></tr></table></figure>
+
+<p>ReconnectResourceManager是由JobManager发送给自己的信息，会不断尝试对ResourceManager进行重连</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> msg: <span class="type">ReconnectResourceManager</span> =&gt;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">reconnectRepeatedly</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">    msg.resourceManager() ! decorateMessage(<span class="keyword">new</span> <span class="type">TriggerRegistrationAtJobManager</span>(self))</span><br><span class="line">    <span class="comment">// try again after some delay</span></span><br><span class="line">  context.system.scheduler.scheduleOnce(triggerResourceManagerReconnectInterval) &#123;</span><br><span class="line">      self ! decorateMessage(msg)</span><br><span class="line">    &#125;(context.dispatcher)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  currentResourceManager <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Some</span>(rm) <span class="keyword">if</span> rm.equals(msg.resourceManager()) &amp;&amp;</span><br><span class="line">      currentResourceManagerConnectionId == msg.getConnectionId =&gt;</span><br><span class="line">      <span class="comment">// we should ditch the current resource manager</span></span><br><span class="line">      currentResourceManager = <span class="type">None</span></span><br><span class="line">      reconnectRepeatedly()</span><br><span class="line">    <span class="keyword">case</span> <span class="type">None</span> =&gt;</span><br><span class="line">      reconnectRepeatedly()</span><br><span class="line">    <span class="keyword">case</span> _ =&gt;</span><br><span class="line">    <span class="comment">// Successful！</span></span><br><span class="line">    <span class="comment">// we have established a new connection to a ResourceManager in the meantime, stop sending</span></span><br><span class="line">    <span class="comment">// TriggerRegistrationAtJobManager messages to the old ResourceManager</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="InstanceManager"><a href="#InstanceManager" class="headerlink" title="InstanceManager"></a>InstanceManager</h3><h3 id="Job-Management"><a href="#Job-Management" class="headerlink" title="Job Management"></a>Job Management</h3><h4 id="Submit-Job"><a href="#Submit-Job" class="headerlink" title="Submit Job"></a>Submit Job</h4><p>submitJob()用于提交一个Job：</p>
+<ol>
+<li><p>利用BlobLibraryCacheManager#registerJob()进行注册，用于创建该Job的设计到的ClassLoader：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Important: We need to make sure that the library registration is the first action, because this makes sure that the uploaded jar files are removed in case of unsuccessful</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  libraryCacheManager.registerJob(</span><br><span class="line">    jobGraph.getJobID, jobGraph.getUserJarBlobKeys, jobGraph.getClasspaths)</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line"><span class="keyword">val</span> userCodeLoader = libraryCacheManager.getClassLoader(jobGraph.getJobID)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>实例化Job的RestartStrategy：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> restartStrategyConfiguration = jobGraph .getSerializedExecutionConfig.deserializeValue(userCodeLoader).getRestartStrategy</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> restartStrategy = <span class="type">RestartStrategyResolving</span></span><br><span class="line">.resolve(restartStrategyConfiguration,</span><br><span class="line">         restartStrategyFactory,</span><br><span class="line">         jobGraph.isCheckpointingEnabled)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>添加到currentJobs中，使用ExecutionGraphBuilder创建ExecutionGraph。在创建时，如果该JobGraph的ExecutionGraph已经存在，则使用之前的ExecutionGraph</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// see if there already exists an ExecutionGraph for the corresponding job ID</span></span><br><span class="line"><span class="keyword">val</span> registerNewGraph = currentJobs.get(jobGraph.getJobID) <span class="keyword">match</span> &#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="type">Some</span>((graph, currentJobInfo)) =&gt;</span><br><span class="line">  executionGraph = graph</span><br><span class="line">  currentJobInfo.setLastActive()</span><br><span class="line">  <span class="literal">false</span></span><br><span class="line">  <span class="keyword">case</span> <span class="type">None</span> =&gt;</span><br><span class="line">  <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> allocationTimeout: <span class="type">Long</span> = flinkConfiguration.getLong(</span><br><span class="line">  <span class="type">JobManagerOptions</span>.<span class="type">SLOT_REQUEST_TIMEOUT</span>)</span><br><span class="line">executionGraph = <span class="type">ExecutionGraphBuilder</span>.buildGraph(</span><br><span class="line">  executionGraph,</span><br><span class="line">  jobGraph,</span><br><span class="line">  flinkConfiguration,</span><br><span class="line">  futureExecutor,</span><br><span class="line">  ioExecutor,</span><br><span class="line">  scheduler,</span><br><span class="line">  userCodeLoader,</span><br><span class="line">  checkpointRecoveryFactory,</span><br><span class="line">  <span class="type">Time</span>.of(timeout.length, timeout.unit),</span><br><span class="line">  restartStrategy,</span><br><span class="line">  jobMetrics,</span><br><span class="line">  numSlots,</span><br><span class="line">  blobServer,</span><br><span class="line">  <span class="type">Time</span>.milliseconds(allocationTimeout),</span><br><span class="line">  log.logger)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (registerNewGraph) &#123;</span><br><span class="line">  currentJobs.put(jobGraph.getJobID, (executionGraph, jobInfo))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>向ExecutionGraph注册JobStatusListener和ExecutionListener</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// get notified about job status changes</span></span><br><span class="line">executionGraph.registerJobStatusListener(</span><br><span class="line">  <span class="keyword">new</span> <span class="type">StatusListenerMessenger</span>(self, leaderSessionID.orNull))</span><br><span class="line"></span><br><span class="line">jobInfo.clients foreach &#123;</span><br><span class="line">  <span class="comment">// the sender wants to be notified about state changes</span></span><br><span class="line">  <span class="keyword">case</span> (client, <span class="type">ListeningBehaviour</span>.<span class="type">EXECUTION_RESULT_AND_STATE_CHANGES</span>) =&gt;</span><br><span class="line">  <span class="keyword">val</span> listener  = <span class="keyword">new</span> <span class="type">StatusListenerMessenger</span>(client, leaderSessionID.orNull)</span><br><span class="line">  executionGraph.registerExecutionListener(listener)</span><br><span class="line">  executionGraph.registerJobStatusListener(listener)</span><br><span class="line">  <span class="keyword">case</span> _ =&gt; <span class="comment">// do nothing</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>以异步的方式执行：</p>
+<ol>
+<li><p>如果是恢复，从最近的Checkpoint进行恢复</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (isRecovery) &#123;</span><br><span class="line">  <span class="comment">// this is a recovery of a master failure (this master takes over)</span></span><br><span class="line">  executionGraph.restoreLatestCheckpointedState(<span class="keyword">false</span>, <span class="keyword">false</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>否则，从Savepoint中进行恢复如需要，并该Job存储到submittedJobGraphs中</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// load a savepoint only if this is not starting from a newer checkpoint as part of an master failure recovery</span></span><br><span class="line"><span class="keyword">val</span> savepointSettings = jobGraph.getSavepointRestoreSettings</span><br><span class="line"><span class="keyword">if</span> (savepointSettings.restoreSavepoint()) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> savepointPath = savepointSettings.getRestorePath()</span><br><span class="line">    <span class="keyword">val</span> allowNonRestored = savepointSettings.allowNonRestoredState()</span><br><span class="line">    executionGraph.getCheckpointCoordinator.restoreSavepoint(</span><br><span class="line">      savepointPath, </span><br><span class="line">      allowNonRestored,</span><br><span class="line">      executionGraph.getAllVertices,</span><br><span class="line">      executionGraph.getUserClassLoader</span><br><span class="line">    )</span><br><span class="line">  &#125; <span class="keyword">catch</span> &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">submittedJobGraphs.putJobGraph(<span class="keyword">new</span> <span class="type">SubmittedJobGraph</span>(jobGraph, jobInfo))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通知客户端Job提交成功</p>
+</li>
+<li><p>检查JobManager处于Leader状态，ExecutionGraph异步调度执行：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (leaderSessionID.isDefined &amp;&amp;</span><br><span class="line">    leaderElectionService.hasLeadership(leaderSessionID.get)) &#123;</span><br><span class="line">  <span class="comment">// <span class="doctag">NOTE:</span> Scheduling the job for execution is a separate action from the job submission. The success of submitting the job must be independent from the success of scheduling  the job.</span></span><br><span class="line">  log.info(<span class="string">s"Scheduling job <span class="subst">$jobId</span> (<span class="subst">$jobName</span>)."</span>)</span><br><span class="line">  executionGraph.scheduleForExecution()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+</li>
+</ol>
+<h4 id="Remove-Job"><a href="#Remove-Job" class="headerlink" title="Remove Job"></a>Remove Job</h4><p>JobManager会处理RemoveJob和RemoveCachedJob两者信息，RemoveCachedJob只清除处于 TerminalState.GLOBALLY状态的Job。两者都调用removeJob()函数去清除Job：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">removeJob</span></span>(jobID: <span class="type">JobID</span>, removeJobFromStateBackend: <span class="type">Boolean</span>): <span class="type">Option</span>[<span class="type">Future</span>[<span class="type">Unit</span>]] = &#123;</span><br><span class="line">    <span class="comment">// Don't remove the job yet...</span></span><br><span class="line">    <span class="keyword">val</span> futureOption = currentJobs.remove(jobID) <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Some</span>((eg, _)) =&gt;</span><br><span class="line">        <span class="keyword">val</span> cleanUpFuture: <span class="type">Future</span>[<span class="type">Unit</span>] = <span class="type">Future</span> &#123;</span><br><span class="line">          <span class="keyword">val</span> cleanupHABlobs = <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (removeJobFromStateBackend) &#123;</span><br><span class="line">              <span class="comment">// ...otherwise, we can have lingering resources when there is a  concurrent shutdown</span></span><br><span class="line">              <span class="comment">// and the ZooKeeper client is closed. Not removing the job immediately allow the</span></span><br><span class="line">              <span class="comment">// shutdown to release all resources.</span></span><br><span class="line">              submittedJobGraphs.removeJobGraph(jobID)</span><br><span class="line">              <span class="literal">true</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">              submittedJobGraphs.releaseJobGraph(jobID)</span><br><span class="line">              <span class="literal">false</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">            .....</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          blobServer.cleanupJob(jobID, cleanupHABlobs)</span><br><span class="line">          ()</span><br><span class="line">        &#125;(context.dispatcher)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (removeJobFromStateBackend) &#123;</span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">            archive ! decorateMessage(</span><br><span class="line">              <span class="type">ArchiveExecutionGraph</span>(</span><br><span class="line">                jobID,</span><br><span class="line">                <span class="type">ArchivedExecutionGraph</span>.createFrom(eg)))</span><br><span class="line">          &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">            </span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">Option</span>(cleanUpFuture)</span><br><span class="line">      <span class="keyword">case</span> <span class="type">None</span> =&gt; <span class="type">None</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    libraryCacheManager.unregisterJob(jobID)</span><br><span class="line">    jobManagerMetricGroup.removeJob(jobID)</span><br><span class="line">    futureOption</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Blob-Management"><a href="#Blob-Management" class="headerlink" title="Blob Management"></a>Blob Management</h3><h2 id="ResourceManager"><a href="#ResourceManager" class="headerlink" title="ResourceManager"></a>ResourceManager</h2><h2 id="TaskManager"><a href="#TaskManager" class="headerlink" title="TaskManager"></a>TaskManager</h2><h2 id="JobMaster"><a href="#JobMaster" class="headerlink" title="JobMaster"></a>JobMaster</h2><h2 id="FlinkScheduler"><a href="#FlinkScheduler" class="headerlink" title="FlinkScheduler"></a>FlinkScheduler</h2><p>`</p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/08/23/Flink-Flink-ExecutionGraph/" title= "Flink ExecutionGraph">
+                    <div class="nextTitle">Flink ExecutionGraph</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/08/23/Spark-Spark-Shuffle/" title= "Spark Shuffle">
+                    <div class="prevTitle">Spark Shuffle</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JobManager"><span class="toc-number">1.</span> <span class="toc-text">JobManager</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#High-Availabiltiy"><span class="toc-number">1.1.</span> <span class="toc-text">High Availabiltiy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Resource-Manager"><span class="toc-number">1.2.</span> <span class="toc-text">Resource Manager</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#InstanceManager"><span class="toc-number">1.3.</span> <span class="toc-text">InstanceManager</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Job-Management"><span class="toc-number">1.4.</span> <span class="toc-text">Job Management</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Submit-Job"><span class="toc-number">1.4.1.</span> <span class="toc-text">Submit Job</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Remove-Job"><span class="toc-number">1.4.2.</span> <span class="toc-text">Remove Job</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Blob-Management"><span class="toc-number">1.5.</span> <span class="toc-text">Blob Management</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ResourceManager"><span class="toc-number">2.</span> <span class="toc-text">ResourceManager</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TaskManager"><span class="toc-number">3.</span> <span class="toc-text">TaskManager</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JobMaster"><span class="toc-number">4.</span> <span class="toc-text">JobMaster</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FlinkScheduler"><span class="toc-number">5.</span> <span class="toc-text">FlinkScheduler</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 34
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-资源调度器/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux常用命令总结/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-安全管理/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager实现/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager行为分析/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-基础库/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode的启动和停止/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-设计思想和架构/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
