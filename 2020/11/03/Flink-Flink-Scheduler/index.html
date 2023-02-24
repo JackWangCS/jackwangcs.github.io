@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink Scheduler · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink Scheduler</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink Scheduler
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Core">Core</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">3.7k</span>Reading time: <span class="post-count reading-time">18 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/11/03</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="Flink-Scheduling"><a href="#Flink-Scheduling" class="headerlink" title="Flink Scheduling"></a>Flink Scheduling</h1><p>当前Flink调度逻辑分散在多个组件中，主要包括ExecutionGraph、Execution和SlotPool中。并且，目前的调度是基于单个任务的粒度，使得高级调度策略难以实现。因此，<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-10429">Flink-10429</a>提出引入一个独立的Scheduler组件，将调度相关的逻辑集中，从而为调度决策提供更加全面的信息，实现更好的调度策略。主要的组件如下：<br><img src="https://lh5.googleusercontent.com/VV0aCY17tTICfNyEZBav7Nkyglrj0EJpB-LSyYy1dZGw1C6PtGTJHGOI6oGSF2tPpf_xl8sw2Phb27UUbYhrETbwO1XWY5M_mgmwECiL47WdKqQOriSKThtdrZyGubW6s0nvHZDc" alt="img"></p>
+<p>详细的设计文档，参考<a target="_blank" rel="noopener" href="https://docs.google.com/document/d/1q7NOqt05HIN-PlKEEPB36JiuU1Iu9fnxxVGJzylhsxU/edit">Group-aware scheduling for Flink</a>和<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-10429">Flink-10429</a>。</p>
+<p>现在，Flink有两种调度模式，EAGER和LAZY_FROM_SOURCES。EAGER调度策略同时调度所有任务，使得整个Job一起运行，而LAZY_FROM_SOURCES则是为批处理设计，按照Stages来调度任务，当某个Stage的输入可用时，就会调度该Stage的任务。</p>
+<h2 id="Legacy-Scheduler"><a href="#Legacy-Scheduler" class="headerlink" title="Legacy Scheduler"></a>Legacy Scheduler</h2><p>Legacy Scheduler是Flink旧版本的实现，Scheduler接口继承了SlotProvider和SlotOwner接口，提供了SchedulerImpl实现：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20200924215834.png"></p>
+<h2 id="SchedulerNG-Scheduler-New-Generation"><a href="#SchedulerNG-Scheduler-New-Generation" class="headerlink" title="SchedulerNG(Scheduler New Generation)"></a>SchedulerNG(Scheduler New Generation)</h2><p>SchedulerNG，表示新一代的Scheduler，是Flink Scheduling抽象的接口。主要负责：</p>
+<ol>
+<li>调度JobGraph执行</li>
+<li>管理Job和Task的执行状态</li>
+<li>管理Task输出的Partition状态，并调度前提条件就绪的Task执行</li>
+<li>实现Checkpoint和Savepoint</li>
+<li>错误处理</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20201110221920.png"></p>
+<p>目前提供的实现为DefaultScheduler：</p>
+<p><img src="https://raw.githubusercontent.com/jieww/RawImages/master/20220410164814.png"></p>
+<h3 id="Create-SchedulerNG"><a href="#Create-SchedulerNG" class="headerlink" title="Create SchedulerNG"></a>Create SchedulerNG</h3><p>SchedulerNG（DefaultScheduler）由SchedulerNGFactory工厂创建。而SchedulerNGFactory则由SchedulerNGFactoryFactory抽象工厂创建，只有在配置“jobmanager.scheduler”为“ng”时，才会返回实现了SchedulerNGFactory的DefaultSchedulerFactory。</p>
+<p>在创建DefaultScheduler时，会根据<code>jobmanager.scheduler.scheduling-strategy</code>创建不同调度策略下的组件，主要组件分为：</p>
+<ul>
+<li>SchedulingStrategy</li>
+<li>SlotProvider</li>
+<li>ExecutionSlotAllocator</li>
+</ul>
+<p>目前，只有两种SCHEDULING_STRATEGY（”region“或者“legacy”）：</p>
+<ol>
+<li><p>PIPELINED_REGION_SCHEDULING，组件如下：</p>
+<ul>
+<li>PipelinedSchedulingStrategy</li>
+<li>PhysicalSlotProvider</li>
+<li>SlotSharingExecutionSlotAllocator</li>
+</ul>
+</li>
+<li><p>LEGACY_SCHEDULING，分为两种</p>
+<ol>
+<li>Eager</li>
+<li>Lazy from Sources</li>
+</ol>
+<p>组件有：</p>
+<ul>
+<li>EagerSchedulingStrategy 或者 LazyFromSourcesSchedulingStrategy</li>
+<li>NormalSlotProviderStrategy 或者 BatchSlotProviderStrategy：两者都会调用Legacy的SchedulerImpl实现。</li>
+<li>DefaultExecutionSlotAllocator</li>
+</ul>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> DefaultSchedulerComponents <span class="title function_">createSchedulerComponents</span><span class="params">(</span></span><br><span class="line"><span class="params">  <span class="keyword">final</span> ScheduleMode scheduleMode, ...)</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="type">String</span> <span class="variable">schedulingStrategy</span> <span class="operator">=</span> jobMasterConfiguration.getString(JobManagerOptions.SCHEDULING_STRATEGY);</span><br><span class="line">  <span class="keyword">switch</span> (schedulingStrategy) &#123;</span><br><span class="line">    <span class="keyword">case</span> PIPELINED_REGION_SCHEDULING:</span><br><span class="line">      <span class="keyword">return</span> createPipelinedRegionSchedulerComponents(...);</span><br><span class="line">    <span class="keyword">case</span> LEGACY_SCHEDULING:</span><br><span class="line">      <span class="keyword">return</span> createLegacySchedulerComponents(...);</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalStateException</span>(<span class="string">&quot;Unsupported scheduling strategy &quot;</span> + schedulingStrategy);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Update:</p>
+<p>在Flink 1.13中，Legacy Scheduler被移除，<code>jobmanager.scheduler.scheduling-strategy</code>配置项也被移除，默认采用DefaultScheduler+PipelinedRegionSchedulingStrategy。</p>
+<h3 id="DefaultScheduler-Implementation"><a href="#DefaultScheduler-Implementation" class="headerlink" title="DefaultScheduler Implementation"></a>DefaultScheduler Implementation</h3><p>核心组件：</p>
+<ul>
+<li>SchedulingStrategy：封装了Job的核心调度逻辑。</li>
+<li>ExecutionSlotAllocator：用于为一组Execution分配Slots，实现为SlotSharingExecutionSlotAllocator。SlotSharingExecutionSlotAllocator负责为ExecutionVertex分配Logical Slots。在分配的过程中，多个Logical Slots（SlotSharingGroup）可以通过Slot Sharing的方式共享一个Physical Slot。</li>
+<li>ExecutionFailureHandler：用于处理Task Failures，ExecutionHandler负责决定是否重启Job，以及如果重启Job，那么需要重启哪些Tasks。</li>
+<li>ShuffleMaster：用于管理Shuffle元数据。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DefaultScheduler</span> <span class="keyword">extends</span> <span class="title class_">SchedulerBase</span> <span class="keyword">implements</span> <span class="title class_">SchedulerOperations</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ClassLoader userCodeLoader;</span><br><span class="line">    <span class="comment">// responsible for assigning slots to a collection of Execution</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ExecutionSlotAllocator executionSlotAllocator;</span><br><span class="line">    <span class="comment">// deals with task failures.</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ExecutionFailureHandler executionFailureHandler;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ScheduledExecutor delayExecutor;</span><br><span class="line">    <span class="comment">// the core scheduling logic, control how to schedule tasks of a job</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SchedulingStrategy schedulingStrategy;</span><br><span class="line">    <span class="comment">// operations on ExecutionVertex</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ExecutionVertexOperations executionVertexOperations;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Set&lt;ExecutionVertexID&gt; verticesWaitingForRestart;</span><br><span class="line">    <span class="comment">// Shuffle master</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ShuffleMaster&lt;?&gt; shuffleMaster;</span><br><span class="line">    <span class="comment">// ....</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ExecutingFailureHandler"><a href="#ExecutingFailureHandler" class="headerlink" title="ExecutingFailureHandler"></a>ExecutingFailureHandler</h3><p>ExecutionFailureHandler用于处理Task Failures，负责决定Job是否重启以及需要重启的Tasks：</p>
+<ul>
+<li>RestartBackoffTimeStrategy：决定是否重启</li>
+<li>FailoverStrategy：决定哪些Task需要重启</li>
+</ul>
+<p>ExecutionFailureHandler提供了</p>
+<ul>
+<li><code>getFailureHandlingResult()</code>：用于处理单个Task的执行失败</li>
+<li><code>getGlobalFailureHandlingResult()</code>：用于处理全局执行失败的情况</li>
+</ul>
+<p>两者内部都通过<code>handleFailure()</code>进行处理，都返回FailureHandlingResult作为结果。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> FailureHandlingResult <span class="title function_">handleFailure</span><span class="params">(</span></span><br><span class="line"><span class="params">        <span class="meta">@Nullable</span> <span class="keyword">final</span> ExecutionVertexID failingExecutionVertexId,</span></span><br><span class="line"><span class="params">        <span class="keyword">final</span> Throwable cause,</span></span><br><span class="line"><span class="params">        <span class="type">long</span> timestamp,</span></span><br><span class="line"><span class="params">        <span class="keyword">final</span> Set&lt;ExecutionVertexID&gt; verticesToRestart, // all vertices or failoverStrategy.getTasksNeedingRestart(failedTask, cause)</span>,</span><br><span class="line">        <span class="keyword">final</span> <span class="type">boolean</span> globalFailure)</span><br></pre></td></tr></table></figure>
+
+<p>一组需要恢复的ExecutionVertexID：verticesToRestart由FailoverStrategy决定，<code>handleFailure()</code>会调用RestartBackoffTimeStrategy决定是否重启，以及重启的延时restartDelayMs。</p>
+<p>FailureHandlingResult：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Task vertices to restart to recover from the failure or &#123;<span class="doctag">@code</span> null&#125; if the failure is not</span></span><br><span class="line"><span class="comment"> * recoverable.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Set&lt;ExecutionVertexID&gt; verticesToRestart;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** Delay before the restarting can be conducted. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">long</span> restartDelayMS;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ExecutionSlotAllocator"><a href="#ExecutionSlotAllocator" class="headerlink" title="ExecutionSlotAllocator"></a>ExecutionSlotAllocator</h2><p>ExecutionSlotAllocator接口定了<code>allocateSlotsFor()</code>方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ExecutionSlotAllocator</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Allocate slots for the given executions.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    List&lt;SlotExecutionVertexAssignment&gt; <span class="title function_">allocateSlotsFor</span><span class="params">(</span></span><br><span class="line"><span class="params">            List&lt;ExecutionVertexID&gt; executionVertexIds)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">cancel</span><span class="params">(ExecutionVertexID executionVertexId)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ExecutionSlotAllocator的实现为SlotSharingExecutionSlotAllocator。</p>
+<h3 id="SlotSharingExecutionSlotAllocator"><a href="#SlotSharingExecutionSlotAllocator" class="headerlink" title="SlotSharingExecutionSlotAllocator"></a>SlotSharingExecutionSlotAllocator</h3><p>SlotSharingExecutionSlotAllocator负责为ExecutionVertex分配Slot。Flink的Slot Sharing机制允许多个subTask共享一个Slot，因此SlotSharingExecutionSlotAllocator还额外维护了ExecutionSharingGroup到Shared Slots的关系。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SlotSharingExecutionSlotAllocator</span> <span class="keyword">implements</span> <span class="title class_">ExecutionSlotAllocator</span> &#123;</span><br><span class="line">    <span class="comment">// physical slots provider will request the physical slot from SlotPool</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> PhysicalSlotProvider slotProvider;</span><br><span class="line">    <span class="comment">// a flag for streaming tasks</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> slotWillBeOccupiedIndefinitely;</span><br><span class="line">    <span class="comment">// determines the ExecutionSlotSharingGroup for each execution vertex</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SlotSharingStrategy slotSharingStrategy;</span><br><span class="line">    <span class="comment">// mapping from ExecutionSlotSharingGroup to SharedSlot. SharedSlot maintains the relationship between logical slots and physical slot</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;ExecutionSlotSharingGroup, SharedSlot&gt; sharedSlots;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SharedSlotProfileRetrieverFactory sharedSlotProfileRetrieverFactory;</span><br><span class="line">    <span class="comment">// tracks a fulfillability timeout of a bulk of physical slot requests.</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> PhysicalSlotRequestBulkChecker bulkChecker;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Time allocationTimeout;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Function&lt;ExecutionVertexID, ResourceProfile&gt; resourceProfileRetriever;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="allocateSlotsFor"><a href="#allocateSlotsFor" class="headerlink" title="allocateSlotsFor()"></a>allocateSlotsFor()</h3><p><code>allocateSlotsFor()</code>的主要步骤如下：</p>
+<pre class="mermaid">sequenceDiagram
+  DefaultScheduler ->> SlotSharingExecutionSlotAllocator: allocateSlotsFor()
+ SlotSharingExecutionSlotAllocator ->> SlotSharingStrategy: getExecutionSlotSharingGroup()
+ SlotSharingStrategy -->> SlotSharingExecutionSlotAllocator: ExecutionSlotSharingGroups
+
+  # Note left of SlotSharingExecutionSlotAllocator: getOrAllocateSharedSlot()
+  
+ SlotSharingExecutionSlotAllocator ->> SlotSharingExecutionSlotAllocator: getOrAllocateSharedSlot()
+  alt if no existed SharedSlot
+ SlotSharingExecutionSlotAllocator ->> PhysicalSlotProvider: allocatePhysicalSlot()
+ PhysicalSlotProvider -->> SlotSharingExecutionSlotAllocator: PhysicalSlot
+  end
+  SlotSharingExecutionSlotAllocator ->> SlotSharingExecutionSlotAllocator: allocateLogicalSlotsFromSharedSlots()
+  SlotSharingExecutionSlotAllocator ->> SlotSharingExecutionSlotAllocator: createBulk() -> SharingPhysicalSlotRequestBulk
+  SlotSharingExecutionSlotAllocator ->> PhysicalSlotRequestBulkChecker: schedulePendingRequestBulkTimeoutCheck()
+  SlotSharingExecutionSlotAllocator -->> DefaultScheduler: SlotExecutionVertexAssignments</pre>
+
+<h3 id="PhysicalSlotProvider"><a href="#PhysicalSlotProvider" class="headerlink" title="PhysicalSlotProvider"></a>PhysicalSlotProvider</h3><p>PhysicalSlotProvider用于向SlotPool中请求一个满足需求的Physical Slot：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> CompletableFuture&lt;PhysicalSlotRequest.Result&gt; allocatePhysicalSlot(</span><br><span class="line">  PhysicalSlotRequest physicalSlotRequest) &#123;</span><br><span class="line">  <span class="type">SlotRequestId</span> <span class="variable">slotRequestId</span> <span class="operator">=</span> physicalSlotRequest.getSlotRequestId();</span><br><span class="line">  <span class="type">SlotProfile</span> <span class="variable">slotProfile</span> <span class="operator">=</span> physicalSlotRequest.getSlotProfile();</span><br><span class="line">  <span class="type">ResourceProfile</span> <span class="variable">resourceProfile</span> <span class="operator">=</span> slotProfile.getPhysicalSlotResourceProfile();</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// use SlotSelectionStrategy to select a best slot from available slots in SlotPool</span></span><br><span class="line">  Optional&lt;PhysicalSlot&gt; availablePhysicalSlot =</span><br><span class="line">    tryAllocateFromAvailable(slotRequestId, slotProfile);</span><br><span class="line"></span><br><span class="line">  CompletableFuture&lt;PhysicalSlot&gt; slotFuture;</span><br><span class="line">  slotFuture =</span><br><span class="line">    availablePhysicalSlot</span><br><span class="line">    .map(CompletableFuture::completedFuture)</span><br><span class="line">    .orElseGet(</span><br><span class="line">    () -&gt;</span><br><span class="line">    <span class="comment">// there is no slot matching the required slot, request SlotPool to allocate a new slot</span></span><br><span class="line">    requestNewSlot(</span><br><span class="line">      slotRequestId,</span><br><span class="line">      resourceProfile,</span><br><span class="line">      physicalSlotRequest</span><br><span class="line">      .willSlotBeOccupiedIndefinitely()));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> slotFuture.thenApply(</span><br><span class="line">    physicalSlot -&gt; <span class="keyword">new</span> <span class="title class_">PhysicalSlotRequest</span>.Result(slotRequestId, physicalSlot));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>PhysicalSlotProvider会利用SlotSelectionStrategy从SlotPool中空闲的Slot中选取一个最合适的Slot：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SlotSelectionStrategy</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Selects the best &#123;<span class="doctag">@link</span> SlotInfo&#125; w.r.t. a certain selection criterion from the provided list</span></span><br><span class="line"><span class="comment">     * of available slots and considering the given &#123;<span class="doctag">@link</span> SlotProfile&#125; that describes the</span></span><br><span class="line"><span class="comment">     * requirements.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> availableSlots a list of the available slots together with their remaining resources</span></span><br><span class="line"><span class="comment">     *     to select from.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> slotProfile a slot profile, describing requirements for the slot selection.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> the selected slot info with the corresponding locality hint.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    Optional&lt;SlotInfoAndLocality&gt; <span class="title function_">selectBestSlotForProfile</span><span class="params">(</span></span><br><span class="line"><span class="params">            <span class="meta">@Nonnull</span> Collection&lt;SlotInfoAndResources&gt; availableSlots,</span></span><br><span class="line"><span class="params">            <span class="meta">@Nonnull</span> SlotProfile slotProfile)</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>目前Flink提供多种SlotSelectionStrategy实现，在满足Slot的资源需求（以ResourceProfile表示）时：</p>
+<ul>
+<li>DefaultLocationPreferenceSlotSelectionStrategy：选择具有最高Locality的Slot</li>
+<li>EvenlySpreadOutLocationPreferenceSlotSelectionStrategy：选择具有最低利用率的TaskExecutor上的Slot。在<code>cluster.evenly-spread-out-slots</code>（默认为false）上启用时使用。DefaultLocationPreferenceSlotSelectionStrategy和EvenlySpreadOutLocationPreferenceSlotSelectionStrategy两者策略都是LocationPreferenceSlotSelectionStrategy的子类。</li>
+<li>PreviousAllocationSlotSelectionStrategy：优先选择之前分配过的Slot，如果没有，则根据具体的LocationPreferenceSlotSelectionStrategy进行选择。在<code>state.backend.local-recovery</code>上使用，可以实现快速的恢复本地的StateBackend的状态。</li>
+</ul>
+<h1 id="SchedulingStrategy"><a href="#SchedulingStrategy" class="headerlink" title="SchedulingStrategy"></a>SchedulingStrategy</h1><p>SchedulingStrategy封装了调度逻辑：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SchedulingStrategy</span> &#123;</span><br><span class="line"> <span class="keyword">void</span> <span class="title function_">startScheduling</span><span class="params">()</span>;</span><br><span class="line"> <span class="keyword">void</span> <span class="title function_">restartTasks</span><span class="params">(Set&lt;ExecutionVertexID&gt; verticesToRestart)</span>;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">void</span> <span class="title function_">onExecutionStateChange</span><span class="params">(ExecutionVertexID executionVertexId, ExecutionState executionState)</span>;</span><br><span class="line"> <span class="keyword">void</span> <span class="title function_">onPartitionConsumable</span><span class="params">(IntermediateResultPartitionID resultPartitionId)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>和SchedulingStrategy相关的类有：</p>
+<ul>
+<li><p>SchedulerOperations：用于提交调度决策</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SchedulerOperations</span> &#123;</span><br><span class="line">  <span class="comment">// Allocate slots and deploy the vertex when slots are returned</span></span><br><span class="line"> <span class="keyword">void</span> <span class="title function_">allocateSlotsAndDeploy</span><span class="params">(List&lt;ExecutionVertexDeploymentOption&gt; executionVertexDeploymentOptions)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ExecutionVertexDeploymentOption：存储了将要部署的task和部署的选项</p>
+<ul>
+<li>ExecutionVertexID</li>
+<li>DeploymentOption：用于指示该task是否应该发送scheduleOrUpdateConsumer消息到Master</li>
+</ul>
+</li>
+<li><p>SchedulingTopology：SchedulingExecutionVertex的拓扑结构</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SchedulingTopology</span></span><br><span class="line"> <span class="keyword">extends</span> <span class="title class_">Topology</span>&lt;ExecutionVertexID, IntermediateResultPartitionID, SchedulingExecutionVertex, SchedulingResultPartition, SchedulingPipelinedRegion&gt; &#123;</span><br><span class="line"> </span><br><span class="line"> SchedulingExecutionVertex <span class="title function_">getVertex</span><span class="params">(ExecutionVertexID executionVertexId)</span>;</span><br><span class="line"> SchedulingResultPartition <span class="title function_">getResultPartition</span><span class="params">(IntermediateResultPartitionID intermediateResultPartitionId)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>SchedulingTopology涉及三个Flink运行时的Topology三个核心抽象：Vertex，Result和PipelinedRegion：</p>
+<ul>
+<li><p>SchedulingExecutionVertex接口继承了Vertex接口，是ExecutionVertex的调度表示，跟踪了ExecutionVertex的执行状态和输入依赖约束：</p>
+<ul>
+<li>ExecutionState</li>
+<li>InputDependencyConstraint</li>
+</ul>
+</li>
+<li><p>SchedulingResultPartition接口继承了Result接口，是IntermediateResultPartition的度调表示，包含了ResultPartition的状态：</p>
+<ul>
+<li>IntermediateDataSetID</li>
+<li>ResultPartitionState</li>
+</ul>
+</li>
+<li><p>SchedulingPipelinedRegion接口继承了PipelinedRegion接口，一组通过piplined data exchange的vertices</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>当前，Flink提供了SchedulingStrategy有以下实现：</p>
+<ul>
+<li>EagerSchedulingStrategy(Removed in 1.13)</li>
+<li>LazyFromSourcesSchedulingStrategy(Removed in 1.13)</li>
+<li>PipelinedRegionSchedulingStrategy</li>
+<li>VertexwiseSchedulingStrategy<br>用于细粒度的Batch任务的调度需求（<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-25036%EF%BC%89%EF%BC%8C%E8%A6%81%E6%B1%82%E6%89%80%E6%9C%89%E7%9A%84GlobalStreamExchangeMode%E4%B8%BAALL_EXCHANGES_BLOCKING%E3%80%82VertexwiseSchedulingStrategy%E5%8F%AF%E4%BB%A5%E5%9C%A8JobVertex%E7%9A%84%E7%B2%92%E5%BA%A6%E8%B0%83%E5%BA%A6Job%E6%89%A7%E8%A1%8C%EF%BC%8C%E8%A7%A3%E5%86%B3%E4%BA%86Batch">https://issues.apache.org/jira/browse/FLINK-25036），要求所有的GlobalStreamExchangeMode为ALL_EXCHANGES_BLOCKING。VertexwiseSchedulingStrategy可以在JobVertex的粒度调度Job执行，解决了Batch</a> Job在PipelinedRegionSchedulingStrategy模式下因为最小资源不满足同时调度某个PipelinedRegion的所有Vertics失败的问题。</li>
+</ul>
+<h2 id="EagerSchedulingStrategy"><a href="#EagerSchedulingStrategy" class="headerlink" title="EagerSchedulingStrategy"></a>EagerSchedulingStrategy</h2><p>EagerSchedulingStrategy用于Streaming Job的调度，EagerSchedulingStrategy将会调度同时所有的任务运行。</p>
+<p>在startScheduling()函数中，从schedulingTopology中按照拓扑顺序获取所有的ExecutionVertexID，并交给schedulerOperations的allocateSlotsAndDeploy()进行部署：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">startScheduling</span><span class="params">()</span> &#123;</span><br><span class="line">  allocateSlotsAndDeploy(SchedulingStrategyUtils.getAllVertexIdsFromTopology(schedulingTopology));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">allocateSlotsAndDeploy</span><span class="params">(<span class="keyword">final</span> Set&lt;ExecutionVertexID&gt; verticesToDeploy)</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> List&lt;ExecutionVertexDeploymentOption&gt; executionVertexDeploymentOptions = SchedulingStrategyUtils.createExecutionVertexDeploymentOptionsInTopologicalOrder(</span><br><span class="line">    schedulingTopology,</span><br><span class="line">    verticesToDeploy,</span><br><span class="line">    id -&gt; deploymentOption);</span><br><span class="line">  schedulerOperations.allocateSlotsAndDeploy(executionVertexDeploymentOptions);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="LazyFromSourcesSchedulingStrategy"><a href="#LazyFromSourcesSchedulingStrategy" class="headerlink" title="LazyFromSourcesSchedulingStrategy"></a>LazyFromSourcesSchedulingStrategy</h2><p>LazyFromSourcesSchedulingStrategy主要用batch作业，只有当ExecutionVertex将要消费的来自上游的ResultPartition全部都就绪以后，才会调度该ExecutionVertex。</p>
+<p>在startScheduling()时，首先根据ExecutionVertex产生的ResultPartition的ResultPartitionType类型，如果是Pipelined类型，则会采用需要sendScheduleOrUpdateConsumerMessage的DeploymentOption，反之则不需要。之后开始调用allocateSlotsAndDeployExecutionVertices()为能够部署的ExecutionVertex分配Slot和部署。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">startScheduling</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">DeploymentOption</span> <span class="variable">updateOption</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DeploymentOption</span>(<span class="literal">true</span>);</span><br><span class="line">  <span class="keyword">final</span> <span class="type">DeploymentOption</span> <span class="variable">nonUpdateOption</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DeploymentOption</span>(<span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (SchedulingExecutionVertex schedulingVertex : schedulingTopology.getVertices()) &#123;</span><br><span class="line">    <span class="type">DeploymentOption</span> <span class="variable">option</span> <span class="operator">=</span> nonUpdateOption;</span><br><span class="line">    <span class="keyword">for</span> (SchedulingResultPartition srp : schedulingVertex.getProducedResults()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (srp.getResultType().isPipelined()) &#123;</span><br><span class="line">        option = updateOption;</span><br><span class="line">      &#125;</span><br><span class="line">      inputConstraintChecker.addSchedulingResultPartition(srp);</span><br><span class="line">    &#125;</span><br><span class="line">    deploymentOptions.put(schedulingVertex.getId(), option);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  allocateSlotsAndDeployExecutionVertices(schedulingTopology.getVertices());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在allocateSlotsAndDeployExecutionVertices()中，首先根据IS_IN_CREATED_EXECUTION_STATE.and(isInputConstraintSatisfied())条件筛选处于CREATED状态，并且InputConstraints都满足的ExecutionVertices，然后<strong>依次</strong>部署构造的ExecutionVertexDeploymentOption。因为Batch作业并不需要所有的ExecutionVertex都同时运行，所以针对每个ExecutionVertex依次部署：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">allocateSlotsAndDeployExecutionVertices</span><span class="params">(</span></span><br><span class="line"><span class="params">  <span class="keyword">final</span> Iterable&lt;? extends SchedulingExecutionVertex&gt; vertices)</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> Set&lt;ExecutionVertexID&gt; verticesToDeploy = IterableUtils.toStream(vertices)</span><br><span class="line">    .filter(IS_IN_CREATED_EXECUTION_STATE.and(isInputConstraintSatisfied()))</span><br><span class="line">    .map(SchedulingExecutionVertex::getId)</span><br><span class="line">    .collect(Collectors.toSet());</span><br><span class="line">  <span class="comment">// construct ExecutionVertexDeploymentOptions</span></span><br><span class="line">  <span class="comment">// .....</span></span><br><span class="line">  <span class="keyword">for</span> (ExecutionVertexDeploymentOption deploymentOption : vertexDeploymentOptions) &#123;</span><br><span class="line">    schedulerOperations.allocateSlotsAndDeploy(Collections.singletonList(deploymentOption));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="InputDependencyConstraint-amp-InputDependencyConstraintChecker-Removed"><a href="#InputDependencyConstraint-amp-InputDependencyConstraintChecker-Removed" class="headerlink" title="InputDependencyConstraint &amp; InputDependencyConstraintChecker(Removed)"></a>InputDependencyConstraint &amp; InputDependencyConstraintChecker(Removed)</h3><p>在上文中提到，SchedulingExecutionVertex都有一个InputDependencyConstraint，用于表示SchedulingExecutionVertex的输入处于什么状态时，该SchedulingExecutionVertex可以调度。InputDependencyConstraint目前之定义了ANY和ALL两种：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">InputDependencyConstraint</span> &#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Schedule the task if any input is consumable.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">  ANY,</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Schedule the task if all the inputs are consumable.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">  ALL</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而LazyFromSourcesSchedulingStrategy中使用到的InputDependencyConstraintChecker则用于检查SchedulingExecutionVertex的InputDependencyConstraint是否满足。</p>
+<p>核心的check()方法根据InputDependencyConstraint检查SchedulingExecutionVertex的输入SchedulingResultPartition的可消费状态（consumable）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">check</span><span class="params">(<span class="keyword">final</span> SchedulingExecutionVertex schedulingExecutionVertex)</span> &#123;</span><br><span class="line">  <span class="comment">// No consumed partition results</span></span><br><span class="line">  <span class="keyword">if</span> (Iterables.isEmpty(schedulingExecutionVertex.getConsumedResults())) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="type">InputDependencyConstraint</span> <span class="variable">inputConstraint</span> <span class="operator">=</span> schedulingExecutionVertex.getInputDependencyConstraint();</span><br><span class="line">  <span class="keyword">switch</span> (inputConstraint) &#123;</span><br><span class="line">    <span class="keyword">case</span> ANY:</span><br><span class="line">      <span class="keyword">return</span> checkAny(schedulingExecutionVertex);</span><br><span class="line">    <span class="keyword">case</span> ALL:</span><br><span class="line">      <span class="keyword">return</span> checkAll(schedulingExecutionVertex);</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalStateException</span>(<span class="string">&quot;Unknown InputDependencyConstraint &quot;</span> + inputConstraint);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先，什么状态下的SchedulingResultPartition是可消费的呢？在checkAny()和checkAll()中，都会调用partitionConsumable()来检查SchedulingResultPartition：</p>
+<ul>
+<li><p>如果SchedulingResultPartition的ResultType是BLOCKING，那么必须要求所有的SchedulingResultPartition对应的IntermediateDataSet的所有SchedulingResultPartition都完成</p>
+</li>
+<li><p>否在，只需要检查SchedulingResultPartition处于CONSUMABLE即可。其中ResultPartitionState分为两种：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">ResultPartitionState</span> &#123;</span><br><span class="line"> <span class="comment">// Partition is just created or is just reset.</span></span><br><span class="line"> CREATED,</span><br><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Partition is ready for consuming. For pipelined partition, this indicates it has data produced. For blocking partition, this indicates all result partitions in its parent result have finished.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> CONSUMABLE</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">partitionConsumable</span><span class="params">(SchedulingResultPartition partition)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (BLOCKING.equals(partition.getResultType())) &#123;</span><br><span class="line">    <span class="keyword">return</span> intermediateDataSetManager.allPartitionsFinished(partition);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">ResultPartitionState</span> <span class="variable">state</span> <span class="operator">=</span> partition.getState();</span><br><span class="line">    <span class="keyword">return</span> ResultPartitionState.CONSUMABLE.equals(state);</span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为了跟踪各个SchedulingResultPartition的状态，InputDependencyConstraint定义了内部类SchedulingIntermediateDataSetManager。SchedulingIntermediateDataSetManager中使用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">private final Map&lt;IntermediateDataSetID, SchedulingIntermediateDataSet&gt; intermediateDataSets = new HashMap&lt;&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>来跟踪一个IntermediateDataSetID的SchedulingIntermediateDataSet的情况：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">SchedulingIntermediateDataSet</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> List&lt;SchedulingResultPartition&gt; partitions;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Set&lt;IntermediateResultPartitionID&gt; producingPartitionIds;</span><br><span class="line"></span><br><span class="line">  SchedulingIntermediateDataSet() &#123;</span><br><span class="line">    partitions = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    producingPartitionIds = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">markPartitionFinished</span><span class="params">(IntermediateResultPartitionID partitionId)</span> &#123;</span><br><span class="line">    producingPartitionIds.remove(partitionId);</span><br><span class="line">    <span class="keyword">return</span> producingPartitionIds.isEmpty();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">resetPartition</span><span class="params">(IntermediateResultPartitionID partitionId)</span> &#123;</span><br><span class="line">    producingPartitionIds.add(partitionId);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">allPartitionsFinished</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> producingPartitionIds.isEmpty();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">addSchedulingResultPartition</span><span class="params">(SchedulingResultPartition partition)</span> &#123;</span><br><span class="line">    partitions.add(partition);</span><br><span class="line">    producingPartitionIds.add(partition.getId());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  List&lt;SchedulingResultPartition&gt; <span class="title function_">getSchedulingResultPartitions</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Collections.unmodifiableList(partitions);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="PipelinedRegionSchedulingStrategy"><a href="#PipelinedRegionSchedulingStrategy" class="headerlink" title="PipelinedRegionSchedulingStrategy"></a>PipelinedRegionSchedulingStrategy</h2><p>PipelinedRegionSchedulingStrategy以PipelinedRegion为粒度进行调度。基本思路是按照拓扑顺序对所有输入的ResultPartition就绪（可消费的）的PipelinedRegion进行调度。</p>
+<p>由于PipelinedRegion的输入ResultPartition都是BLOCKING的，所以PipelinedRegionSchedulingStrategy的所有节点的DeploymentOption都不需要发送sendScheduleOrUpdateConsumerMessage。</p>
+<p>在<code>startScheduling()</code>中，从schedulingTopology中筛选得到源PipelinedRegion，利用maybeScheduleRegions()调度执行输入就绪的PipelinedRegion：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">startScheduling</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> Set&lt;SchedulingPipelinedRegion&gt; sourceRegions = IterableUtils</span><br><span class="line">    .toStream(schedulingTopology.getAllPipelinedRegions())</span><br><span class="line">    .filter(region -&gt; !region.getConsumedResults().iterator().hasNext())</span><br><span class="line">    .collect(Collectors.toSet());</span><br><span class="line">  maybeScheduleRegions(sourceRegions);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在maybeScheduleRegions()从，以<strong>拓扑顺序</strong>调度：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">maybeScheduleRegions</span><span class="params">(<span class="keyword">final</span> Set&lt;SchedulingPipelinedRegion&gt; regions)</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> List&lt;SchedulingPipelinedRegion&gt; regionsSorted =</span><br><span class="line">    SchedulingStrategyUtils.sortPipelinedRegionsInTopologicalOrder(schedulingTopology, regions);</span><br><span class="line">  <span class="keyword">for</span> (SchedulingPipelinedRegion region : regionsSorted) &#123;</span><br><span class="line">    maybeScheduleRegion(region);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>maybeScheduleRegion()则会检查PipelinedRegion的所有输入是否都是可消费的，如果就绪，会<strong>统一</strong>部署属于该PipelinedRegion的所有ExecutionVertex：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">maybeScheduleRegion</span><span class="params">(<span class="keyword">final</span> SchedulingPipelinedRegion region)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (!areRegionInputsAllConsumable(region)) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  checkState(areRegionVerticesAllInCreatedState(region), <span class="string">&quot;BUG: trying to schedule a region which is not in CREATED state&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> List&lt;ExecutionVertexDeploymentOption&gt; vertexDeploymentOptions =</span><br><span class="line">    SchedulingStrategyUtils.createExecutionVertexDeploymentOptions(</span><br><span class="line">    regionVerticesSorted.get(region),</span><br><span class="line">    id -&gt; deploymentOption);</span><br><span class="line">  schedulerOperations.allocateSlotsAndDeploy(vertexDeploymentOptions);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在startScheduling()之后，PipelinedRegionSchedulingStrategy会通过onExecutionStateChange()监听ExecutionVertex的状态变化，如果有某个ExecutionVertex已经完成，那么会获取该ExecutionVertex产生的ResultPartition，并尝试调度消费产生的ResultPartition的PipelinedRegions：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onExecutionStateChange</span><span class="params">(<span class="keyword">final</span> ExecutionVertexID executionVertexId, <span class="keyword">final</span> ExecutionState executionState)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (executionState == ExecutionState.FINISHED) &#123;</span><br><span class="line">    <span class="keyword">final</span> Set&lt;SchedulingResultPartition&gt; finishedPartitions = IterableUtils</span><br><span class="line">      .toStream(schedulingTopology.getVertex(executionVertexId).getProducedResults())</span><br><span class="line">      <span class="comment">// The produced partition has pipelined region consumers</span></span><br><span class="line">      .filter(partition -&gt; partitionConsumerRegions.containsKey(partition.getId()))</span><br><span class="line">      <span class="comment">// And the state of this partition is CONSUMABLE</span></span><br><span class="line">      .filter(partition -&gt; partition.getState() == ResultPartitionState.CONSUMABLE)</span><br><span class="line">      <span class="comment">// Also consider the correlated partitions</span></span><br><span class="line">      .flatMap(partition -&gt; correlatedResultPartitions.get(partition.getResultId()).stream())</span><br><span class="line">      .collect(Collectors.toSet());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> Set&lt;SchedulingPipelinedRegion&gt; consumerRegions = finishedPartitions.stream()</span><br><span class="line">      .flatMap(partition -&gt; partitionConsumerRegions.get(partition.getId()).stream())</span><br><span class="line">      .collect(Collectors.toSet());</span><br><span class="line">    <span class="comment">// Try to schedule </span></span><br><span class="line">    maybeScheduleRegions(consumerRegions);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​</p>
+<h1 id="Pipelined-Region-Scheduling"><a href="#Pipelined-Region-Scheduling" class="headerlink" title="Pipelined Region Scheduling"></a>Pipelined Region Scheduling</h1><p><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-119+Pipelined+Region+Scheduling">https://cwiki.apache.org/confluence/display/FLINK/FLIP-119+Pipelined+Region+Scheduling</a></p>
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>Motivation: resolve potential batch job deadlocks and unify the different code paths for batch and streaming jobs.</p>
+<p>Rules of Pipelined Region Scheduling:</p>
+<ol>
+<li>Schedule pipelined connected tasks together, i.e., <strong>treat a region as a whole in scheduling</strong>.</li>
+<li>Schedule a region only if all the result partitions it consumes are ready. This ensures that a started region will be able to finish, and thus can release slots to be used by other regions.</li>
+<li>Slot allocation competitions between different pipelined regions must be avoided. This ensures that a scheduled region will always be able to acquire required slots to start work (given that the cluster has enough resources for each single region).</li>
+</ol>
+<p>For streaming jobs, all tasks are connected with each other by pipelined data exchanges.</p>
+<h2 id="Pipelined-Region-Scheduling-Strategy"><a href="#Pipelined-Region-Scheduling-Strategy" class="headerlink" title="Pipelined Region Scheduling Strategy"></a>Pipelined Region Scheduling Strategy</h2><p><code>PipelinedRegionSchedulingStrategy</code> implements the <code>SchedulingStrategy</code> interface which is now responsible for determing when to schedule and which tasks to schedule.</p>
+<p>The <code>PipelinedRegionSchedulingStrategy</code> submits one pipelined region to the <code>DefaultScheduler</code> each time. <strong>The <code>DefaultScheduler</code> will treat the bulk of tasks in one submission as a whole, namely allocate slots for them and deploy them only if all of them have slots assigned</strong>.</p>
+<p>The <code>PipelinedRegionSchedulingStrategy</code> must be aware of the inputs of each pipelined region. It should schedule a region if and only if all the inputs of that region become consumable.</p>
+<p><code>PipelinedRegionSchedulingStrategy</code> respects rules #1 and #2.</p>
+<h3 id="FIFO-Physical-Slot-Assignment"><a href="#FIFO-Physical-Slot-Assignment" class="headerlink" title="FIFO Physical Slot Assignment"></a>FIFO Physical Slot Assignment</h3><p>In order not to slow down the scheduling process, Flink cannot schedule regions and allocate resources for them sequentially. But mulitple regions may have slot allocation competition and this should be avoided otherwise resource deadlocks may happen.</p>
+<p>FIFO pyhsical slot assignment is proposed for SlotPool. <em>With it enabled, the SlotPool tries to fulfill the oldest pending slot request once it receives an available slot. The available slot can be returned by another terminated task or is just offered from a task manager</em>. This naturally ensures that slot requests of an earlier scheduled region will be fulfilled earlier than requests of a later scheduled region. <em>This is different from the current slot assignment mechanism that a newly offered slot will tend to fulfill the slot request which requested it from the ResourceManager</em>.</p>
+<h3 id="Bulk-Slot-Allocation"><a href="#Bulk-Slot-Allocation" class="headerlink" title="Bulk Slot Allocation"></a>Bulk Slot Allocation</h3><p>The <code>SlotPool</code>  needs to <strong>know all the slot allocations of a pipelined region since they must be fulfilled at the same time</strong>. Otherwise it cannot tell whether the cluster is able to offer enough slots for a pipelined region to run.</p>
+<p><em>Bulk slot allocation</em>  enables SlotPool to check whether a bulk of slot allocations is fulfillable. <em>A slot allocation bulk is fulfillable if its resource requirements can be satisfied using all reusable slots in the <code>SlotPool</code></em> . Note that we do not require all resources in the <code>SlotPool</code>  to be available immediately . Slots occupied by bounded tasks are considered ‘reusable’ because they will eventually be released once the task completes. Unbounded tasks will occupy the slots indefinitely.</p>
+<h3 id="Pipelined-Region-as-a-Common-Component"><a href="#Pipelined-Region-as-a-Common-Component" class="headerlink" title="Pipelined Region as a Common Component"></a>Pipelined Region as a Common Component</h3><h2 id="Global-Data-Exchange-Mode"><a href="#Global-Data-Exchange-Mode" class="headerlink" title="Global Data Exchange Mode"></a>Global Data Exchange Mode</h2><p>GlobalDataExchangeMode is a job-wide mode which helps to automatically set data exchange types for job edges. Therefore it controls how to divide jobs into pipelined regions. There are four modes:</p>
+<ul>
+<li><code>ALL_EDGES_BLOCKING</code>: The most conservative setting. Should only be used with special consideration.</li>
+<li><code>FORWARD_EDGES_PIPELINED</code>: With this mode, each pipelined region would need one and only one slot to run. Can be used in resource limited scenarios or if it should be guaranteed that the job can successfully run with only 1 slot.</li>
+<li><code>POINTWISE_EDGES_PIPELINED</code>: Pointwise distribution pattern includes FORWARD and RESCALE. With this mode, RESCALE edges can be pipelined, at the cost of larger regions that may need more slots at the same time. However, in most cases, the number of required slots is much smaller than the parallelism.</li>
+<li><code>ALL_EDGES_PIPELINED</code>: This would require slots no less that the parallelism. It saves time on scheduling tasks and can be used for interactive queries (see <a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-16543">FLINK-16543</a>).</li>
+</ul>
+<p>StreamGraph will be extended with a new field to host the GlobalDataExchangeMode. In the JobGraph generation stage, this mode will be used to determine the data exchange type of each job edge.</p>
+<h1 id="Optimize-scheduler-performance-for-large-scale-jobs"><a href="#Optimize-scheduler-performance-for-large-scale-jobs" class="headerlink" title="Optimize scheduler performance for large-scale jobs"></a>Optimize scheduler performance for large-scale jobs</h1><p>主要目的是减少调度大规模任务的时间复杂度和空间占用</p>
+<blockquote>
+<p>As we can see, for two JobVertices connected with the all-to-all distribution type, all IntermediateResultPartitions produced by the upstream ExecutionVertices are isomorphic, which means that the downstream ExecutionVertices they connected are exactly the same. The downstream ExecutionVertices belonging to the same JobVertex are also isomorphic, as the upstream ResultPartitions they connect are the same, too.</p>
+<p>For the pointwise distribution type, because each result partition is connected to different downstream vertices, they should belong to different groups. Vice versa, all the vertices belong to different groups. Since one result partition group is connected to one vertex group pointwisely, the computation complexity of looping over them is still O(N).</p>
+</blockquote>
+<p><img src="https://issues.apache.org/jira/secure/attachment/13019271/13019271_Illustration+of+Group.jpg"></p>
+<p><a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-21110">https://issues.apache.org/jira/browse/FLINK-21110</a></p>
+<p>Design Doc: <a target="_blank" rel="noopener" href="https://docs.google.com/document/d/1OjGAyJ9Z6KsxcMtBHr6vbbrwP9xye7CdCtrLvf8dFYw/edit?usp=sharing">https://docs.google.com/document/d/1OjGAyJ9Z6KsxcMtBHr6vbbrwP9xye7CdCtrLvf8dFYw/edit?usp=sharing</a></p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/11/10/Spark-spark-sql/" title= "Spark SQL Basics">
+                    <div class="nextTitle">Spark SQL Basics</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/11/02/Flink-flink-file-system-connector/" title= "Flink FileSystem Connector">
+                    <div class="prevTitle">Flink FileSystem Connector</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2020/11/03/Flink-Flink-Scheduler/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink Scheduler"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Flink-Scheduling"><span class="toc-number">1.</span> <span class="toc-text">Flink Scheduling</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Legacy-Scheduler"><span class="toc-number">1.1.</span> <span class="toc-text">Legacy Scheduler</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SchedulerNG-Scheduler-New-Generation"><span class="toc-number">1.2.</span> <span class="toc-text">SchedulerNG(Scheduler New Generation)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Create-SchedulerNG"><span class="toc-number">1.2.1.</span> <span class="toc-text">Create SchedulerNG</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DefaultScheduler-Implementation"><span class="toc-number">1.2.2.</span> <span class="toc-text">DefaultScheduler Implementation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ExecutingFailureHandler"><span class="toc-number">1.2.3.</span> <span class="toc-text">ExecutingFailureHandler</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ExecutionSlotAllocator"><span class="toc-number">1.3.</span> <span class="toc-text">ExecutionSlotAllocator</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SlotSharingExecutionSlotAllocator"><span class="toc-number">1.3.1.</span> <span class="toc-text">SlotSharingExecutionSlotAllocator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#allocateSlotsFor"><span class="toc-number">1.3.2.</span> <span class="toc-text">allocateSlotsFor()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PhysicalSlotProvider"><span class="toc-number">1.3.3.</span> <span class="toc-text">PhysicalSlotProvider</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#SchedulingStrategy"><span class="toc-number">2.</span> <span class="toc-text">SchedulingStrategy</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#EagerSchedulingStrategy"><span class="toc-number">2.1.</span> <span class="toc-text">EagerSchedulingStrategy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LazyFromSourcesSchedulingStrategy"><span class="toc-number">2.2.</span> <span class="toc-text">LazyFromSourcesSchedulingStrategy</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#InputDependencyConstraint-amp-InputDependencyConstraintChecker-Removed"><span class="toc-number">2.2.1.</span> <span class="toc-text">InputDependencyConstraint &amp; InputDependencyConstraintChecker(Removed)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PipelinedRegionSchedulingStrategy"><span class="toc-number">2.3.</span> <span class="toc-text">PipelinedRegionSchedulingStrategy</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Pipelined-Region-Scheduling"><span class="toc-number">3.</span> <span class="toc-text">Pipelined Region Scheduling</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Introduction"><span class="toc-number">3.1.</span> <span class="toc-text">Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pipelined-Region-Scheduling-Strategy"><span class="toc-number">3.2.</span> <span class="toc-text">Pipelined Region Scheduling Strategy</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#FIFO-Physical-Slot-Assignment"><span class="toc-number">3.2.1.</span> <span class="toc-text">FIFO Physical Slot Assignment</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bulk-Slot-Allocation"><span class="toc-number">3.2.2.</span> <span class="toc-text">Bulk Slot Allocation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Pipelined-Region-as-a-Common-Component"><span class="toc-number">3.2.3.</span> <span class="toc-text">Pipelined Region as a Common Component</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Global-Data-Exchange-Mode"><span class="toc-number">3.3.</span> <span class="toc-text">Global Data Exchange Mode</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Optimize-scheduler-performance-for-large-scale-jobs"><span class="toc-number">4.</span> <span class="toc-text">Optimize scheduler performance for large-scale jobs</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

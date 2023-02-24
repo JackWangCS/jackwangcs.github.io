@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink ExecutionGraph · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink ExecutionGraph</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink ExecutionGraph
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Core">Core</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">1.6k</span>Reading time: <span class="post-count reading-time">8 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/08/23</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="ExecutionGraph"><a href="#ExecutionGraph" class="headerlink" title="ExecutionGraph"></a>ExecutionGraph</h1><p>ExecutionGraph是DataFlows分布式执行时的核心数据结构，包含：</p>
+<ul>
+<li>ExecutionJobVertex是JobGraph中JobVertex执行时的表示，也称为task。ExecutionJobVertex里面存储了每个个并行的subtask的聚集状态（aggregated state）</li>
+<li>ExecutionVertex表示一个并行执行的subtask，ExecutionVertex的个数与ExecutionJobVertex的并行度（parallelism）一致</li>
+<li>Execution是ExecutionVertex的一次执行尝试（attempt），由ExecutionAttemptID标志</li>
+</ul>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-master/fig/job_and_execution_graph.svg"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** All job vertices that are part of this graph. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;JobVertexID, ExecutionJobVertex&gt; tasks;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** All vertices, in the order in which they were created. **/</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;ExecutionJobVertex&gt; verticesInCreationOrder;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** All intermediate results that are part of this graph. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;IntermediateDataSetID, IntermediateResult&gt; intermediateResults;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** The currently executed tasks, for callbacks. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;ExecutionAttemptID, Execution&gt; currentExecutions;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ExecutionJobVertex"><a href="#ExecutionJobVertex" class="headerlink" title="ExecutionJobVertex"></a>ExecutionJobVertex</h3><p>ExecutionJobVertex是ExecutionGraph的组成部分，与StreamGraph中的一个JobVertex对应，表示一个并行化的操作（operation）。ExecutionJobVertex包含了多个ExecutionVertex，每个ExecutionVertex是操作的一个并行实例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ExecutionGraph graph;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> JobVertex jobVertex;</span><br><span class="line"></span><br><span class="line"><span class="comment">// IDs of all operators contained in the corresponding job vertex</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;OperatorID&gt; operatorIDs;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;OperatorID&gt; userDefinedOperatorIds;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Task Vertices, each one is a parallel instance</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ExecutionVertex[] taskVertices;</span><br><span class="line"><span class="comment">// Outputs</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> IntermediateResult[] producedDataSets;</span><br><span class="line"><span class="comment">// Inputs</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;IntermediateResult&gt; inputs;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> InputSplit[] inputSplits;</span><br><span class="line"><span class="keyword">private</span> InputSplitAssigner splitAssigner;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> SlotSharingGroup slotSharingGroup;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> CoLocationGroup coLocationGroup;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> parallelism;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> maxParallelismConfigured;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> maxParallelism;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ResourceProfile</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ResourceProfile resourceProfile;</span><br><span class="line"><span class="keyword">private</span> Either&lt;SerializedValue&lt;TaskInformation&gt;, PermanentBlobKey&gt; taskInformationOrBlobKey = <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;OperatorID, OperatorCoordinator&gt; operatorCoordinators;</span><br></pre></td></tr></table></figure>
+
+<p>taskVertices的数量有实际的并行度决定：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="variable">vertexParallelism</span> <span class="operator">=</span> jobVertex.getParallelism();</span><br><span class="line"><span class="type">int</span> <span class="variable">numTaskVertices</span> <span class="operator">=</span> vertexParallelism &gt; <span class="number">0</span> ? vertexParallelism : defaultParallelism;</span><br></pre></td></tr></table></figure>
+
+<p>并会创建numTaskVertices个ExecutionVertex：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// create all task vertices</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; numTaskVertices; i++) &#123;</span><br><span class="line">  <span class="type">ExecutionVertex</span> <span class="variable">vertex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ExecutionVertex</span>(</span><br><span class="line">    <span class="built_in">this</span>,</span><br><span class="line">    i,</span><br><span class="line">    producedDataSets,</span><br><span class="line">    timeout,</span><br><span class="line">    initialGlobalModVersion,</span><br><span class="line">    createTimestamp,</span><br><span class="line">    maxPriorAttemptsHistoryLength);</span><br><span class="line">  <span class="built_in">this</span>.taskVertices[i] = vertex;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于该JobVertex产生的IntermidateDataSet，会封装为IntermediateResult：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; jobVertex.getProducedDataSets().size(); i++) &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">IntermediateDataSet</span> <span class="variable">result</span> <span class="operator">=</span> jobVertex.getProducedDataSets().get(i);</span><br><span class="line">  <span class="built_in">this</span>.producedDataSets[i] = <span class="keyword">new</span> <span class="title class_">IntermediateResult</span>(</span><br><span class="line">    result.getId(),</span><br><span class="line">    <span class="built_in">this</span>,</span><br><span class="line">    numTaskVertices,</span><br><span class="line">    result.getResultType());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每个ExecutionVertex表示一个执行的subTask，其执行的状态转移如下：</p>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-master/fig/state_machine.svg" alt="States and Transitions of Task Executions"></p>
+<h4 id="ResourceProfile"><a href="#ResourceProfile" class="headerlink" title="ResourceProfile"></a>ResourceProfile</h4><p>ExecutionJobVertex中每个ExecutionVertex所需要的资源由ResourceProfile描述。</p>
+<p>在请求或者提供Slot时，ResourceProfile描述了一个Slot的不可变的资源信息。ResourceProfile提供了isMatching()用于检查ResourceProfile是否匹配，并且还有方法来计算ResourceProfile的匹配分数，从而从候选的ResourceProfile中选择最匹配的一个。</p>
+<p>ResourceProfile包含的资源如下，按照全序排列：</p>
+<ul>
+<li>Memory Size：taskHeapMemory，taskOffHeapMemory，managedMemory，networkMemory</li>
+<li>CPU cores</li>
+<li>Extended Resources</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Resource cpuCores;</span><br><span class="line"><span class="comment">/** How much task heap memory is needed. */</span></span><br><span class="line"><span class="meta">@Nullable</span> <span class="comment">// can be null only for UNKNOWN</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> MemorySize taskHeapMemory;</span><br><span class="line"><span class="comment">/** How much task off-heap memory is needed. */</span></span><br><span class="line"><span class="meta">@Nullable</span> <span class="comment">// can be null only for UNKNOWN</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> MemorySize taskOffHeapMemory;</span><br><span class="line"><span class="comment">/** How much managed memory is needed. */</span></span><br><span class="line"><span class="meta">@Nullable</span> <span class="comment">// can be null only for UNKNOWN</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> MemorySize managedMemory;</span><br><span class="line"><span class="comment">/** How much network memory is needed. */</span></span><br><span class="line"><span class="meta">@Nullable</span> <span class="comment">// can be null only for UNKNOWN</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> MemorySize networkMemory;</span><br><span class="line"><span class="comment">/** A extensible field for user specified resources from &#123;<span class="doctag">@link</span> ResourceSpec&#125;. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, Resource&gt; extendedResources = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<p>isMatching(required)则是用于检查各项资源满足required。</p>
+<p>另外，ResourceProfile可以通过ResourceSpec + NetworkMemory构建：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> ResourceProfile <span class="title function_">fromResourceSpec</span><span class="params">(ResourceSpec resourceSpec, MemorySize networkMemory)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (ResourceSpec.UNKNOWN.equals(resourceSpec)) &#123;</span><br><span class="line">    <span class="keyword">return</span> UNKNOWN;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> newBuilder()</span><br><span class="line">    .setCpuCores(resourceSpec.getCpuCores())</span><br><span class="line">    .setTaskHeapMemory(resourceSpec.getTaskHeapMemory())</span><br><span class="line">    .setTaskOffHeapMemory(resourceSpec.getTaskOffHeapMemory())</span><br><span class="line">    .setManagedMemory(resourceSpec.getManagedMemory())</span><br><span class="line">    .setNetworkMemory(networkMemory)</span><br><span class="line">    .addExtendedResources(resourceSpec.getExtendedResources())</span><br><span class="line">    .build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="connectToPredecessors"><a href="#connectToPredecessors" class="headerlink" title="connectToPredecessors"></a>connectToPredecessors</h4><p>connectToPredecessors()用于将该ExecutionJobVertex与上游的IntermediateResults相连接：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">connectToPredecessors</span><span class="params">(Map&lt;IntermediateDataSetID, IntermediateResult&gt; intermediateDataSets)</span> <span class="keyword">throws</span> JobException &#123;</span><br><span class="line">  List&lt;JobEdge&gt; inputs = jobVertex.getInputs();</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">num</span> <span class="operator">=</span> <span class="number">0</span>; num &lt; inputs.size(); num++) &#123;</span><br><span class="line">    <span class="type">JobEdge</span> <span class="variable">edge</span> <span class="operator">=</span> inputs.get(num);</span><br><span class="line">    <span class="comment">// fetch the intermediate result via ID. if it does not exist, then it either has not been created, or the order in which this method is called for the job vertices is not a topological order</span></span><br><span class="line">    <span class="type">IntermediateResult</span> <span class="variable">ires</span> <span class="operator">=</span> intermediateDataSets.get(edge.getSourceId());</span><br><span class="line">    <span class="keyword">if</span> (ires == <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">JobException</span>(<span class="string">&quot;Cannot connect this job graph to the previous graph. No previous intermediate result found for ID &quot;</span></span><br><span class="line">                             + edge.getSourceId());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">this</span>.inputs.add(ires);</span><br><span class="line">    <span class="comment">// Add this ExecutionJobVertex as a consumer</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">consumerIndex</span> <span class="operator">=</span> ires.registerConsumer();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; parallelism; i++) &#123;</span><br><span class="line">      <span class="type">ExecutionVertex</span> <span class="variable">ev</span> <span class="operator">=</span> taskVertices[i];</span><br><span class="line">      ev.connectSource(num, ires, edge, consumerIndex);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="IntermediateResult"><a href="#IntermediateResult" class="headerlink" title="IntermediateResult"></a>IntermediateResult</h3><p>IntermediateResult是IntermediateDataSet的执行时的表示：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> IntermediateDataSetID id;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ExecutionJobVertex producer;</span><br><span class="line"><span class="comment">// Specific partitions</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> IntermediateResultPartition[] partitions;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;IntermediateResultPartitionID, Integer&gt; partitionLookupHelper = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> numParallelProducers;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> AtomicInteger numberOfRunningProducers;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> partitionsAssigned;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> numConsumers;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> connectionIndex;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ResultPartitionType resultType;</span><br></pre></td></tr></table></figure>
+
+<p>IntermediateResult维护了IntermediateResultPartition数组，用于跟踪所有的IntermediateResultPartition，以及对应consumer的个数。</p>
+<h2 id="ExecutionGraphBuilder"><a href="#ExecutionGraphBuilder" class="headerlink" title="ExecutionGraphBuilder"></a>ExecutionGraphBuilder</h2><p>ExecutionGraphBuilder的静态方法buildGraph()可以基于JobGraph构建ExecutionGraph，在通过构造函数创建ExecutionGraph后，调用executionGraph.attachJobGraph()方法，完成构建：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// create a new execution graph, if none exists so far</span></span><br><span class="line"><span class="keyword">final</span> ExecutionGraph executionGraph;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  executionGraph = (prior != <span class="literal">null</span>) ? prior :</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">ExecutionGraph</span>(</span><br><span class="line">    jobInformation,</span><br><span class="line">    futureExecutor,</span><br><span class="line">    ioExecutor,</span><br><span class="line">    rpcTimeout,</span><br><span class="line">    restartStrategy,</span><br><span class="line">    maxPriorAttemptsHistoryLength,</span><br><span class="line">    failoverStrategyFactory,</span><br><span class="line">    slotProvider,</span><br><span class="line">    classLoader,</span><br><span class="line">    blobWriter,</span><br><span class="line">    allocationTimeout,</span><br><span class="line">    partitionReleaseStrategyFactory,</span><br><span class="line">    shuffleMaster,</span><br><span class="line">    partitionTracker,</span><br><span class="line">    jobGraph.getScheduleMode());</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">  <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">JobException</span>(<span class="string">&quot;Could not create the ExecutionGraph.&quot;</span>, e);</span><br><span class="line">&#125;</span><br><span class="line">.....</span><br><span class="line"><span class="comment">// topologically sort the job vertices and attach the graph to the existing one</span></span><br><span class="line">List&lt;JobVertex&gt; sortedTopology = jobGraph.getVerticesSortedTopologicallyFromSources();</span><br><span class="line"><span class="comment">// create the ExecutionJobVertexs and IntermediateResults</span></span><br><span class="line">executionGraph.attachJobGraph(sortedTopology);</span><br><span class="line">.....</span><br></pre></td></tr></table></figure>
+
+<p>在ExecutionGraph#attachJobGraph()中，遍历所有的JobVertex，并为之创建ExecutionJobVertex，然后根据连接到该ExecutionJobVertex的前辈节点。由于是按照拓扑顺序遍历的，保证了ExecutionJobVertex的所有前辈节点在之前已经创建。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">attachJobGraph</span><span class="params">(List&lt;JobVertex&gt; topologiallySorted)</span> <span class="keyword">throws</span> JobException &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">final</span> ArrayList&lt;ExecutionJobVertex&gt; newExecJobVertices = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(topologiallySorted.size());</span><br><span class="line">  <span class="keyword">final</span> <span class="type">long</span> <span class="variable">createTimestamp</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">  <span class="keyword">for</span> (JobVertex jobVertex : topologiallySorted) &#123;</span><br><span class="line">    <span class="keyword">if</span> (jobVertex.isInputVertex() &amp;&amp; !jobVertex.isStoppable()) &#123;</span><br><span class="line">      <span class="built_in">this</span>.isStoppable = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// create the execution job vertex and attach it to the graph</span></span><br><span class="line">    <span class="type">ExecutionJobVertex</span> <span class="variable">ejv</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ExecutionJobVertex</span>(</span><br><span class="line">      <span class="built_in">this</span>,</span><br><span class="line">      jobVertex,</span><br><span class="line">      <span class="number">1</span>,</span><br><span class="line">      maxPriorAttemptsHistoryLength,</span><br><span class="line">      rpcTimeout,</span><br><span class="line">      globalModVersion,</span><br><span class="line">      createTimestamp);</span><br><span class="line">    <span class="comment">// connect to predecessors</span></span><br><span class="line">    ejv.connectToPredecessors(<span class="built_in">this</span>.intermediateResults);</span><br><span class="line"></span><br><span class="line">    <span class="type">ExecutionJobVertex</span> <span class="variable">previousTask</span> <span class="operator">=</span> <span class="built_in">this</span>.tasks.putIfAbsent(jobVertex.getID(), ejv);</span><br><span class="line">    <span class="keyword">if</span> (previousTask != <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">JobException</span>(String.format(<span class="string">&quot;Encountered two job vertices with ID %s : previous=[%s] / new=[%s]&quot;</span>, jobVertex.getID(), ejv, previousTask));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (IntermediateResult res : ejv.getProducedDataSets()) &#123;</span><br><span class="line">      <span class="type">IntermediateResult</span> <span class="variable">previousDataSet</span> <span class="operator">=</span> <span class="built_in">this</span>.intermediateResults.putIfAbsent(res.getId(), res);</span><br><span class="line">      <span class="keyword">if</span> (previousDataSet != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">JobException</span>(String.format(<span class="string">&quot;Encountered two intermediate data set with ID %s : previous=[%s] / new=[%s]&quot;</span>, res.getId(), res, previousDataSet));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">this</span>.verticesInCreationOrder.add(ejv);</span><br><span class="line">    <span class="built_in">this</span>.numVerticesTotal += ejv.getParallelism();</span><br><span class="line">    newExecJobVertices.add(ejv);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// the topology assigning should happen before notifying new vertices to failoverStrategy</span></span><br><span class="line">  executionTopology = <span class="keyword">new</span> <span class="title class_">DefaultExecutionTopology</span>(<span class="built_in">this</span>);</span><br><span class="line">  failoverStrategy.notifyNewVertices(newExecJobVertices);</span><br><span class="line">  partitionReleaseStrategy = partitionReleaseStrategyFactory.createInstance(getSchedulingTopology());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Schedule-For-Execution-Deprecated"><a href="#Schedule-For-Execution-Deprecated" class="headerlink" title="Schedule For Execution(Deprecated)"></a>Schedule For Execution(Deprecated)</h2><p>用户向JobManager提交之后，会调用ExecutionGraph#scheduleForExecution()让该ExecutionGraph开始异步调度执行。</p>
+<p>根据ExecutionGraph的调度模式（scheduleMode），分别采取对应的调度方法，调度所有的ExecutionJobVertex执行。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">scheduleForExecution</span><span class="params">()</span> <span class="keyword">throws</span> JobException &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">long</span> <span class="variable">currentGlobalModVersion</span> <span class="operator">=</span> globalModVersion;</span><br><span class="line">  <span class="keyword">if</span> (transitionState(JobStatus.CREATED, JobStatus.RUNNING)) &#123;</span><br><span class="line">    <span class="keyword">final</span> CompletableFuture&lt;Void&gt; newSchedulingFuture;</span><br><span class="line">    <span class="keyword">switch</span> (scheduleMode) &#123;</span><br><span class="line">      <span class="keyword">case</span> LAZY_FROM_SOURCES:</span><br><span class="line">        newSchedulingFuture = scheduleLazy(slotProvider);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> EAGER:</span><br><span class="line">        newSchedulingFuture = scheduleEager(slotProvider, allocationTimeout);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">JobException</span>(<span class="string">&quot;Schedule mode is invalid.&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Make sure the ExecutionGraph is not changed</span></span><br><span class="line">    <span class="keyword">if</span> (state == JobStatus.RUNNING &amp;&amp; currentGlobalModVersion == globalModVersion) &#123;</span><br><span class="line">      schedulingFuture = newSchedulingFuture;</span><br><span class="line">      newSchedulingFuture.whenCompleteAsync(</span><br><span class="line">        (Void ignored, Throwable throwable) -&gt; &#123;</span><br><span class="line">          <span class="keyword">if</span> (throwable != <span class="literal">null</span> &amp;&amp; !(throwable <span class="keyword">instanceof</span> CancellationException)) &#123;</span><br><span class="line">            <span class="comment">// only fail if the scheduling future was not canceled</span></span><br><span class="line">            failGlobal(ExceptionUtils.stripCompletionException(throwable));</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        futureExecutor);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      newSchedulingFuture.cancel(<span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">.....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Lazy-Scheduling"><a href="#Lazy-Scheduling" class="headerlink" title="Lazy Scheduling"></a>Lazy Scheduling</h3><p>Lazy Scheduling只有在任务的输入数据就绪后才开始调度该任务执行。scheduleLazy()会首先遍历verticesInCreationOrder，<strong>调度所有的源ExecutionJobVertex（inputs为空，无上游依赖）执行</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> CompletableFuture&lt;Void&gt; <span class="title function_">scheduleLazy</span><span class="params">(SlotProvider slotProvider)</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> ArrayList&lt;CompletableFuture&lt;Void&gt;&gt; schedulingFutures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(numVerticesTotal);</span><br><span class="line">  <span class="comment">// simply take the vertices without inputs.</span></span><br><span class="line">  <span class="keyword">for</span> (ExecutionJobVertex ejv : verticesInCreationOrder) &#123;</span><br><span class="line">    <span class="comment">// Schedule all input vertices firstly</span></span><br><span class="line">    <span class="keyword">if</span> (ejv.getJobVertex().isInputVertex()) &#123;</span><br><span class="line">      <span class="keyword">final</span> CompletableFuture&lt;Void&gt; schedulingJobVertexFuture = ejv.scheduleAll(</span><br><span class="line">        slotProvider,</span><br><span class="line">        allowQueuedScheduling,</span><br><span class="line">        LocationPreferenceConstraint.ALL); <span class="comment">// since it is an input vertex, the input based location preferences should be empty</span></span><br><span class="line">      schedulingFutures.add(schedulingJobVertexFuture);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> FutureUtils.waitForAll(schedulingFutures);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Eager-Scheduling"><a href="#Eager-Scheduling" class="headerlink" title="Eager Scheduling"></a>Eager Scheduling</h3><p>Eager Scheduling则是调度所有的任务立即执行。</p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/09/10/Spark-Spark-Context-and-Env/" title= "Spark Context and Env">
+                    <div class="nextTitle">Spark Context and Env</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/08/23/Flink-Flink-JobManager/" title= "Flink JobManager">
+                    <div class="prevTitle">Flink JobManager</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2020/08/23/Flink-Flink-ExecutionGraph/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink ExecutionGraph"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ExecutionGraph"><span class="toc-number">1.</span> <span class="toc-text">ExecutionGraph</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ExecutionJobVertex"><span class="toc-number">1.0.1.</span> <span class="toc-text">ExecutionJobVertex</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ResourceProfile"><span class="toc-number">1.0.1.1.</span> <span class="toc-text">ResourceProfile</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#connectToPredecessors"><span class="toc-number">1.0.1.2.</span> <span class="toc-text">connectToPredecessors</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IntermediateResult"><span class="toc-number">1.0.2.</span> <span class="toc-text">IntermediateResult</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ExecutionGraphBuilder"><span class="toc-number">1.1.</span> <span class="toc-text">ExecutionGraphBuilder</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedule-For-Execution-Deprecated"><span class="toc-number">1.2.</span> <span class="toc-text">Schedule For Execution(Deprecated)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Lazy-Scheduling"><span class="toc-number">1.2.1.</span> <span class="toc-text">Lazy Scheduling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Eager-Scheduling"><span class="toc-number">1.2.2.</span> <span class="toc-text">Eager Scheduling</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

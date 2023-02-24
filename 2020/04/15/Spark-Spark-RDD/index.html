@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Spark RDD · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Spark RDD</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Spark RDD
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Core">Core</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Spark">Spark</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">1.4k</span>Reading time: <span class="post-count reading-time">7 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/04/15</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="RDD"><a href="#RDD" class="headerlink" title="RDD"></a>RDD</h2><p>RDD表示一个不可变的、分区的可以并行处理的元素集合。每个RDD具有下面的五个性质：</p>
+<ul>
+<li>分区列表</li>
+<li>用于计算每个Split的函数</li>
+<li>依赖于其他的RDD的依赖列表</li>
+<li>可选的用于key-value RDD的Partitioner</li>
+<li>可选的，每个Split偏好的计算位置</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">RDD</span>[<span class="type">T</span>: <span class="type">ClassTag</span>](<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    @transient private var _sc: <span class="type">SparkContext</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    @transient private var deps: <span class="type">Seq</span>[<span class="type">Dependency</span>[_]]</span></span></span><br><span class="line"><span class="params"><span class="class">  </span>) <span class="keyword">extends</span> <span class="title">Serializable</span> <span class="keyword">with</span> <span class="title">Logging</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>RDD的构造函数需要提供SparkContext和对应的依赖。除了<code>_sc</code>和<code>deps</code>，RDD核心的数据结构还包括：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> id: <span class="type">Int</span> = sc.newRddId()</span><br><span class="line"><span class="meta">@transient</span> <span class="keyword">var</span> name: <span class="type">String</span> = _</span><br><span class="line"></span><br><span class="line"><span class="comment">// Our dependencies and partitions will be gotten by calling subclass&#x27;s methods below, and will be overwritten when we&#x27;re checkpointed</span></span><br><span class="line"><span class="meta">@volatile</span> <span class="keyword">private</span> <span class="keyword">var</span> dependencies_ : <span class="type">Seq</span>[<span class="type">Dependency</span>[_]] = _</span><br><span class="line"><span class="meta">@volatile</span> <span class="meta">@transient</span> <span class="keyword">private</span> <span class="keyword">var</span> partitions_ : <span class="type">Array</span>[<span class="type">Partition</span>] = _</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> storageLevel: <span class="type">StorageLevel</span> = <span class="type">StorageLevel</span>.<span class="type">NONE</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Checkpoint data</span></span><br><span class="line"><span class="keyword">private</span>[spark] <span class="keyword">var</span> checkpointData: <span class="type">Option</span>[<span class="type">RDDCheckpointData</span>[<span class="type">T</span>]] = <span class="type">None</span></span><br><span class="line"><span class="meta">@transient</span> <span class="keyword">protected</span> <span class="keyword">lazy</span> <span class="keyword">val</span> isBarrier_ : <span class="type">Boolean</span> =</span><br><span class="line">dependencies.filter(!_.isInstanceOf[<span class="type">ShuffleDependency</span>[_, _, _]]).exists(_.rdd.isBarrier())</span><br></pre></td></tr></table></figure>
+
+<p>子类通常需要重写：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">compute</span></span>(split: <span class="type">Partition</span>, context: <span class="type">TaskContext</span>): <span class="type">Iterator</span>[<span class="type">T</span>]</span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">getPartitions</span></span>: <span class="type">Array</span>[<span class="type">Partition</span>]</span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">getDependencies</span></span>: <span class="type">Seq</span>[<span class="type">Dependency</span>[_]] = deps</span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">getPreferredLocations</span></span>(split: <span class="type">Partition</span>): <span class="type">Seq</span>[<span class="type">String</span>] = <span class="type">Nil</span></span><br></pre></td></tr></table></figure>
+
+<p>RDD提供了Iterator用于遍历所有的分区：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="function"><span class="keyword">def</span> <span class="title">iterator</span></span>(split: <span class="type">Partition</span>, context: <span class="type">TaskContext</span>): <span class="type">Iterator</span>[<span class="type">T</span>] = &#123;</span><br><span class="line">  <span class="keyword">if</span> (storageLevel != <span class="type">StorageLevel</span>.<span class="type">NONE</span>) &#123;</span><br><span class="line">    getOrCompute(split, context)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    computeOrReadCheckpoint(split, context)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>RDD的Split可能已经被缓存到BlockManager里面，否则需要检查Checkpoint和重新计算：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="function"><span class="keyword">def</span> <span class="title">getOrCompute</span></span>(partition: <span class="type">Partition</span>, context: <span class="type">TaskContext</span>): <span class="type">Iterator</span>[<span class="type">T</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> blockId = <span class="type">RDDBlockId</span>(id, partition.index)</span><br><span class="line">  <span class="keyword">var</span> readCachedBlock = <span class="literal">true</span></span><br><span class="line">  <span class="comment">// This method is called on executors, so we need call SparkEnv.get instead of sc.env.</span></span><br><span class="line">  <span class="type">SparkEnv</span>.get.blockManager.getOrElseUpdate(blockId, storageLevel, elementClassTag, () =&gt; &#123;</span><br><span class="line">    readCachedBlock = <span class="literal">false</span></span><br><span class="line">    computeOrReadCheckpoint(partition, context)</span><br><span class="line">  &#125;) <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Left</span>(blockResult) =&gt;</span><br><span class="line">    <span class="keyword">if</span> (readCachedBlock) &#123;</span><br><span class="line">      <span class="keyword">new</span> <span class="type">InterruptibleIterator</span>[<span class="type">T</span>](context, blockResult.data.asInstanceOf[<span class="type">Iterator</span>[<span class="type">T</span>]]) &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">next</span></span>(): <span class="type">T</span> = &#123;</span><br><span class="line">          delegate.next()</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">new</span> <span class="type">InterruptibleIterator</span>(context, blockResult.data.asInstanceOf[<span class="type">Iterator</span>[<span class="type">T</span>]])</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Right</span>(iter) =&gt;</span><br><span class="line">    <span class="keyword">new</span> <span class="type">InterruptibleIterator</span>(context, iter.asInstanceOf[<span class="type">Iterator</span>[<span class="type">T</span>]])</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h3><p>RDD可以使用<code>persist()</code>函数进行持久化，以便快速恢复：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">persist</span></span>(newLevel: <span class="type">StorageLevel</span>): <span class="keyword">this</span>.<span class="keyword">type</span> = &#123;</span><br><span class="line">  <span class="keyword">if</span> (isLocallyCheckpointed) &#123;</span><br><span class="line">    <span class="comment">// This means the user previously called localCheckpoint(), which should have already marked this RDD for persisting. Here we should override the old storage level with one that is explicitly requested by the user (after adapting it to use disk).</span></span><br><span class="line">    persist(<span class="type">LocalRDDCheckpointData</span>.transformStorageLevel(newLevel), allowOverride = <span class="literal">true</span>)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    persist(newLevel, allowOverride = <span class="literal">false</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>StorageLevel分为多种，包括，DISK，MEMORY，SERIALIZID，OFF_HEAP等。而<code>cache()</code>则是在只保存在内存中的持久化：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">persist</span></span>(): <span class="keyword">this</span>.<span class="keyword">type</span> = persist(<span class="type">StorageLevel</span>.<span class="type">MEMORY_ONLY</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cache</span></span>(): <span class="keyword">this</span>.<span class="keyword">type</span> = persist()</span><br></pre></td></tr></table></figure>
+
+<h3 id="操作（Functions）"><a href="#操作（Functions）" class="headerlink" title="操作（Functions）"></a>操作（Functions）</h3><p>此外，RDD提供了丰富的操作，例如filter，map等， 针对key-value的RDD，提供了groupByKey和join等操作。</p>
+<p><strong>coalesce和repartition</strong></p>
+<p>coalesce用于改变partition的数量，并且使得数据均匀分布。coalesce提供了shuffle和非shuffle的两个版本，而repartition实际上是coalesce的shuffle版本：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">repartition</span></span>(numPartitions: <span class="type">Int</span>)(<span class="keyword">implicit</span> ord: <span class="type">Ordering</span>[<span class="type">T</span>] = <span class="literal">null</span>): <span class="type">RDD</span>[<span class="type">T</span>] = withScope &#123;</span><br><span class="line">  coalesce(numPartitions, shuffle = <span class="literal">true</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意，在repartition时不仅可以用来减少partition的数量，也可以增加partition的数量（可以用来解决某些partition过大导致的问题）。</p>
+<p>对于非shuffle版本，直接包装为一个CoalescedRDD返回：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">coalesce</span></span>(numPartitions: <span class="type">Int</span>, shuffle: <span class="type">Boolean</span> = <span class="literal">false</span>,</span><br><span class="line">             partitionCoalescer: <span class="type">Option</span>[<span class="type">PartitionCoalescer</span>] = <span class="type">Option</span>.empty)</span><br><span class="line">(<span class="keyword">implicit</span> ord: <span class="type">Ordering</span>[<span class="type">T</span>] = <span class="literal">null</span>)</span><br><span class="line">: <span class="type">RDD</span>[<span class="type">T</span>] = withScope &#123;</span><br><span class="line">	<span class="keyword">if</span> (shuffle) &#123; ... &#125; </span><br><span class="line">  <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">new</span> <span class="type">CoalescedRDD</span>(<span class="keyword">this</span>, numPartitions, partitionCoalescer)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CoalescedRDD通过PartitionCoalescer来均匀分布partition到新partition，并且尽可能的保留preferred location。</p>
+<p>而对于shuffle版本，首先会创建一个随机的key，并通过这个key进行一次shuffle，从而重新分配元素到新的partition中：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (shuffle) &#123;</span><br><span class="line">  <span class="comment">/** Distributes elements evenly across output partitions, starting from a random partition. */</span></span><br><span class="line">  <span class="keyword">val</span> distributePartition = (index: <span class="type">Int</span>, items: <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; &#123;</span><br><span class="line">    <span class="keyword">var</span> position = <span class="keyword">new</span> <span class="type">Random</span>(hashing.byteswap32(index)).nextInt(numPartitions)</span><br><span class="line">    items.map &#123; t =&gt;</span><br><span class="line">      position = position + <span class="number">1</span></span><br><span class="line">      (position, t)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; : <span class="type">Iterator</span>[(<span class="type">Int</span>, <span class="type">T</span>)]</span><br><span class="line"></span><br><span class="line">  <span class="comment">// include a shuffle step so that our upstream tasks are still distributed</span></span><br><span class="line">  <span class="keyword">new</span> <span class="type">CoalescedRDD</span>(</span><br><span class="line">    <span class="keyword">new</span> <span class="type">ShuffledRDD</span>[<span class="type">Int</span>, <span class="type">T</span>, <span class="type">T</span>](</span><br><span class="line">      mapPartitionsWithIndexInternal(distributePartition, isOrderSensitive = <span class="literal">true</span>),</span><br><span class="line">      <span class="keyword">new</span> <span class="type">HashPartitioner</span>(numPartitions)),</span><br><span class="line">    numPartitions,</span><br><span class="line">    partitionCoalescer).values</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Partitioner"><a href="#Partitioner" class="headerlink" title="Partitioner"></a>Partitioner</h2><p>Spark中的Partition定义非常简单，具有一个index变量表示partition的索引：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Partition</span> <span class="keyword">extends</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">  <span class="comment">// Get the partition&#x27;s index within its parent RDD</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">index</span></span>: <span class="type">Int</span></span><br><span class="line">  <span class="comment">// A better default implementation of HashCode</span></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">hashCode</span></span>(): <span class="type">Int</span> = index</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">equals</span></span>(other: <span class="type">Any</span>): <span class="type">Boolean</span> = <span class="keyword">super</span>.equals(other)</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>Partitioner用于对RDD进行划分，Partitioner必须是确定的（deterministic），即对于同样的key，总是返回相同的partition id。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Partitioner</span> <span class="keyword">extends</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">numPartitions</span></span>: <span class="type">Int</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">getPartition</span></span>(key: <span class="type">Any</span>): <span class="type">Int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在Partitioner对象中，默认提供了下面的两种实现：</p>
+<ul>
+<li><p>HashPartitioner：基于Java对象的<code>Object.hashcode()</code>实现的哈希partitioner。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HashPartitioner</span>(<span class="params">partitions: <span class="type">Int</span></span>) <span class="keyword">extends</span> <span class="title">Partitioner</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">numPartitions</span></span>: <span class="type">Int</span> = partitions</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">getPartition</span></span>(key: <span class="type">Any</span>): <span class="type">Int</span> = key <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="literal">null</span> =&gt; <span class="number">0</span></span><br><span class="line">    <span class="keyword">case</span> _ =&gt; <span class="type">Utils</span>.nonNegativeMod(key.hashCode, numPartitions)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">hashCode</span></span>: <span class="type">Int</span> = numPartitions</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在默认情况下，HashPartitioner的分区数量<strong>根据上游RDD的最大分区数量和默认并行度</strong>（<code>spark.default.parallelism</code>）决定：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If the existing max partitioner is an eligible one, or its partitions number is larger than or equal to the default number of partitions, use the existing partitioner.</span></span><br><span class="line"><span class="keyword">if</span> (hasMaxPartitioner.nonEmpty &amp;&amp; (isEligiblePartitioner(hasMaxPartitioner.get, rdds) ||</span><br><span class="line">                                   defaultNumPartitions &lt;= hasMaxPartitioner.get.getNumPartitions)) &#123;</span><br><span class="line">  hasMaxPartitioner.get.partitioner.get</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="keyword">new</span> <span class="type">HashPartitioner</span>(defaultNumPartitions)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>RangePartitioner：将排序的记录换分成大小相近的分区。</p>
+</li>
+</ul>
+<h2 id="Dependency"><a href="#Dependency" class="headerlink" title="Dependency"></a>Dependency</h2><p>Dependency定义了RDD的依赖关系：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Dependency</span>[<span class="type">T</span>] <span class="keyword">extends</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">rdd</span></span>: <span class="type">RDD</span>[<span class="type">T</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>主要有：</p>
+<ol>
+<li><p>NarrowDependency：子RDD的每个分区只依赖于父RDD的部分分区。NarrowDependency的RDD可以管道化的执行（pipelined execution）。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">NarrowDependency</span>[<span class="type">T</span>](<span class="params">_rdd: <span class="type">RDD</span>[<span class="type">T</span>]</span>) <span class="keyword">extends</span> <span class="title">Dependency</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Get the parent partitions for a child partition.</span></span><br><span class="line"><span class="comment">   * @param partitionId a partition of the child RDD</span></span><br><span class="line"><span class="comment">   * @return the partitions of the parent RDD that the child partition depends upon</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">getParents</span></span>(partitionId: <span class="type">Int</span>): <span class="type">Seq</span>[<span class="type">Int</span>]</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">rdd</span></span>: <span class="type">RDD</span>[<span class="type">T</span>] = _rdd</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其子类有OneToOneDependency，RangeDependency等。</p>
+</li>
+<li><p>ShuffleDependency：表示依赖于Shuffle Stage的输出的依赖关系。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ShuffleDependency</span>[<span class="type">K</span>: <span class="type">ClassTag</span>, <span class="type">V</span>: <span class="type">ClassTag</span>, <span class="type">C</span>: <span class="type">ClassTag</span>](<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    @transient private val _rdd: <span class="type">RDD</span>[_ &lt;: <span class="type">Product2</span>[<span class="type">K</span>, <span class="type">V</span>]],</span></span></span><br><span class="line"><span class="params"><span class="class">    val partitioner: <span class="type">Partitioner</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val serializer: <span class="type">Serializer</span> = <span class="type">SparkEnv</span>.get.serializer,</span></span></span><br><span class="line"><span class="params"><span class="class">    val keyOrdering: <span class="type">Option</span>[<span class="type">Ordering</span>[<span class="type">K</span>]] = <span class="type">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val aggregator: <span class="type">Option</span>[<span class="type">Aggregator</span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">C</span>]] = <span class="type">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val mapSideCombine: <span class="type">Boolean</span> = false,</span></span></span><br><span class="line"><span class="params"><span class="class">    val shuffleWriterProcessor: <span class="type">ShuffleWriteProcessor</span> = new <span class="type">ShuffleWriteProcessor</span></span>)</span></span><br><span class="line">  <span class="keyword">extends</span> <span class="type">Dependency</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">V</span>]] &#123;</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">rdd</span></span>: <span class="type">RDD</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">V</span>]] = _rdd.asInstanceOf[<span class="type">RDD</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">V</span>]]]</span><br><span class="line">  <span class="keyword">val</span> shuffleId: <span class="type">Int</span> = _rdd.context.newShuffleId()</span><br><span class="line">  <span class="keyword">val</span> shuffleHandle: <span class="type">ShuffleHandle</span> = _rdd.context.env.shuffleManager.registerShuffle(</span><br><span class="line">    shuffleId, <span class="keyword">this</span>)</span><br><span class="line">  _rdd.sparkContext.cleaner.foreach(_.registerShuffleForCleanup(<span class="keyword">this</span>))</span><br><span class="line">  _rdd.sparkContext.shuffleDriverComponents.registerShuffle(shuffleId)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/05/10/Spark-SparkQueryExecution/" title= "Spark Query Execution">
+                    <div class="nextTitle">Spark Query Execution</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" title= "Spark Unified Memory Manager">
+                    <div class="prevTitle">Spark Unified Memory Manager</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2020/04/15/Spark-Spark-RDD/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Spark RDD"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#RDD"><span class="toc-number">1.</span> <span class="toc-text">RDD</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-number">1.1.</span> <span class="toc-text">持久化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%EF%BC%88Functions%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">操作（Functions）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Partitioner"><span class="toc-number">2.</span> <span class="toc-text">Partitioner</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Dependency"><span class="toc-number">3.</span> <span class="toc-text">Dependency</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

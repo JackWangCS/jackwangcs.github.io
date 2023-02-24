@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Yarn 3.0 Scheduling Advances · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Yarn 3.0 Scheduling Advances</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Yarn 3.0 Scheduling Advances
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Yarn">Yarn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Scheduling">Scheduling</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">3.7k</span>Reading time: <span class="post-count reading-time">18 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2022/02/15</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>在Yarn 3.0+的版本中，Scheduling方面有很多新的进展，包括：Global Scheduling，Async Scheduling。这篇主要是对Global Scheduling的方面实现的一些分析。</p>
+<h2 id="Global-Scheduling"><a href="#Global-Scheduling" class="headerlink" title="Global Scheduling"></a>Global Scheduling</h2><h3 id="基于节点心跳的调度"><a href="#基于节点心跳的调度" class="headerlink" title="基于节点心跳的调度"></a>基于节点心跳的调度</h3><p>在Hadoop 2.6中，YARN采用了基于节点心跳的调度方式（Node heartbeat based scheduling）。当有节点的信息发送到ResourceManager时，YARN调度器只根据该节点去选择一个合适的队列以及最终选择一个最优的Application进行Container的分配。</p>
+<p>整个过程可以用下面的伪代码来描述：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">for nodeHeartBeating:</span><br><span class="line">	Go to parentQueue</span><br><span class="line">		Go to leafQueue</span><br><span class="line">			for application in leafQueue.applications:</span><br><span class="line">				for resource-request in application.resource-requests</span><br><span class="line">					try to schedule containers on the node</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是 ，Scheduler在检查Resource Requests之前，只考虑一些通用的属性，比如total cluster resource，used resources，node-partition等，但是没有具体考虑心跳节点的相关信息。但为了满足具有Placement Requirements的Resource Requests，又必须要检查节点的信息。</p>
+<p>缺点：</p>
+<ul>
+<li>One-node-at-a-time的过程容易导致非最优的调度决策</li>
+<li>对于复杂的Resource Placement Requirement很难满足</li>
+</ul>
+<p>因此，提出了Global Scheduling调度算法。Global Scheduling在调度时会考虑各个Partition的所有节点，并且能够根据Placement Requirements选择最优的节点进行分配。</p>
+<h3 id="全局调度"><a href="#全局调度" class="headerlink" title="全局调度"></a>全局调度</h3><p>全局调度（Global Scheduling）算法的如下：</p>
+<ul>
+<li>在一次资源分配时，会尝试在一个node-partition上进行分配，而不是只考虑单个节点。</li>
+<li>对于需要分配的Resource-Request，在分配时，会基于该Resource-Request对一组节点进行排序然后分配</li>
+<li>预分配过程可以多个线程同时进行，每个线程通过提交的方式确定最终的分配结果</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210719125440.png"></p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210719140536.png"></p>
+<p>提出的Global Scheduling并不是一个真正的全局最优调度，但是考虑到YARN资源调度需要一个在线算法，因此很难做到实时的获取整个全局视角，然后再对调度进行决策。</p>
+<p>在Global Scheduling中，对于每个Resource-Request都需要对节点进行排序，如何减少排序所需要的时间？</p>
+<ul>
+<li>使用并行的Resource Allocator</li>
+<li>如果Application的Placement Requirement是默认的，没有额外的限制，可以每次随机地选择一个节点作为PlacementSet进行分配。这种情况下，其实回退到了基于节点心跳的调度。</li>
+<li>缓存排序后的结果</li>
+</ul>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>YARN-7494引入了支持多节点的全局调度。此前，分配资源只能调用<code>allocateContainersToNode(NodeId nodeId,     boolean withNodeHeartbeat)</code>在单个节点上进行。YARN-7494中，为了支持多个节点的调度，重载了<code>allocateContainersToNode()</code>方法，支持传入多个节点的列表<code>CandidateNodeSet&lt;FiCaSchedulerNode&gt;</code>，在内部，会根据节点的个数，再调用不同的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">CSAssignment <span class="title function_">allocateContainersToNode</span><span class="params">(</span></span><br><span class="line"><span class="params">  CandidateNodeSet&lt;FiCaSchedulerNode&gt; candidates,</span></span><br><span class="line"><span class="params">  <span class="type">boolean</span> withNodeHeartbeat)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (rmContext.isWorkPreservingRecoveryEnabled() &amp;&amp; !rmContext</span><br><span class="line">      .isSchedulerReadyForAllocatingContainers()) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Backward compatible way to make sure previous behavior which allocation</span></span><br><span class="line">  <span class="comment">// driven by node heartbeat works.</span></span><br><span class="line">  <span class="type">FiCaSchedulerNode</span> <span class="variable">node</span> <span class="operator">=</span> CandidateNodeSetUtils.getSingleNode(candidates);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// We have two different logics to handle allocation on single node / multinodes.</span></span><br><span class="line">  CSAssignment assignment;</span><br><span class="line">  <span class="keyword">if</span> (!multiNodePlacementEnabled) &#123;</span><br><span class="line">    assignment = allocateContainerOnSingleNode(candidates,</span><br><span class="line">                                               node, withNodeHeartbeat);</span><br><span class="line">  &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">    assignment = allocateContainersOnMultiNodes(candidates);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> assignment;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意，在未开启多节点调度时，依然只调用<code>allocateContainersToNode(NodeId nodeId,     boolean withNodeHeartbeat)</code>进行调度。</p>
+<h4 id="节点心跳分配"><a href="#节点心跳分配" class="headerlink" title="节点心跳分配"></a>节点心跳分配</h4><p>基于节点心跳的分配使用<code>allocateContainersToNode(nodeId, true)</code>，内部也会调用接受多个节点的<code>allocateContainersToNode()</code>方法，但是在基于节点心跳的调度可以在一次调度的时候分配多个Container：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">allocateContainersToNode</span><span class="params">(NodeId nodeId,</span></span><br><span class="line"><span class="params">                                      <span class="type">boolean</span> withNodeHeartbeat)</span> &#123;</span><br><span class="line">  <span class="type">FiCaSchedulerNode</span> <span class="variable">node</span> <span class="operator">=</span> getNode(nodeId);</span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">null</span> != node) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">offswitchCount</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">assignedContainers</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    CandidateNodeSet&lt;FiCaSchedulerNode&gt; candidates =</span><br><span class="line">      getCandidateNodeSet(node);</span><br><span class="line">    <span class="type">CSAssignment</span> <span class="variable">assignment</span> <span class="operator">=</span> allocateContainersToNode(candidates,</span><br><span class="line">                                                       withNodeHeartbeat);</span><br><span class="line">    <span class="comment">// Only check if we can allocate more container on the same node when</span></span><br><span class="line">    <span class="comment">// scheduling is triggered by node heartbeat</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">null</span> != assignment &amp;&amp; withNodeHeartbeat) &#123;</span><br><span class="line">      <span class="keyword">if</span> (assignment.getType() == NodeType.OFF_SWITCH) &#123;</span><br><span class="line">        offswitchCount++;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (Resources.greaterThan(calculator, getClusterResource(),</span><br><span class="line">                                assignment.getResource(), Resources.none())) &#123;</span><br><span class="line">        assignedContainers++;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">while</span> (canAllocateMore(assignment, offswitchCount,</span><br><span class="line">                             assignedContainers)) &#123;</span><br><span class="line">        <span class="comment">// Try to see if it is possible to allocate multiple container for</span></span><br><span class="line">        <span class="comment">// the same node heartbeat</span></span><br><span class="line">        assignment = allocateContainersToNode(candidates, <span class="literal">true</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="literal">null</span> != assignment</span><br><span class="line">            &amp;&amp; assignment.getType() == NodeType.OFF_SWITCH) &#123;</span><br><span class="line">          offswitchCount++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="literal">null</span> != assignment</span><br><span class="line">            &amp;&amp; Resources.greaterThan(calculator, getClusterResource(),</span><br><span class="line">                                     assignment.getResource(), Resources.none())) &#123;</span><br><span class="line">          assignedContainers++;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>canAllocateMore()</code>会根据是否启用单次心跳进行多次分配的配置项检查是否能够继续分配。相关配置的前缀为：yarn.scheduler.capacity.per-node-heartbeat，具体配置如下：</p>
+<ul>
+<li>multiple-assignments-enabled，启用，默认为true</li>
+<li>maximum-container-assignments，单次最多分配的Container数量，默认为100</li>
+<li>maximum-offswitch-assignments：允许的最多的Offswitch分配的Container数量，默认为1</li>
+</ul>
+<h4 id="单个节点分配"><a href="#单个节点分配" class="headerlink" title="单个节点分配"></a>单个节点分配</h4><p><code>allocateContainerOnSingleNode()</code>用于在单个节点上分配Container。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> CSAssignment <span class="title function_">allocateContainerOnSingleNode</span><span class="params">(</span></span><br><span class="line"><span class="params">  CandidateNodeSet&lt;FiCaSchedulerNode&gt; candidates, FiCaSchedulerNode node,</span></span><br><span class="line"><span class="params">  <span class="type">boolean</span> withNodeHeartbeat)</span> &#123;</span><br><span class="line">  <span class="comment">// Assign new containers...</span></span><br><span class="line">  <span class="comment">// 1. Check for reserved applications</span></span><br><span class="line">  <span class="comment">// 2. Schedule if there are no reservations</span></span><br><span class="line">  <span class="type">RMContainer</span> <span class="variable">reservedContainer</span> <span class="operator">=</span> node.getReservedContainer();</span><br><span class="line">  <span class="keyword">if</span> (reservedContainer != <span class="literal">null</span>) &#123;</span><br><span class="line">    allocateFromReservedContainer(node, withNodeHeartbeat, reservedContainer);</span><br><span class="line">    <span class="comment">// Do not schedule if there are any reservations to fulfill on the node</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// First check if we can schedule</span></span><br><span class="line">  <span class="comment">// When this time look at one node only, try schedule if the node</span></span><br><span class="line">  <span class="comment">// has any available or killable resource</span></span><br><span class="line">  <span class="keyword">if</span> (calculator.computeAvailableContainers(Resources</span><br><span class="line">                                            .add(node.getUnallocatedResource(), node.getTotalKillableResources()),</span><br><span class="line">                                            minimumAllocation) &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> allocateOrReserveNewContainers(candidates, withNodeHeartbeat);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是，如果该节点上有Reserved Container，会首先尝试去分配Reserved Container。即使Reserved Container分配失败，该节点剩余的资源也不会分配给新的Container。<br><strong>在某些情况下，如果该节点上有某个Application的Reserved Container，同时该Application将这个节点加入到了Blacklist中，那么这个节点上的资源就再也分配不出去了</strong>。</p>
+<h4 id="多节点分配"><a href="#多节点分配" class="headerlink" title="多节点分配"></a>多节点分配</h4><p><code>allocateContainersOnMultiNodes()</code>会首先考虑分配各个节点上的Reserved Container，之后才考虑分配新的Container：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> CSAssignment <span class="title function_">allocateContainersOnMultiNodes</span><span class="params">(</span></span><br><span class="line"><span class="params">  CandidateNodeSet&lt;FiCaSchedulerNode&gt; candidates)</span> &#123;</span><br><span class="line">  <span class="comment">// Try to allocate from reserved containers</span></span><br><span class="line">  <span class="keyword">for</span> (FiCaSchedulerNode node : candidates.getAllNodes().values()) &#123;</span><br><span class="line">    <span class="comment">// One node only has at most one reserved container?</span></span><br><span class="line">    <span class="type">RMContainer</span> <span class="variable">reservedContainer</span> <span class="operator">=</span> node.getReservedContainer();</span><br><span class="line">    <span class="keyword">if</span> (reservedContainer != <span class="literal">null</span>) &#123;</span><br><span class="line">      allocateFromReservedContainer(node, <span class="literal">false</span>, reservedContainer);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> allocateOrReserveNewContainers(candidates, <span class="literal">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看出Reserved Container具有最高的优先级。</p>
+<h4 id="分配Reserved-Container"><a href="#分配Reserved-Container" class="headerlink" title="分配Reserved Container"></a>分配Reserved Container</h4><p><code>allocateFromReservedContainer()</code>用于分配节点上的Reserved Container。在分配过程中，会根据Reserved Container获取对应的LeafQueue，然后进行Container的分配。整个过程不需要从Root队列开始，自顶向下的分配。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">allocateFromReservedContainer</span><span class="params">(FiCaSchedulerNode node,</span></span><br><span class="line"><span class="params">      <span class="type">boolean</span> withNodeHeartbeat, RMContainer reservedContainer)</span> &#123;</span><br><span class="line">    <span class="type">FiCaSchedulerApp</span> <span class="variable">reservedApplication</span> <span class="operator">=</span> getCurrentAttemptForContainer(</span><br><span class="line">        reservedContainer.getContainerId());</span><br><span class="line">    <span class="keyword">if</span> (reservedApplication == <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Get the LeafQueue directly and do the allocation</span></span><br><span class="line">    <span class="type">LeafQueue</span> <span class="variable">queue</span> <span class="operator">=</span> ((LeafQueue) reservedApplication.getQueue());</span><br><span class="line">    <span class="type">CSAssignment</span> <span class="variable">assignment</span> <span class="operator">=</span> queue.assignContainers(getClusterResource(),</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">SimpleCandidateNodeSet</span>&lt;&gt;(node),</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">ResourceLimits</span>(labelManager</span><br><span class="line">            .getResourceByLabel(RMNodeLabelsManager.NO_LABEL,</span><br><span class="line">                getClusterResource())),</span><br><span class="line">        SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (assignment.isFulfilledReservation()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (withNodeHeartbeat) &#123;</span><br><span class="line">        <span class="comment">// Only update SchedulerHealth in sync scheduling, existing</span></span><br><span class="line">        <span class="comment">// Data structure of SchedulerHealth need to be updated for</span></span><br><span class="line">        <span class="comment">// Async mode</span></span><br><span class="line">        updateSchedulerHealth(lastNodeUpdateTime, node.getNodeID(),</span><br><span class="line">            assignment);</span><br><span class="line">      &#125;</span><br><span class="line">      schedulerHealth.updateSchedulerFulfilledReservationCounts(<span class="number">1</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (assignment.getAssignmentInformation().getNumReservations() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// Container is not allocated, but re-reserved. Just record the activity.</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    assignment.setSchedulingMode(</span><br><span class="line">        SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY);</span><br><span class="line">    submitResourceCommitRequest(getClusterResource(), assignment);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="分配或预留新的Container"><a href="#分配或预留新的Container" class="headerlink" title="分配或预留新的Container"></a>分配或预留新的Container</h4><p><code>allocateOrReserveNewContainers()</code>用于从Root队列开始，根据队列的使用量，自顶向下的选择一个Leaf Queue。再从选择的LeafQueue中，根据队列的调度策略，选择一个Application进行分配或预留新的Container。</p>
+<p><code>allocateOrReserveNewContainers()</code>会首先尝试按照RESPECT_PARTITION_EXCLUSIVITY的模式进行分配，如果RESPECT_PARTITION_EXCLUSIVITY模式没有分配Container，再按照IGNORE_PARTITION_EXCLUSIVITY模式尝试再次分配。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> CSAssignment <span class="title function_">allocateOrReserveNewContainers</span><span class="params">(</span></span><br><span class="line"><span class="params">    CandidateNodeSet&lt;FiCaSchedulerNode&gt; candidates,</span></span><br><span class="line"><span class="params">    <span class="type">boolean</span> withNodeHeartbeat)</span> &#123;</span><br><span class="line">  <span class="comment">// Start from the root queue to allocate or reserve new container</span></span><br><span class="line">  <span class="type">CSAssignment</span> <span class="variable">assignment</span> <span class="operator">=</span> getRootQueue().assignContainers(</span><br><span class="line">      getClusterResource(), candidates, <span class="keyword">new</span> <span class="title class_">ResourceLimits</span>(labelManager</span><br><span class="line">          .getResourceByLabel(candidates.getPartition(),</span><br><span class="line">              getClusterResource())),</span><br><span class="line">      SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY);</span><br><span class="line">  assignment.setSchedulingMode(SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY);</span><br><span class="line">  submitResourceCommitRequest(getClusterResource(), assignment);</span><br><span class="line">  <span class="comment">// If we allocate something, this may not succeed to commit</span></span><br><span class="line">  <span class="keyword">if</span> (Resources.greaterThan(calculator, getClusterResource(),</span><br><span class="line">      assignment.getResource(), Resources.none())) &#123;</span><br><span class="line">    <span class="type">FiCaSchedulerNode</span> <span class="variable">node</span> <span class="operator">=</span> CandidateNodeSetUtils.getSingleNode(candidates);</span><br><span class="line">    <span class="type">NodeId</span> <span class="variable">nodeId</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (node != <span class="literal">null</span>) &#123;</span><br><span class="line">      nodeId = node.getNodeID();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (withNodeHeartbeat) &#123;</span><br><span class="line">      updateSchedulerHealth(lastNodeUpdateTime, nodeId, assignment);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> assignment;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Only do non-exclusive allocation when node has node-labels.</span></span><br><span class="line">  <span class="keyword">if</span> (StringUtils.equals(candidates.getPartition(),</span><br><span class="line">      RMNodeLabelsManager.NO_LABEL)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Only do non-exclusive allocation when the node-label supports that</span></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (rmContext.getNodeLabelManager().isExclusiveNodeLabel(</span><br><span class="line">        candidates.getPartition())) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Try to use NON_EXCLUSIVE</span></span><br><span class="line">  assignment = getRootQueue().assignContainers(getClusterResource(),</span><br><span class="line">      candidates,</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">ResourceLimits</span>(labelManager</span><br><span class="line">          .getResourceByLabel(RMNodeLabelsManager.NO_LABEL,</span><br><span class="line">              getClusterResource())),</span><br><span class="line">      SchedulingMode.IGNORE_PARTITION_EXCLUSIVITY);</span><br><span class="line">  assignment.setSchedulingMode(SchedulingMode.IGNORE_PARTITION_EXCLUSIVITY);</span><br><span class="line">  submitResourceCommitRequest(getClusterResource(), assignment);</span><br><span class="line">  <span class="keyword">return</span> assignment;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="提交新的分配"><a href="#提交新的分配" class="headerlink" title="提交新的分配"></a>提交新的分配</h4><p>新的分配通过<code>submitResourceCommitRequest()</code>进行提交，如果启用了异步调度，那么使用ResourceComitterService进行异步提交，否则直接通过<code>tryCommit()</code>进行同步提交：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">submitResourceCommitRequest</span><span class="params">(Resource cluster,</span></span><br><span class="line"><span class="params">                                        CSAssignment csAssignment)</span> &#123;</span><br><span class="line">  ResourceCommitRequest&lt;FiCaSchedulerApp, FiCaSchedulerNode&gt; request =</span><br><span class="line">    createResourceCommitRequest(csAssignment);</span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">null</span> == request) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (scheduleAsynchronously) &#123;</span><br><span class="line">    <span class="comment">// Submit to a commit thread and commit it async-ly</span></span><br><span class="line">    resourceCommitterService.addNewCommitRequest(request);</span><br><span class="line">  &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="comment">// Otherwise do it sync-ly.</span></span><br><span class="line">    tryCommit(cluster, request, <span class="literal">true</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="ResourceCommitterService"><a href="#ResourceCommitterService" class="headerlink" title="ResourceCommitterService"></a>ResourceCommitterService</h4><p>ResourceCommitterService是一个Daemon线程，不断地调用CapacityScheduler的<code>tryCommit()</code>去提交保存在阻塞队列中的由异步线程发起的ResourceCommitRequests。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">ResourceCommitterService</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> BlockingQueue&lt;ResourceCommitRequest&lt;FiCaSchedulerApp, FiCaSchedulerNode&gt;&gt;</span><br><span class="line">    backlogs = <span class="keyword">new</span> <span class="title class_">LinkedBlockingQueue</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">while</span> (!Thread.currentThread().isInterrupted()) &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        ResourceCommitRequest&lt;FiCaSchedulerApp, FiCaSchedulerNode&gt; request =</span><br><span class="line">          backlogs.take();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          cs.writeLock.lock();</span><br><span class="line">          cs.tryCommit(cs.getClusterResource(), request);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">          cs.writeLock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">        Thread.currentThread().interrupt();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addNewCommitRequest</span><span class="params">(</span></span><br><span class="line"><span class="params">    ResourceCommitRequest&lt;FiCaSchedulerApp, FiCaSchedulerNode&gt; proposal)</span> &#123;</span><br><span class="line">    backlogs.add(proposal);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>yarn.scheduler.capacity.multi-node-placement-enabled YARN-7494</p>
+<ul>
+<li><p>CandidateNodeSet：一组由Scheduler预先选择的用于分配的节点</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">CandidateNodeSet</span>&lt;N <span class="keyword">extends</span> <span class="title class_">SchedulerNode</span>&gt; &#123;</span><br><span class="line">  Map&lt;NodeId, N&gt; <span class="title function_">getAllNodes</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="type">long</span> <span class="title function_">getVersion</span><span class="params">()</span>;</span><br><span class="line">  String <span class="title function_">getPartition</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>NodeScorer：对PlacementSet按照Resource Request标准进行排序</p>
+</li>
+<li><p>ResourceAllocationCommitter：用于提交ResourceCommitRequest</p>
+</li>
+</ul>
+<pre class="mermaid">classDiagram
+    class ResourceCommitRequest
+    class ContainerAllocationProposal
+    class ResourceAllocationCommitter
+    ResourceAllocationCommitter <|-- CapacityScheduler
+    <<interface>> ResourceAllocationCommitter
+    class CSAssignment
+    ResourceCommitRequest o-- ContainerAllocationProposal
+    ContainerAllocationProposal --> CSAssignment
+    ResourceCommitRequest -- ResourceAllocationCommitter</pre>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ResourceAllocationCommitter</span> &#123;</span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">tryCommit</span><span class="params">(Resource cluster, ResourceCommitRequest proposal)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ResourceCommitRequest包含需要分配，保留和释放的Container列表。</p>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>在CapacityScheduler实现中，全局调度的配置项为：</p>
+<ul>
+<li>yarn.scheduler.capacity.multi-node-placement-enabled，默认为false</li>
+</ul>
+<h2 id="Asynchronously-Scheduling"><a href="#Asynchronously-Scheduling" class="headerlink" title="Asynchronously Scheduling"></a>Asynchronously Scheduling</h2><p>异步调度（Asynchronously Scheduling）在<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/YARN-1512">YARN-1512</a>中引入，将CapacityScheduler的调度逻辑与节点心跳上报进行解耦，在没有节点上报的情况，也进行调度。但是，YARN-1512中的Asynchronously Scheduling只支持单线程。</p>
+<p>在<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/YARN-5176">YARN-5176</a>中，YARN开始支持多线的异步调度，从而显著地提升了调度性能。YARN-5176是Global Scheduling的一部分，为了使得多个线程能够同时调度，引入了ResourceCommitterService。ResourceCommitterService用于提交各个调度线程提出的资源分配的Proposal。只有被接受并提交的Proposal，才会执行实际的资源分配动作。</p>
+<h3 id="调度触发"><a href="#调度触发" class="headerlink" title="调度触发"></a>调度触发</h3><p>CapacityScheduler的触发调度情况：</p>
+<ul>
+<li><p><code>nodeUpdate()</code>：一个RMNode上报心跳信息，在异步调度未启用的情况下，CapacityScheduler会尝试在这个节点分配Container：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">nodeUpdate</span><span class="params">(RMNode rmNode)</span> &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    readLock.lock();</span><br><span class="line">    setLastNodeUpdateTime(Time.now());</span><br><span class="line">    <span class="comment">// Handle the completed, released containers and do bookkeeping of this node</span></span><br><span class="line">    <span class="built_in">super</span>.nodeUpdate(rmNode);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    readLock.unlock();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Try to do scheduling if scheduleAsynchronously is not enabled</span></span><br><span class="line">  <span class="keyword">if</span> (!scheduleAsynchronously) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      writeLock.lock();</span><br><span class="line">      <span class="comment">// Try to allocate containers on the heartbeat node</span></span><br><span class="line">      allocateContainersToNode(rmNode.getNodeID(), <span class="literal">true</span>);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      writeLock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>异步调度线程AsyncScheduleThread，周期性调度触发：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">while</span> (!Thread.currentThread().isInterrupted()) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (!runSchedules.get()) &#123;</span><br><span class="line">        Thread.sleep(<span class="number">100</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// Don&#x27;t run schedule if we have some pending backlogs already</span></span><br><span class="line">        <span class="keyword">if</span> (cs.getAsyncSchedulingPendingBacklogs() &gt; <span class="number">100</span>) &#123;</span><br><span class="line">          Thread.sleep(<span class="number">1</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">          schedule(cs);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123;</span><br><span class="line">      <span class="comment">// keep interrupt signal</span></span><br><span class="line">      Thread.currentThread().interrupt();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  LOG.info(<span class="string">&quot;AsyncScheduleThread[&quot;</span> + getName() + <span class="string">&quot;] exited!&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="调度执行"><a href="#调度执行" class="headerlink" title="调度执行"></a>调度执行</h3><p>在异步调度时，AsyncScheduleThread通过调用<code>schedule()</code>静态方法进行调度。<code>schedule()</code>考虑到多个线程调度的情况，会随机的选择一个节点开始调度（在Multinode Placement开启的情况下，则是随机选择一个Node Partition中的所有节点），从而避免多个线程同时调度一个节点：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">schedule</span><span class="params">(CapacityScheduler cs)</span> <span class="keyword">throws</span> InterruptedException&#123;</span><br><span class="line">  <span class="comment">// First randomize the start point</span></span><br><span class="line">  <span class="type">int</span> <span class="variable">current</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">  Collection&lt;FiCaSchedulerNode&gt; nodes = cs.nodeTracker.getAllNodes();</span><br><span class="line">  <span class="comment">// If nodes size is 0 (when there are no node managers registered,</span></span><br><span class="line">  <span class="comment">// we can return from here itself.</span></span><br><span class="line">  <span class="type">int</span> <span class="variable">nodeSize</span> <span class="operator">=</span> nodes.size();</span><br><span class="line">  <span class="keyword">if</span>(nodeSize == <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!cs.multiNodePlacementEnabled) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">start</span> <span class="operator">=</span> random.nextInt(nodeSize);</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">printSkippedNodeLogging</span> <span class="operator">=</span> isPrintSkippedNodeLogging(cs);</span><br><span class="line">    <span class="comment">// Allocate containers of node [start, end)</span></span><br><span class="line">    <span class="keyword">for</span> (FiCaSchedulerNode node : nodes) &#123;</span><br><span class="line">      <span class="keyword">if</span> (current++ &gt;= start) &#123;</span><br><span class="line">        <span class="keyword">if</span> (shouldSkipNodeSchedule(node, cs, printSkippedNodeLogging)) &#123;</span><br><span class="line">          <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        cs.allocateContainersToNode(node.getNodeID(), <span class="literal">false</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    current = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// Allocate containers of node [0, start), same as above</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Get all partitions</span></span><br><span class="line">    List&lt;String&gt; partitions = cs.nodeTracker.getPartitions();</span><br><span class="line">    <span class="type">int</span> <span class="variable">partitionSize</span> <span class="operator">=</span> partitions.size();</span><br><span class="line">    <span class="comment">// First randomize the start point</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">start</span> <span class="operator">=</span> random.nextInt(partitionSize);</span><br><span class="line">    <span class="comment">// Allocate containers of partition [start, end)</span></span><br><span class="line">    <span class="keyword">for</span> (String partition : partitions) &#123;</span><br><span class="line">      <span class="keyword">if</span> (current++ &gt;= start) &#123;</span><br><span class="line">        CandidateNodeSet&lt;FiCaSchedulerNode&gt; candidates =</span><br><span class="line">          cs.getCandidateNodeSet(partition);</span><br><span class="line">        <span class="keyword">if</span> (candidates == <span class="literal">null</span>) &#123;</span><br><span class="line">          <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        cs.allocateContainersToNode(candidates, <span class="literal">false</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    current = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// Allocate containers of partition [0, start), same as above</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// sleep for aysnc scheduling interval</span></span><br><span class="line">  Thread.sleep(cs.getAsyncScheduleInterval());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>一次调度执行，将会对集群中的所有节点尝试进行分配</strong>。</p>
+<h3 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h3><p>异步调度配置项的前缀为：yarn.scheduler.capacity.schedule-asynchronously</p>
+<ul>
+<li>enable：开启异步调度，默认关闭</li>
+<li>scheduling-interval-ms：异步调度线程的调度间隔，默认为5ms</li>
+<li>maximum-threads：线程数量，默认为1</li>
+<li>maximum-pending-backlogs：pending的资源分配Proposal的最大个数，当等待提交的Proposal的个数超过该阈值，停止调度，默认为100</li>
+</ul>
+<h3 id="性能"><a href="#性能" class="headerlink" title="性能"></a>性能</h3><p>根据YARN-5139中的<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/secure/attachment/12831662/YARN-5139-Concurrent-scheduling-performance-report.pdf">性能报告</a>，测试的调度器的性能如下：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210721184310.png"></p>
+<p>在开启异步调度和多线程情况下，具有5~6倍的性能提升。</p>
+<h2 id="Exceptions"><a href="#Exceptions" class="headerlink" title="Exceptions"></a>Exceptions</h2><p><a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/YARN-8193">https://issues.apache.org/jira/browse/YARN-8193</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">2021-07-18 11:25:37,845 FATAL org.apache.hadoop.yarn.event.EventDispatcher: Error in handling event type NODE_UPDATE to the Event Dispatcher</span><br><span class="line">java.lang.NullPointerException</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.allocator.RegularContainerAllocator.getLocalityWaitFactor(RegularContainerAllocator.java:270)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.allocator.RegularContainerAllocator.canAssign(RegularContainerAllocator.java:316)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.allocator.RegularContainerAllocator.assignOffSwitchContainers(RegularContainerAllocator.java:389)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.allocator.RegularContainerAllocator.assignContainersOnNode(RegularContainerAllocator.java:470)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.allocator.RegularContainerAllocator.tryAllocateOnNode(RegularContainerAllocator.java:252)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.allocator.RegularContainerAllocator.allocate(RegularContainerAllocator.java:816)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.allocator.RegularContainerAllocator.assignContainers(RegularContainerAllocator.java:854)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.allocator.ContainerAllocator.assignContainers(ContainerAllocator.java:54)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.fica.FiCaSchedulerApp.assignContainers(FiCaSchedulerApp.java:871)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.LeafQueue.assignContainers(LeafQueue.java:1111)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.ParentQueue.assignContainersToChildQueues(ParentQueue.java:735)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.ParentQueue.assignContainers(ParentQueue.java:559)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.ParentQueue.assignContainersToChildQueues(ParentQueue.java:735)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.ParentQueue.assignContainers(ParentQueue.java:559)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.allocateOrReserveNewContainers(CapacityScheduler.java:1397)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.allocateContainerOnSingleNode(CapacityScheduler.java:1391)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.allocateContainersToNode(CapacityScheduler.java:1488)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.allocateContainersToNode(CapacityScheduler.java:1249)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.nodeUpdate(CapacityScheduler.java:1110)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.handle(CapacityScheduler.java:1530)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.handle(CapacityScheduler.java:152)</span><br><span class="line">        at org.apache.hadoop.yarn.event.EventDispatcher$EventProcessor.run(EventDispatcher.java:66)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:745)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/YARN-6629">https://issues.apache.org/jira/browse/YARN-6629</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">2021-07-12 17:03:23,066 FATAL org.apache.hadoop.yarn.event.EventDispatcher: Error in handling event type NODE_UPDATE to the Event Dispatcher</span><br><span class="line">java.lang.NullPointerException</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.AppSchedulingInfo.allocate(AppSchedulingInfo.java:433)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.fica.FiCaSchedulerApp.apply(FiCaSchedulerApp.java:532)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.tryCommit(CapacityScheduler.java:2584)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.submitResourceCommitRequest(CapacityScheduler.java:2466)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.allocateOrReserveNewContainers(CapacityScheduler.java:1404)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.allocateContainerOnSingleNode(CapacityScheduler.java:1391)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.allocateContainersToNode(CapacityScheduler.java:1488)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.allocateContainersToNode(CapacityScheduler.java:1267)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.nodeUpdate(CapacityScheduler.java:1110)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.handle(CapacityScheduler.java:1530)</span><br><span class="line">        at org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler.handle(CapacityScheduler.java:152)</span><br><span class="line">        at org.apache.hadoop.yarn.event.EventDispatcher$EventProcessor.run(EventDispatcher.java:66)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:745)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ol>
+<li>[Umbrella] Move YARN scheduler towards global scheduler <a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/YARN-5139">https://issues.apache.org/jira/browse/YARN-5139</a></li>
+<li>Add global scheduler interface definition and update CapacityScheduler to use it. <a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/YARN-5716">https://issues.apache.org/jira/browse/YARN-5716</a></li>
+<li>Enhance CS to decouple scheduling from node heartbeats <a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/YARN-1512">https://issues.apache.org/jira/browse/YARN-1512</a></li>
+<li>Add multi-node lookup mechanism and pluggable nodes sorting policies to optimize placement decision <a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/YARN-7494">https://issues.apache.org/jira/browse/YARN-7494</a></li>
+<li>Capacity Scheduler : Assign single or multiple containers per heart beat driven by configuration. <a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/YARN-4161">https://issues.apache.org/jira/browse/YARN-4161</a></li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2022/06/19/Flink-Flink-MiniBatch/" title= "Flink MiniBatch">
+                    <div class="nextTitle">Flink MiniBatch</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2022/02/13/Yarn-Yarn3-0-Features/" title= "Yarn 3.0+ New Features">
+                    <div class="prevTitle">Yarn 3.0+ New Features</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2022/02/15/Yarn-YarnSchedulerAdvances/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Yarn 3.0 Scheduling Advances"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Global-Scheduling"><span class="toc-number">1.</span> <span class="toc-text">Global Scheduling</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E8%8A%82%E7%82%B9%E5%BF%83%E8%B7%B3%E7%9A%84%E8%B0%83%E5%BA%A6"><span class="toc-number">1.1.</span> <span class="toc-text">基于节点心跳的调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E8%B0%83%E5%BA%A6"><span class="toc-number">1.2.</span> <span class="toc-text">全局调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.3.</span> <span class="toc-text">实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8A%82%E7%82%B9%E5%BF%83%E8%B7%B3%E5%88%86%E9%85%8D"><span class="toc-number">1.3.1.</span> <span class="toc-text">节点心跳分配</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%95%E4%B8%AA%E8%8A%82%E7%82%B9%E5%88%86%E9%85%8D"><span class="toc-number">1.3.2.</span> <span class="toc-text">单个节点分配</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%9A%E8%8A%82%E7%82%B9%E5%88%86%E9%85%8D"><span class="toc-number">1.3.3.</span> <span class="toc-text">多节点分配</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E9%85%8DReserved-Container"><span class="toc-number">1.3.4.</span> <span class="toc-text">分配Reserved Container</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E9%85%8D%E6%88%96%E9%A2%84%E7%95%99%E6%96%B0%E7%9A%84Container"><span class="toc-number">1.3.5.</span> <span class="toc-text">分配或预留新的Container</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%96%B0%E7%9A%84%E5%88%86%E9%85%8D"><span class="toc-number">1.3.6.</span> <span class="toc-text">提交新的分配</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ResourceCommitterService"><span class="toc-number">1.3.7.</span> <span class="toc-text">ResourceCommitterService</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE"><span class="toc-number">1.4.</span> <span class="toc-text">配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Asynchronously-Scheduling"><span class="toc-number">2.</span> <span class="toc-text">Asynchronously Scheduling</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E5%BA%A6%E8%A7%A6%E5%8F%91"><span class="toc-number">2.1.</span> <span class="toc-text">调度触发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E5%BA%A6%E6%89%A7%E8%A1%8C"><span class="toc-number">2.2.</span> <span class="toc-text">调度执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE-1"><span class="toc-number">2.3.</span> <span class="toc-text">配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%A7%E8%83%BD"><span class="toc-number">2.4.</span> <span class="toc-text">性能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Exceptions"><span class="toc-number">3.</span> <span class="toc-text">Exceptions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#References"><span class="toc-number">4.</span> <span class="toc-text">References</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

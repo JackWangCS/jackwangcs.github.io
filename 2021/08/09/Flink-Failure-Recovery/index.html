@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink Restart and Recovery · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink Restart and Recovery</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink Restart and Recovery
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Runtime">Runtime</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">1.6k</span>Reading time: <span class="post-count reading-time">8 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/08/09</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>Flink的故障恢复主要通过Restart Strategies和Failover Strategies来实现。Restart Strategies用于决定<strong>是否以及何时</strong>失败&#x2F;受影响的Tasks可以进行重启，Failover Strategies则是决定<strong>哪些</strong>Tasks需要重启以恢复整个job。</p>
+<h2 id="Restart-Strategies"><a href="#Restart-Strategies" class="headerlink" title="Restart Strategies"></a>Restart Strategies</h2><p>可以通过flink-conf.yaml或者动态参数来配置Restart Strategy：</p>
+<table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">restart-strategy</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+<td align="left">Defines the restart strategy to use in case of job failures. If checkpointing is disabled, the default value is <code>none</code>. If checkpointing is enabled, the default value is <code>fixed-delay</code> with <code>Integer.MAX_VALUE</code> restart attempts and ‘<code>1 s</code>‘ delay.</td>
+</tr>
+</tbody></table>
+<p>此外，在代码中也可以设置：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ExecutionEnvironment</span> <span class="variable">env</span> <span class="operator">=</span> ExecutionEnvironment.getExecutionEnvironment();</span><br><span class="line">env.setRestartStrategy(RestartStrategies.fixedDelayRestart(</span><br><span class="line">  <span class="number">3</span>, <span class="comment">// number of restart attempts</span></span><br><span class="line">  Time.of(<span class="number">10</span>, TimeUnit.SECONDS) <span class="comment">// delay</span></span><br><span class="line">));</span><br></pre></td></tr></table></figure>
+
+<p>支持的Restart Strategies：</p>
+<ul>
+<li><p><code>none</code>, <code>off</code>, <code>disable</code>: No restart strategy</p>
+</li>
+<li><p><code>fixeddelay</code>, <code>fixed-delay</code>: Fixed delay restart strategy</p>
+<table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">restart-strategy.fixed-delay.attempts</td>
+<td align="left">1</td>
+<td align="left">Integer</td>
+<td align="left">The number of times that Flink retries the execution before the job is declared as failed if <code>restart-strategy</code> has been set to <code>fixed-delay</code>.</td>
+</tr>
+<tr>
+<td align="left">restart-strategy.fixed-delay.delay</td>
+<td align="left">1 s</td>
+<td align="left">Duration</td>
+<td align="left">Delay between two consecutive restart attempts if <code>restart-strategy</code> has been set to <code>fixed-delay</code>. Delaying the retries can be helpful when the program interacts with external systems where for example connections or pending transactions should reach a timeout before re-execution is attempted. It can be specified using notation: “1 min”, “20 s”</td>
+</tr>
+</tbody></table>
+</li>
+<li><p><code>failurerate</code>, <code>failure-rate</code>: Failure rate restart strategy</p>
+<table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">restart-strategy.failure-rate.delay</td>
+<td align="left">1 s</td>
+<td align="left">Duration</td>
+<td align="left">Delay between two consecutive restart attempts if <code>restart-strategy</code> has been set to <code>failure-rate</code>. It can be specified using notation: “1 min”, “20 s”</td>
+</tr>
+<tr>
+<td align="left">restart-strategy.failure-rate.failure-rate-interval</td>
+<td align="left">1 min</td>
+<td align="left">Duration</td>
+<td align="left">Time interval for measuring failure rate if <code>restart-strategy</code> has been set to <code>failure-rate</code>. It can be specified using notation: “1 min”, “20 s”</td>
+</tr>
+<tr>
+<td align="left">restart-strategy.failure-rate.max-failures-per-interval</td>
+<td align="left">1</td>
+<td align="left">Integer</td>
+<td align="left">Maximum number of restarts in given time interval before failing a job if <code>restart-strategy</code> has been set to <code>failure-rate</code>.</td>
+</tr>
+</tbody></table>
+</li>
+<li><p><code>exponentialdelay</code>, <code>exponential-delay</code>: Exponential delay restart strategy</p>
+<table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">restart-strategy.exponential-delay.backoff-multiplier</td>
+<td align="left">2.0</td>
+<td align="left">Double</td>
+<td align="left">Backoff value is multiplied by this value after every failure,until max backoff is reached if <code>restart-strategy</code> has been set to <code>exponential-delay</code>.</td>
+</tr>
+<tr>
+<td align="left">restart-strategy.exponential-delay.initial-backoff</td>
+<td align="left">1 s</td>
+<td align="left">Duration</td>
+<td align="left">Starting duration between restarts if <code>restart-strategy</code> has been set to <code>exponential-delay</code>. It can be specified using notation: “1 min”, “20 s”</td>
+</tr>
+<tr>
+<td align="left">restart-strategy.exponential-delay.jitter-factor</td>
+<td align="left">0.1</td>
+<td align="left">Double</td>
+<td align="left">Jitter specified as a portion of the backoff if <code>restart-strategy</code> has been set to <code>exponential-delay</code>. It represents how large random value will be added or subtracted to the backoff. Useful when you want to avoid restarting multiple jobs at the same time.</td>
+</tr>
+<tr>
+<td align="left">restart-strategy.exponential-delay.max-backoff</td>
+<td align="left">5 min</td>
+<td align="left">Duration</td>
+<td align="left">The highest possible duration between restarts if <code>restart-strategy</code> has been set to <code>exponential-delay</code>. It can be specified using notation: “1 min”, “20 s”</td>
+</tr>
+<tr>
+<td align="left">restart-strategy.exponential-delay.reset-backoff-threshold</td>
+<td align="left">1 h</td>
+<td align="left">Duration</td>
+<td align="left">Threshold when the backoff is reset to its initial value if <code>restart-strategy</code> has been set to <code>exponential-delay</code>. It specifies how long the job must be running without failure to reset the exponentially increasing backoff to its initial value. It can be specified using notation: “1 min”, “20 s”</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+<h3 id="Implementations"><a href="#Implementations" class="headerlink" title="Implementations"></a>Implementations</h3><p>位于flink-core中的RestartStrategies类用于从Flink Configuration中读取Restart Strategy相关的配置，并创建各个策略对应的RestartStrategyConfiguration子类。该RestartStrategyConfiguration将会被保存到ExecutionConfig，用于在Job运行时，创建对应的RestartBackoffTimeStrategy。</p>
+<p>在运行时，JobManager中Scheduler会通过RestartBackoffTimeStrategyFactoryLoader的<code>createRestartBackoffTimeStrategyFactory()</code>静态方法，根据RestartStrategyConfiguration创建对应的RestartBackoffTimeStrategy.Factory，并根据Factory创建具体的RestartBackoffTimeStrategy。</p>
+<pre class="mermaid">classDiagram
+ RestartStrategies --> RestartStrategyConfiguration: create
+ RestartStrategies -- FlinkConfiguration
+ RestartBackoffTimeStrategyFactoryLoader --> RestartStrategyConfiguration
+ RestartBackoffTimeStrategyFactoryLoader -- RestartBackoffTimeStrategyFactory
+ RestartBackoffTimeStrategyFactory --> RestartBackoffTimeStrategy: create
+ NoRestartBackoffTimeStrategy --|> RestartBackoffTimeStrategy
+ FixedDelayRestartBackoffTimeStrategy --|> RestartBackoffTimeStrategy
+ FailureRateRestartBackoffTimeStrategy --|> RestartBackoffTimeStrategy
+ ExponentialDelayRestartBackoffTimeStrategy --|> RestartBackoffTimeStrategy</pre>
+
+<h3 id="RestartBackoffTimeStrategy"><a href="#RestartBackoffTimeStrategy" class="headerlink" title="RestartBackoffTimeStrategy"></a>RestartBackoffTimeStrategy</h3><p>RestartBackoffTimeStrategy接口的定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">RestartBackoffTimeStrategy</span> &#123;</span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">canRestart</span><span class="params">()</span>;</span><br><span class="line">    <span class="type">long</span> <span class="title function_">getBackoffTime</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">notifyFailure</span><span class="params">(Throwable cause)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** The factory to instantiate &#123;<span class="doctag">@link</span> RestartBackoffTimeStrategy&#125;. */</span></span><br><span class="line">    <span class="keyword">interface</span> <span class="title class_">Factory</span> &#123;</span><br><span class="line">        RestartBackoffTimeStrategy <span class="title function_">create</span><span class="params">()</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以定义行为：</p>
+<ul>
+<li>canRestart()决定是否可以重启</li>
+<li>notifyFailure()用于Scheduler通知Task失败的原因给RestartBackoffTimeStrategy</li>
+<li>getBackoffTime()用于设定本次重启前需要等待的时间</li>
+</ul>
+<p>ExecutionFailureHandler会持有RestartBackoffTimeStrategy，用于处理执行时出现的各种错误。核心逻辑为handleFailure()函数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> FailureHandlingResult <span class="title function_">handleFailure</span><span class="params">(</span></span><br><span class="line"><span class="params">  <span class="meta">@Nullable</span> <span class="keyword">final</span> ExecutionVertexID failingExecutionVertexId,</span></span><br><span class="line"><span class="params">  <span class="keyword">final</span> Throwable cause,</span></span><br><span class="line"><span class="params">  <span class="type">long</span> timestamp,</span></span><br><span class="line"><span class="params">  <span class="keyword">final</span> Set&lt;ExecutionVertexID&gt; verticesToRestart,</span></span><br><span class="line"><span class="params">  <span class="keyword">final</span> <span class="type">boolean</span> globalFailure)</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// isUnrecoverableError() uses ThrowableType to judge the failure recoverable</span></span><br><span class="line">  <span class="comment">// ThrowableType.NonRecoverableError</span></span><br><span class="line">  <span class="keyword">if</span> (isUnrecoverableError(cause)) &#123;</span><br><span class="line">    <span class="keyword">return</span> FailureHandlingResult.unrecoverable(</span><br><span class="line">      failingExecutionVertexId,</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">JobException</span>(<span class="string">&quot;The failure is not recoverable&quot;</span>, cause),</span><br><span class="line">      timestamp,</span><br><span class="line">      globalFailure);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// only handle recoverable failures</span></span><br><span class="line">  restartBackoffTimeStrategy.notifyFailure(cause);</span><br><span class="line">  <span class="keyword">if</span> (restartBackoffTimeStrategy.canRestart()) &#123;</span><br><span class="line">    numberOfRestarts++;</span><br><span class="line">    <span class="keyword">return</span> FailureHandlingResult.restartable(</span><br><span class="line">      failingExecutionVertexId,</span><br><span class="line">      cause,</span><br><span class="line">      timestamp,</span><br><span class="line">      verticesToRestart,</span><br><span class="line">      restartBackoffTimeStrategy.getBackoffTime(), <span class="comment">// backoff time before restarting tasks</span></span><br><span class="line">      globalFailure);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> FailureHandlingResult.unrecoverable(</span><br><span class="line">      failingExecutionVertexId,</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">JobException</span>(</span><br><span class="line">        <span class="string">&quot;Recovery is suppressed by &quot;</span> + restartBackoffTimeStrategy, cause),</span><br><span class="line">      timestamp,</span><br><span class="line">      globalFailure);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么，什么样的错误时不可恢复的呢？当前，Flink定义了SuppressRestartsException：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ThrowableAnnotation(ThrowableType.NonRecoverableError)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SuppressRestartsException</span> <span class="keyword">extends</span> <span class="title class_">RuntimeException</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">221873676920848349L</span>;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">SuppressRestartsException</span><span class="params">(Throwable cause)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>(</span><br><span class="line">      <span class="string">&quot;Unrecoverable failure. This suppresses job restarts. Please check the &quot;</span></span><br><span class="line">      + <span class="string">&quot;stack trace for the root cause.&quot;</span>,</span><br><span class="line">      cause);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>SuppressRestartsException只有在KvStateLocationRegistry中被使用到。这样可以看出，只要Flink的JobManager进程如果没有退出，绝大部分的Job都是可以重启的。</p>
+<h2 id="Failover-Strategies"><a href="#Failover-Strategies" class="headerlink" title="Failover Strategies"></a>Failover Strategies</h2><p>目前，Flink支持的Failover Strategy有两种，通过<code>jobmanager.execution.failover-strategy</code>配置：</p>
+<table>
+<thead>
+<tr>
+<th align="left">Failover Strategy</th>
+<th align="left">Value for jobmanager.execution.failover-strategy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Restart all tasks in the job to recover from a task failure</td>
+<td align="left">full</td>
+</tr>
+<tr>
+<td align="left">Restart pipelined region</td>
+<td align="left">region</td>
+</tr>
+</tbody></table>
+<p>FailoverStrategyFactoryLoader负责从Flink Configuration中读取<code>jobmanager.execution.failover-strategy</code>配置项，并创建对应的FailoverStrategy实现的Factory：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> FailoverStrategy.Factory <span class="title function_">loadFailoverStrategyFactory</span><span class="params">(<span class="keyword">final</span> Configuration config)</span> &#123;</span><br><span class="line">  checkNotNull(config);</span><br><span class="line">  <span class="keyword">final</span> <span class="type">String</span> <span class="variable">strategyParam</span> <span class="operator">=</span></span><br><span class="line">    config.getString(JobManagerOptions.EXECUTION_FAILOVER_STRATEGY);</span><br><span class="line">  <span class="keyword">switch</span> (strategyParam.toLowerCase()) &#123;</span><br><span class="line">    <span class="keyword">case</span> FULL_RESTART_STRATEGY_NAME:</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RestartAllFailoverStrategy</span>.Factory();</span><br><span class="line">    <span class="keyword">case</span> PIPELINED_REGION_RESTART_STRATEGY_NAME:</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RestartPipelinedRegionFailoverStrategy</span>.Factory();</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalConfigurationException</span>(</span><br><span class="line">        <span class="string">&quot;Unknown failover strategy: &quot;</span> + strategyParam);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FailoverStrategy接口定义了<code>getTasksNeedingRestart()</code>方法，用于获取在执行DAG时，某个ExecutionVertex失败时，需要重启的ExecutionVertex集合：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">FailoverStrategy</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns a set of IDs corresponding to the set of vertices that should be restarted.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> executionVertexId ID of the failed task</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> cause cause of the failure</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> set of IDs of vertices to restart</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    Set&lt;ExecutionVertexID&gt; <span class="title function_">getTasksNeedingRestart</span><span class="params">(</span></span><br><span class="line"><span class="params">            ExecutionVertexID executionVertexId, Throwable cause)</span>;</span><br><span class="line">    <span class="keyword">interface</span> <span class="title class_">Factory</span> &#123;</span><br><span class="line">        FailoverStrategy <span class="title function_">create</span><span class="params">(</span></span><br><span class="line"><span class="params">                SchedulingTopology topology,</span></span><br><span class="line"><span class="params">                ResultPartitionAvailabilityChecker resultPartitionAvailabilityChecker)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="RestartAllFailoverStrategy"><a href="#RestartAllFailoverStrategy" class="headerlink" title="RestartAllFailoverStrategy"></a>RestartAllFailoverStrategy</h3><p>RestartAllFailoverStrategy策略比较简单，在任意一个ExecutionVertex执行失败时，都会重启整个SchedulingTopology表示的DAG：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Set&lt;ExecutionVertexID&gt; <span class="title function_">getTasksNeedingRestart</span><span class="params">(</span></span><br><span class="line"><span class="params">  ExecutionVertexID executionVertexId, Throwable cause)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> IterableUtils.toStream(topology.getVertices())</span><br><span class="line">    .map(SchedulingExecutionVertex::getId)</span><br><span class="line">    .collect(Collectors.toSet());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="RestartPipelinedRegionFailoverStrategy"><a href="#RestartPipelinedRegionFailoverStrategy" class="headerlink" title="RestartPipelinedRegionFailoverStrategy"></a>RestartPipelinedRegionFailoverStrategy</h3><p>RestartPipelinedRegionFailoverStrategy会根据失败的executionVertexId计算需要重启的PipelinedRegions。规则如下：</p>
+<ol>
+<li>包含失败任务的Pipelined Region总是会重启，用failedRegion表示</li>
+<li>如果需要重启的Pipelined Region的输入（Result Partition）不可用，那么包含用于生成该结果的Task的Pipelined Region也需要重启</li>
+<li>如果一个Pipelined Region需要重启，那么它所有的下游消费者也需要重启</li>
+</ol>
+<p>RestartPipelinedRegionFailoverStrategy创建时，需要传入ResultPartitionAvailabilityChecker，用于检测规则2中的输入Result Partition的可用性情况。</p>
+<p>RestartPipelinedRegionFailoverStrategy#getRegionsToRestart()根据上面的规则以failedRegion为起点，采用BFS的方式，计算所有需要重启的Pipelined Regions:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// start from the failed region to visit all involved regions</span></span><br><span class="line">visitedRegions.add(failedRegion);</span><br><span class="line">regionsToVisit.add(failedRegion);</span><br><span class="line"><span class="keyword">while</span> (!regionsToVisit.isEmpty()) &#123;</span><br><span class="line">  <span class="type">SchedulingPipelinedRegion</span> <span class="variable">regionToRestart</span> <span class="operator">=</span> regionsToVisit.poll();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// an involved region should be restarted</span></span><br><span class="line">  regionsToRestart.add(regionToRestart);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// if a needed input result partition is not available, its producer region is involved</span></span><br><span class="line">  <span class="keyword">for</span> (IntermediateResultPartitionID consumedPartitionId :</span><br><span class="line">       getConsumedPartitionsToVisit(regionToRestart, visitedConsumedResultGroups)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!resultPartitionAvailabilityChecker.isAvailable(consumedPartitionId)) &#123;</span><br><span class="line">      <span class="type">SchedulingResultPartition</span> <span class="variable">consumedPartition</span> <span class="operator">=</span></span><br><span class="line">        topology.getResultPartition(consumedPartitionId);</span><br><span class="line">      <span class="type">SchedulingPipelinedRegion</span> <span class="variable">producerRegion</span> <span class="operator">=</span></span><br><span class="line">        topology.getPipelinedRegionOfVertex(</span><br><span class="line">        consumedPartition.getProducer().getId());</span><br><span class="line">      <span class="keyword">if</span> (!visitedRegions.contains(producerRegion)) &#123;</span><br><span class="line">        visitedRegions.add(producerRegion);</span><br><span class="line">        regionsToVisit.add(producerRegion);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// all consumer regions of an involved region should be involved</span></span><br><span class="line">  <span class="keyword">for</span> (ExecutionVertexID consumerVertexId :</span><br><span class="line">       getConsumerVerticesToVisit(regionToRestart, visitedConsumerVertexGroups)) &#123;</span><br><span class="line">    <span class="type">SchedulingPipelinedRegion</span> <span class="variable">consumerRegion</span> <span class="operator">=</span></span><br><span class="line">      topology.getPipelinedRegionOfVertex(consumerVertexId);</span><br><span class="line">    <span class="keyword">if</span> (!visitedRegions.contains(consumerRegion)) &#123;</span><br><span class="line">      visitedRegions.add(consumerRegion);</span><br><span class="line">      regionsToVisit.add(consumerRegion);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> regionsToRestart</span><br></pre></td></tr></table></figure>
+
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ul>
+<li>Flink Task Failure Recovery Offical Docs</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/11/23/Calcite-Calcite/" title= "Calcite Overview">
+                    <div class="nextTitle">Calcite Overview</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/07/16/Flink-Flink-TaskManager/" title= "Flink TaskManager">
+                    <div class="prevTitle">Flink TaskManager</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2021/08/09/Flink-Failure-Recovery/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink Restart and Recovery"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Restart-Strategies"><span class="toc-number">1.</span> <span class="toc-text">Restart Strategies</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Implementations"><span class="toc-number">1.1.</span> <span class="toc-text">Implementations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RestartBackoffTimeStrategy"><span class="toc-number">1.2.</span> <span class="toc-text">RestartBackoffTimeStrategy</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Failover-Strategies"><span class="toc-number">2.</span> <span class="toc-text">Failover Strategies</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RestartAllFailoverStrategy"><span class="toc-number">2.1.</span> <span class="toc-text">RestartAllFailoverStrategy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RestartPipelinedRegionFailoverStrategy"><span class="toc-number">2.2.</span> <span class="toc-text">RestartPipelinedRegionFailoverStrategy</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#References"><span class="toc-number">3.</span> <span class="toc-text">References</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

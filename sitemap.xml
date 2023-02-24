@@ -1,0 +1,809 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2023/01/16/Flink-Flink-Unified-Sink/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2022/06/19/Flink-Flink-MiniBatch/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2022/11/16/Flink-Flink-Deduplicate-Functions/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/about/index.html</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/google6332e620333eab0a.html</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/07/16/Yarn-ResourceScheduler/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2022/02/13/Yarn-Yarn3-0-Features/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2022/02/15/Yarn-YarnSchedulerAdvances/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/05/18/Streaming-Streaming-101/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/09/10/Streaming-Window/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/06/11/Streaming-watermarks/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/11/10/Spark-spark-sql/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/07/28/Yarn-CapacityScheduler/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/08/23/Spark-Spark-Shuffle/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/02/11/Spark-Spark-UnifiedMemoryManager/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/09/22/Spark-Spark-Tungsten/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/05/10/Spark-SparkQueryExecution/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/10/20/Spark-spark-internal/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/10/18/Spark-Spark-BlockManager/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/07/23/Spark-Spark-Broadcast/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/09/10/Spark-Spark-Context-and-Env/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/04/15/Spark-Spark-RDD/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2021/12/23/Hudi/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2022/01/15/Hudi-Flink-Write/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/08/15/Flink-Hive-integration-of-Flink/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/11/02/Flink-flink-file-system-connector/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/11/03/Flink-Flink-Scheduler/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2021/01/07/Flink-Flink-TableSource-and-TableSink/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2021/07/16/Flink-Flink-TaskManager/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2021/02/23/Flink-Flink-Planner/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/09/17/Flink-FlinkUnifiedMemory/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/09/17/Flink-Flink-DataStream/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2021/05/03/Flink-Flink-ClassLoader/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/08/23/Flink-Flink-ExecutionGraph/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/08/23/Flink-Flink-JobManager/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2021/02/03/Flink-Flink-SQL/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2020/09/17/Calcite-Planner/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2021/12/01/Calcite-Calcite-Planner/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2021/12/03/Calcite-Calcite-VolcanoPlanner/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2021/11/23/Calcite-Calcite/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2021/08/09/Flink-Failure-Recovery/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/2019/05/08/streaming-101/</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/404.html</loc>
+    
+    <lastmod>2023-02-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+
+  <url>
+    <loc>http://jackwangcs.github.io/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Streaming-System/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Calcite/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/SQL/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Hudi/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/DataLake/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Flink/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Calclite/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Linux/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Commands/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Runtime/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Core/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Connector/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Table/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Planner/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Memory/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/HDFS/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/NameNode/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Hadoop/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Streaming/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Exactly-Once/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Watermarks/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Spark/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Scheduler/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/DataFrame/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Yarn/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/ResourceScheduler/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/ResourceManager/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/NodeManager/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/ResourceSheduler/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Scheduling/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/RPC/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/StateMachine/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Security/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/tags/Architecture/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+
+  
+  <url>
+    <loc>http://jackwangcs.github.io/categories/Streaming-Systemfalse/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/categories/Calcite/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/categories/DataLake/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/categories/SQL/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/categories/Linux/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/categories/Flink/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/categories/HDFS/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/categories/Streaming-System/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/categories/Spark/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://jackwangcs.github.io/categories/Yarn/</loc>
+    <lastmod>2023-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+</urlset>

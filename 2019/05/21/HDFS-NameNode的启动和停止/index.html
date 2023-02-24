@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>NameNode的启动和停止 · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">NameNode的启动和停止</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            NameNode的启动和停止
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "HDFS">HDFS</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "NameNode">NameNode</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Hadoop">Hadoop</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">2k</span>Reading time: <span class="post-count reading-time">9 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/05/21</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="安全模式"><a href="#安全模式" class="headerlink" title="安全模式"></a>安全模式</h2><p>NameNode启动时：</p>
+<ol>
+<li>首先需要把命名空间镜像加载到内存中，并应用镜像编辑日志，在这个过程结束以后，则会创建一个新的checkpoint。</li>
+<li>监听IPC和HTTP请求，为客户端提供一个只读视图，该模式称为安全模式。之后，NameNode会获取来自DataNode的数据块报告信息，直到NameNode获取的数据块达到一定的比例以后，就会退出安全模式，进入正常工作状态。</li>
+</ol>
+<p>在安全模式下，NameNode不会向DataNode发送数据块复制或删除命令。在默认情况下，需要NameNode收到来自至少95%的数据块的至少一个副本的位置信息。此外，还可以配置安全模式等待时间，在满足条件以后继续等待一段时间，默认设置为0。</p>
+<table>
+<thead>
+<tr>
+<th align="left">配置项</th>
+<th>默认值</th>
+<th>描述(<code>SafeModeInfo</code>)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">dfs.replication.min</td>
+<td>1</td>
+<td>系统最小副本数，<code>safeReplication</code></td>
+</tr>
+<tr>
+<td align="left">dfs.safemode.threshold.pct</td>
+<td>0.95</td>
+<td>离开安全模式时系统满足最小副本数的数据块比例，<code>threshold</code></td>
+</tr>
+<tr>
+<td align="left">dfs.safemode.extension</td>
+<td>0</td>
+<td>安全模式等待时间</td>
+</tr>
+</tbody></table>
+<p>通过<code>dfsadmin</code>中的<code>safemode</code>命令对NameNode的安全模式进行管理：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看</span></span><br><span class="line">dfsadmin -safemode get</span><br><span class="line"><span class="comment"># 进入</span></span><br><span class="line">dfsadmin -safemode enter</span><br><span class="line"><span class="comment"># 等待</span></span><br><span class="line">dfsadmin -safemode <span class="built_in">wait</span></span><br><span class="line"><span class="comment"># 离开</span></span><br><span class="line">dfsadmin -safemode leave</span><br></pre></td></tr></table></figure>
+
+<p>与安全模式相关的代码主要在<code>FSNamesytsem</code>中，其中<code>SafeModeInfo</code>保存了安全模式下的配置信息和工作时需要的状态信息，<code>SafeModeMonitor</code>实现了Runnable接口，用于实现安全模式等待时间。</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20190520233806.png"></p>
+<p><code>SafeModeInfo</code>中的<code>blockSafe</code>和<code>blockTotal</code>用于分别统计满足安全副本数量的数据块和总的数据块，<code>reach</code>则表示状态，默认值为-1，表示非安全模式，0表示进入安全模式，当系统达到最小副本的数据块满足条件时，值为对应的系统时间。在对安全数据块进行增加和减少时，都调用<code>checkMode()</code>进行状态的检查和变化：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">checkMode</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="comment">// Check safeRatio &lt; threshold ?</span></span><br><span class="line">     <span class="keyword">if</span> (needEnter()) &#123;</span><br><span class="line">       enter(); <span class="comment">// reach -&gt; 0</span></span><br><span class="line">       reportStatus(<span class="string">&quot;STATE* Safe mode ON.&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">       <span class="keyword">return</span>;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">// the threshold is reached</span></span><br><span class="line">     <span class="keyword">if</span> (!isOn() ||                           <span class="comment">// safe mode is off</span></span><br><span class="line">         extension &lt;= <span class="number">0</span> || threshold &lt;= <span class="number">0</span>) &#123;  <span class="comment">// don&#x27;t need to wait</span></span><br><span class="line">       <span class="built_in">this</span>.leave(<span class="literal">true</span>); <span class="comment">// leave safe mode</span></span><br><span class="line">       <span class="keyword">return</span>;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">if</span> (reached &gt; <span class="number">0</span>) &#123;  <span class="comment">// threshold has already been reached before</span></span><br><span class="line">       reportStatus(<span class="string">&quot;STATE* Safe mode ON.&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">       <span class="keyword">return</span>;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">// start monitor</span></span><br><span class="line">     reached = now();</span><br><span class="line">     smmthread = <span class="keyword">new</span> <span class="title class_">Daemon</span>(<span class="keyword">new</span> <span class="title class_">SafeModeMonitor</span>());</span><br><span class="line">     smmthread.start();</span><br><span class="line">     reportStatus(<span class="string">&quot;STATE* Safe mode extension entered.&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于是否能够离开安全模式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment">   * Safe mode can be turned off iff </span></span><br><span class="line"><span class="comment">   * the threshold is reached and </span></span><br><span class="line"><span class="comment">   * the extension time have passed.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> true if can leave or false otherwise.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">synchronized</span> <span class="type">boolean</span> <span class="title function_">canLeave</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (reached == <span class="number">0</span>) <span class="comment">// in safe mode</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (now() - reached &lt; extension) &#123; <span class="comment">// wait for safe monitor</span></span><br><span class="line">      reportStatus(<span class="string">&quot;STATE* Safe mode ON.&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> !needEnter();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>实际离开安全模式，通过<code>leave()</code>实现。在离开时，需要恢复缺失的数据块，可能会引起数据块的复制和删除工作：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">    * Leave safe mode.</span></span><br><span class="line"><span class="comment">    * Switch to manual safe mode if distributed upgrade is required.</span></span><br><span class="line"><span class="comment">    * Check for invalid, under- &amp; over-replicated blocks in the end of startup.</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">leave</span><span class="params">(<span class="type">boolean</span> checkForUpgrades)</span> &#123;</span><br><span class="line">     <span class="keyword">if</span>(checkForUpgrades) &#123;</span><br><span class="line">       ...</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">// check missing replicated blocks and may start replicating or deleting blocks</span></span><br><span class="line">     processMisReplicatedBlocks();</span><br><span class="line">     ...</span><br><span class="line">     reached = -<span class="number">1</span>;</span><br><span class="line">     safeMode = <span class="literal">null</span>;</span><br><span class="line">     ...  </span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在安全模式下，<code>ReplicationMonitor</code>是运行的，但是会抛弃任何的复制或删除请求。<code>processMisReplicatedBlocks()</code>会遍历所有的数据块，并进行对应操作：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * For each block in the name-node verify whether it belongs to any file,</span></span><br><span class="line"><span class="comment">  * over or under replicated. Place it into the respective queue.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> <span class="keyword">private</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">processMisReplicatedBlocks</span><span class="params">()</span> &#123;</span><br><span class="line">   <span class="type">long</span> <span class="variable">nrInvalid</span> <span class="operator">=</span> <span class="number">0</span>, nrOverReplicated = <span class="number">0</span>, nrUnderReplicated = <span class="number">0</span>;</span><br><span class="line">   neededReplications.clear(); <span class="comment">// Clear neededReplications</span></span><br><span class="line">   <span class="keyword">for</span>(BlocksMap.BlockInfo block : blocksMap.getBlocks()) &#123;</span><br><span class="line">     <span class="type">INodeFile</span> <span class="variable">fileINode</span> <span class="operator">=</span> block.getINode();</span><br><span class="line">     <span class="keyword">if</span>(fileINode == <span class="literal">null</span>) &#123;</span><br><span class="line">       <span class="comment">// block does not belong to any file</span></span><br><span class="line">       nrInvalid++;</span><br><span class="line">       addToInvalidates(block);</span><br><span class="line">       <span class="keyword">continue</span>;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">// calculate current replication</span></span><br><span class="line">     <span class="type">short</span> <span class="variable">expectedReplication</span> <span class="operator">=</span> fileINode.getReplication();</span><br><span class="line">     <span class="type">NumberReplicas</span> <span class="variable">num</span> <span class="operator">=</span> countNodes(block);</span><br><span class="line">     <span class="type">int</span> <span class="variable">numCurrentReplica</span> <span class="operator">=</span> num.liveReplicas();</span><br><span class="line">     <span class="comment">// add to under-replicated queue if need to be</span></span><br><span class="line">     <span class="keyword">if</span> (neededReplications.add(block, </span><br><span class="line">                                numCurrentReplica,</span><br><span class="line">                                num.decommissionedReplicas(),</span><br><span class="line">                                expectedReplication)) &#123;</span><br><span class="line">       nrUnderReplicated++;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">if</span> (numCurrentReplica &gt; expectedReplication) &#123;</span><br><span class="line">       <span class="comment">// over-replicated block</span></span><br><span class="line">       nrOverReplicated++;</span><br><span class="line">       processOverReplicatedBlock(block, expectedReplication, <span class="literal">null</span>, <span class="literal">null</span>);</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line">...</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>此外，NameNode提供了远程方法<code>ClientProtocol.setSafeMode()</code>来支持安全模式查询，等待和设置。</p>
+<h2 id="NameNode的启动"><a href="#NameNode的启动" class="headerlink" title="NameNode的启动"></a>NameNode的启动</h2><p>NameNode启动的入口是<code>NameNode.main()</code>,</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String argv[])</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    StringUtils.startupShutdownMessage(NameNode.class, argv, LOG);</span><br><span class="line">    <span class="comment">// Create a new NameNode instance</span></span><br><span class="line">    <span class="type">NameNode</span> <span class="variable">namenode</span> <span class="operator">=</span> createNameNode(argv, <span class="literal">null</span>);</span><br><span class="line">    <span class="keyword">if</span> (namenode != <span class="literal">null</span>)</span><br><span class="line">      <span class="comment">// Wait for IPC server to terminate</span></span><br><span class="line">      namenode.join(); </span><br><span class="line">  &#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>与DataNode的方式一样，通过静态方法<code>createNameNode()</code>来创建一个NameNode：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">ode <span class="title function_">createNameNode</span><span class="params">(String argv[], </span></span><br><span class="line"><span class="params">                                 Configuration conf)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">		...</span><br><span class="line">    <span class="type">StartupOption</span> <span class="variable">startOpt</span> <span class="operator">=</span> parseArguments(argv);</span><br><span class="line">		...</span><br><span class="line">    setStartupOption(conf, startOpt);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (startOpt) &#123;</span><br><span class="line">      <span class="keyword">case</span> FORMAT:</span><br><span class="line">        <span class="type">boolean</span> <span class="variable">aborted</span> <span class="operator">=</span> format(conf, <span class="literal">true</span>);</span><br><span class="line">        System.exit(aborted ? <span class="number">1</span> : <span class="number">0</span>);</span><br><span class="line">      <span class="keyword">case</span> FINALIZE:</span><br><span class="line">        aborted = finalize(conf, <span class="literal">true</span>);</span><br><span class="line">        System.exit(aborted ? <span class="number">1</span> : <span class="number">0</span>);</span><br><span class="line">      <span class="keyword">default</span>:</span><br><span class="line">    &#125;</span><br><span class="line">    DefaultMetricsSystem.initialize(<span class="string">&quot;NameNode&quot;</span>);</span><br><span class="line">    <span class="comment">// Create a new instance</span></span><br><span class="line">    <span class="type">NameNode</span> <span class="variable">namenode</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">NameNode</span>(conf);</span><br><span class="line">    <span class="keyword">return</span> namenode;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>startOpt</code>包括：</p>
+<ul>
+<li>FORMAT，格式化，建立或重新建立NameNode文件结构</li>
+<li>REGULAR，正常启动</li>
+<li>UPGRAGE&#x2F;ROLLBACK&#x2F;FINALIZE，升级、升级回滚或升级提交</li>
+<li>IMPORT，恢复NameNode的元数据到某一个检查点</li>
+</ul>
+<p>除了格式化和升级以外，都需要构造新的NameNode对象。在NameNode构造函数中，主要调用<code>NameNode.initialize()</code>进行初始化。如果<code>getServiceRpcServerAddress()</code>不如空，即配置了<code>$&#123;dfs.namenode.servicerpcaddress&#125;</code>，则会创建IPC服务器<code>serviceRpcServer</code>。而IPC服务器<code>server</code>则使用<code>$&#123;fs.default.name&#125;</code>中的端口和主机创建。区别在于，当<code>serviceRpcServer</code>存在时，<code>DataNodeProtocol</code>和<code>NameNodeProtocol</code>上的远程调用必须是用<code>serviceRpcServer</code>，而客户端的IPC则使用<code>server</code>。因为客户端的IPC调用执行时间短，而DataNode和Secondary NameNode的IPC调用执行时间长，对请求使用不同的IPC服务器可以提高服务器的响应性。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Initialize name-node.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> conf the configuration</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">initialize</span><span class="params">(Configuration conf)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  <span class="type">InetSocketAddress</span> <span class="variable">socAddr</span> <span class="operator">=</span> NameNode.getAddress(conf);</span><br><span class="line">...</span><br><span class="line">  myMetrics = NameNodeInstrumentation.create(conf);</span><br><span class="line">  <span class="comment">// Create FSNamesystem instance</span></span><br><span class="line">  <span class="built_in">this</span>.namesystem = <span class="keyword">new</span> <span class="title class_">FSNamesystem</span>(<span class="built_in">this</span>, conf);</span><br><span class="line">  ...</span><br><span class="line">  <span class="comment">// create rpc server</span></span><br><span class="line">  <span class="type">InetSocketAddress</span> <span class="variable">dnSocketAddr</span> <span class="operator">=</span> getServiceRpcServerAddress(conf);</span><br><span class="line">  <span class="keyword">if</span> (dnSocketAddr != <span class="literal">null</span>) &#123; <span class="comment">// service rpc server</span></span><br><span class="line">  ...</span><br><span class="line">    <span class="built_in">this</span>.serviceRpcServer = RPC.getServer(<span class="built_in">this</span>, dnSocketAddr.getHostName(), </span><br><span class="line">        dnSocketAddr.getPort(), serviceHandlerCount,</span><br><span class="line">        <span class="literal">false</span>, conf, namesystem.getDelegationTokenSecretManager());</span><br><span class="line">    <span class="built_in">this</span>.serviceRPCAddress = <span class="built_in">this</span>.serviceRpcServer.getListenerAddress();</span><br><span class="line">    setRpcServiceServerAddress(conf);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">this</span>.server = RPC.getServer(<span class="built_in">this</span>, socAddr.getHostName(),</span><br><span class="line">      socAddr.getPort(), handlerCount, <span class="literal">false</span>, conf, namesystem</span><br><span class="line">      .getDelegationTokenSecretManager());</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The rpc-server port can be ephemeral... ensure we have the correct info</span></span><br><span class="line">  <span class="built_in">this</span>.serverAddress = <span class="built_in">this</span>.server.getListenerAddress(); </span><br><span class="line">  FileSystem.setDefaultUri(conf, getUri(serverAddress));</span><br><span class="line">  </span><br><span class="line">  startHttpServer(conf);</span><br><span class="line">  <span class="built_in">this</span>.server.start();  <span class="comment">//start RPC server   </span></span><br><span class="line">  <span class="keyword">if</span> (serviceRpcServer != <span class="literal">null</span>) &#123;</span><br><span class="line">    serviceRpcServer.start();      </span><br><span class="line">  &#125;</span><br><span class="line">  startTrashEmptier(conf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>NameNode中，主要的工作委托给<code>FSNamesystem</code>完成，其在构造时，也会进行初始化<code>FSNamesystem.initialize()</code>，完成：</p>
+<ol>
+<li>利用<code>conf</code>初始化成员变量</li>
+<li>创建<code>FSDirecotry</code>对象，并通过<code>FSDirectory.loadFSImage()</code>加载命名空间镜像并应用编辑日志。</li>
+<li>创建安全模式管理对象<code>SafeModeInfo</code>，调用<code>setBlockTotal()</code>来更新<code>SafeModeInfo</code>的<code>blockTotal</code>，之后，NameNode则会处于安全模式。</li>
+<li>创建启动心跳检查线程、租约管理线程、数据块复制&#x2F;删除线程。</li>
+<li>读入DataNode的include和exclude文件，创建并启动DataNode的<code>DecommissionManager</code>线程。</li>
+<li>创建<code>dnsToSwitchMapping</code>对象用于网络布局感知。</li>
+<li>读入<code>$&#123;fs.default.name&#125;</code>配置项</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">initialize</span><span class="params">(NameNode nn, Configuration conf)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  ...</span><br><span class="line">  setConfigurationParameters(conf);</span><br><span class="line">  ...</span><br><span class="line">  <span class="comment">// Create a FSDirectory and load FSImage</span></span><br><span class="line">  <span class="built_in">this</span>.dir = <span class="keyword">new</span> <span class="title class_">FSDirectory</span>(<span class="built_in">this</span>, conf);</span><br><span class="line">  <span class="type">StartupOption</span> <span class="variable">startOpt</span> <span class="operator">=</span> NameNode.getStartupOption(conf);</span><br><span class="line">  <span class="built_in">this</span>.dir.loadFSImage(getNamespaceDirs(conf),</span><br><span class="line">                       getNamespaceEditsDirs(conf), startOpt);</span><br><span class="line"> <span class="comment">// Enter the safe mode</span></span><br><span class="line">  <span class="built_in">this</span>.safeMode = <span class="keyword">new</span> <span class="title class_">SafeModeInfo</span>(conf);</span><br><span class="line">  setBlockTotal();</span><br><span class="line">  <span class="comment">// Start all management threads</span></span><br><span class="line">  pendingReplications = <span class="keyword">new</span> <span class="title class_">PendingReplicationBlocks</span>(</span><br><span class="line">                          conf.getInt(<span class="string">&quot;dfs.replication.pending.timeout.sec&quot;</span>, </span><br><span class="line">                                      -<span class="number">1</span>) * <span class="number">1000L</span>);</span><br><span class="line">  <span class="built_in">this</span>.hbthread = <span class="keyword">new</span> <span class="title class_">Daemon</span>(<span class="keyword">new</span> <span class="title class_">HeartbeatMonitor</span>());</span><br><span class="line">  <span class="built_in">this</span>.lmthread = <span class="keyword">new</span> <span class="title class_">Daemon</span>(leaseManager.<span class="keyword">new</span> <span class="title class_">Monitor</span>());</span><br><span class="line">  <span class="built_in">this</span>.replmon = <span class="keyword">new</span> <span class="title class_">ReplicationMonitor</span>();</span><br><span class="line">  <span class="built_in">this</span>.replthread = <span class="keyword">new</span> <span class="title class_">Daemon</span>(replmon);</span><br><span class="line">  hbthread.start();</span><br><span class="line">  lmthread.start();</span><br><span class="line">  replthread.start();</span><br><span class="line"> <span class="comment">// Read in include and exclude files to manage DataNodes</span></span><br><span class="line">  <span class="built_in">this</span>.hostsReader = <span class="keyword">new</span> <span class="title class_">HostsFileReader</span>(conf.get(<span class="string">&quot;dfs.hosts&quot;</span>,<span class="string">&quot;&quot;</span>),</span><br><span class="line">                                         conf.get(<span class="string">&quot;dfs.hosts.exclude&quot;</span>,<span class="string">&quot;&quot;</span>));</span><br><span class="line">  <span class="built_in">this</span>.dnthread = <span class="keyword">new</span> <span class="title class_">Daemon</span>(<span class="keyword">new</span> <span class="title class_">DecommissionManager</span>(<span class="built_in">this</span>).<span class="keyword">new</span> <span class="title class_">Monitor</span>(</span><br><span class="line">      conf.getInt(<span class="string">&quot;dfs.namenode.decommission.interval&quot;</span>, <span class="number">30</span>),</span><br><span class="line">      conf.getInt(<span class="string">&quot;dfs.namenode.decommission.nodes.per.interval&quot;</span>, <span class="number">5</span>)));</span><br><span class="line">  dnthread.start();</span><br><span class="line"><span class="comment">// Dns switch mapping</span></span><br><span class="line">  <span class="built_in">this</span>.dnsToSwitchMapping = ReflectionUtils.newInstance(</span><br><span class="line">      conf.getClass(<span class="string">&quot;topology.node.switch.mapping.impl&quot;</span>, ScriptBasedMapping.class,</span><br><span class="line">          DNSToSwitchMapping.class), conf);</span><br><span class="line">  <span class="keyword">if</span> (dnsToSwitchMapping <span class="keyword">instanceof</span> CachedDNSToSwitchMapping) &#123;</span><br><span class="line">    dnsToSwitchMapping.resolve(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;(hostsReader.getHosts()));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Read $&#123;fs.default.name&#125;</span></span><br><span class="line">  <span class="type">InetSocketAddress</span> <span class="variable">socAddr</span> <span class="operator">=</span> NameNode.getAddress(conf);</span><br><span class="line">  <span class="built_in">this</span>.nameNodeHostName = socAddr.getHostName();</span><br><span class="line">  </span><br><span class="line">  registerWith(DefaultMetricsSystem.INSTANCE);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="NameNode的关闭"><a href="#NameNode的关闭" class="headerlink" title="NameNode的关闭"></a>NameNode的关闭</h2><p>在NameNode关闭时，并不需要做太多的工作：NameNode的文件目录树会不断的通过日志持久化，而文件到数据块的映射可以通过在启动的从各个DataNode的数据块上报中进行恢复。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Stop all NameNode threads and wait for all to finish.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">stop</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (stopRequested)</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  stopRequested = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (httpServer != <span class="literal">null</span>) httpServer.stop();</span><br><span class="line">  &#125; </span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">if</span>(namesystem != <span class="literal">null</span>) namesystem.close();</span><br><span class="line">  <span class="keyword">if</span>(emptier != <span class="literal">null</span>) emptier.interrupt();</span><br><span class="line">  <span class="keyword">if</span>(server != <span class="literal">null</span>) server.stop();</span><br><span class="line">  <span class="keyword">if</span>(serviceRpcServer != <span class="literal">null</span>) serviceRpcServer.stop();</span><br><span class="line">  <span class="keyword">if</span> (myMetrics != <span class="literal">null</span>) &#123;</span><br><span class="line">    myMetrics.shutdown();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (namesystem != <span class="literal">null</span>) &#123;</span><br><span class="line">    namesystem.shutdown();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>namesytem.close()</code>中，则会关闭其中的所有管理线程：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">**</span><br><span class="line">   * Close down <span class="built_in">this</span> file system manager.</span><br><span class="line">   * Causes heartbeat and lease daemons to stop; waits briefly <span class="keyword">for</span></span><br><span class="line">   * them to finish, but a <span class="type">short</span> timeout returns control back to caller.</span><br><span class="line">   */</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> &#123;</span><br><span class="line">    fsRunning = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (pendingReplications != <span class="literal">null</span>) pendingReplications.stop();</span><br><span class="line">      <span class="keyword">if</span> (hbthread != <span class="literal">null</span>) hbthread.interrupt();</span><br><span class="line">      <span class="keyword">if</span> (replthread != <span class="literal">null</span>) replthread.interrupt();</span><br><span class="line">      <span class="keyword">if</span> (dnthread != <span class="literal">null</span>) dnthread.interrupt();</span><br><span class="line">      <span class="keyword">if</span> (smmthread != <span class="literal">null</span>) smmthread.interrupt();</span><br><span class="line">      <span class="keyword">if</span> (dtSecretManager != <span class="literal">null</span>) dtSecretManager.stopThreads();</span><br><span class="line">  		...</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="comment">// using finally to ensure we also wait for lease daemon</span></span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (lmthread != <span class="literal">null</span>) &#123;</span><br><span class="line">          lmthread.interrupt();</span><br><span class="line">          lmthread.join(<span class="number">3000</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        dir.close();</span><br><span class="line">        blocksMap.close();</span><br><span class="line">      &#125; </span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" title= "Yarn 基础库">
+                    <div class="nextTitle">Yarn 基础库</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" title= "Yarn架构">
+                    <div class="prevTitle">Yarn架构</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "NameNode的启动和停止"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.</span> <span class="toc-text">安全模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NameNode%E7%9A%84%E5%90%AF%E5%8A%A8"><span class="toc-number">2.</span> <span class="toc-text">NameNode的启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NameNode%E7%9A%84%E5%85%B3%E9%97%AD"><span class="toc-number">3.</span> <span class="toc-text">NameNode的关闭</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

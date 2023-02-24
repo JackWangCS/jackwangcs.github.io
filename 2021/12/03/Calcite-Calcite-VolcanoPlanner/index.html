@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Calcite Volcano Planner · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Calcite Volcano Planner</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Calcite Volcano Planner
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SQL">SQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Calclite">Calclite</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.4k</span>Reading time: <span class="post-count reading-time">23 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/12/03</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>VolcanoPlanner是一种基于代价的优化器，是Calcite中默认的优化器类型。Volcano在优化的过程中使用了动态规划算法，整体的过程如下：</p>
+<p><img src="https://matt33.com/images/calcite/12-VolcanoPlanner.png"></p>
+<ol>
+<li>将成功匹配的优化规则加入到匹配队列中</li>
+<li>从匹配队列中依次取出匹配的优化规则，并应用优化规则对执行计划进行转换</li>
+<li>迭代上述过程直到达到固定的最大迭代次数，或者执行计划的最优代价不再改变</li>
+</ol>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="RelSet"><a href="#RelSet" class="headerlink" title="RelSet"></a>RelSet</h3><p>RelSet是指一组语义等价的关系表达式集合：</p>
+<blockquote>
+<p>RelSet is an equivalence-set of expressions that is, a set of expressions which have <strong>identical semantics</strong>.<br>We are generally interested in using the expression which has <strong>the lowest cost</strong>.<br>All of the expressions in an RelSet have the <strong>same calling convention</strong>.</p>
+</blockquote>
+<p>RelSet的核心成员变量：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">RelSet</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> List&lt;RelNode&gt; rels = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Relational expressions that have a subset in this set as a child. This</span></span><br><span class="line"><span class="comment">   * is a multi-set. If multiple relational expressions in this set have the</span></span><br><span class="line"><span class="comment">   * same parent, there will be multiple entries.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">final</span> List&lt;RelNode&gt; parents = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">  <span class="keyword">final</span> List&lt;RelSubset&gt; subsets = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Set to the superseding set when this is found to be equivalent to another set.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="meta">@MonotonicNonNull</span> RelSet equivalentSet;</span><br><span class="line">  <span class="meta">@MonotonicNonNull</span> RelNode rel;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Exploring state of current RelSet. Two states: EXPLORING, EXPLORED</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="meta">@Nullable</span> ExploringState exploringState;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Records conversions / enforcements that have happened on the</span></span><br><span class="line"><span class="comment">   * pair of derived and required traitset.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">final</span> Set&lt;Pair&lt;RelTraitSet, RelTraitSet&gt;&gt; conversions = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Variables that are set by relational expressions in this set</span></span><br><span class="line"><span class="comment">   * and available for use by parent and child expressions.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">final</span> Set&lt;CorrelationId&gt; variablesPropagated;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Variables that are used by relational expressions in this set.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">final</span> Set&lt;CorrelationId&gt; variablesUsed;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Reentrancy flag.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> inMetadataQuery;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在优化的时候，可能存在多个等价的RelSet，此时，这些RelSet按照树形结构组织，并通过<strong>Union-Find</strong>的方式快速识别两个RelSet是否属于同一个等价集合中。如果两个RelSet是等价的，还会合并（merge）两个RelSet，详细的合并过程可以查看VolcanoPlanner.merge(RelSet, RelSet)的实现。</p>
+<h3 id="RelSubset"><a href="#RelSubset" class="headerlink" title="RelSubset"></a>RelSubset</h3><p> RelSubset表示具有相同的RelTrait（物理属性）的RelSet的子集：</p>
+<blockquote>
+<p>Subset of an equivalence class where all relational expressions have the same physical properties.</p>
+</blockquote>
+<p>RelSubset相对于RelSet，强调了物理属性相同，这里的物理属性是指RelNode的所有Traits。RelSubset继承了AbstractRelNode，因此也是一种RelNode。<strong>RelSubset会持有RelSet的引用，并不保存实际的等价的关系表达式，是一个逻辑概念</strong>。</p>
+<p>RelSubset的重要成员变量：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RelSubset</span> <span class="keyword">extends</span> <span class="title class_">AbstractRelNode</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">DELIVERED</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">REQUIRED</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">  <span class="comment">/** Optimization task state. OPTIMIZING or COMPLETED */</span></span><br><span class="line">  <span class="meta">@Nullable</span> OptimizeState taskState;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/** Cost of best known plan (it may have improved since). */</span></span><br><span class="line">  RelOptCost bestCost;</span><br><span class="line">  <span class="comment">/** Best known plan. */</span></span><br><span class="line">  <span class="meta">@Nullable</span> RelNode best;</span><br><span class="line">  <span class="comment">/* The upper bound of the last OptimizeGroup call. */</span></span><br><span class="line">  RelOptCost upperBound;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/** The set this subset belongs to. */</span></span><br><span class="line">  <span class="keyword">final</span> RelSet set;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * This subset should trigger rules when it becomes delivered.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="variable">triggerRule</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Physical property state of current subset. Values:</span></span><br><span class="line"><span class="comment">   * &lt;ul&gt;</span></span><br><span class="line"><span class="comment">   * &lt;li&gt;0: logical operators, NONE convention is neither DELIVERED nor REQUIRED</span></span><br><span class="line"><span class="comment">   * &lt;li&gt;1: traitSet DELIVERED from child operators or itself</span></span><br><span class="line"><span class="comment">   * &lt;li&gt;2: traitSet REQUIRED from parent operators</span></span><br><span class="line"><span class="comment">   * &lt;li&gt;3: both DELIVERED and REQUIRED</span></span><br><span class="line"><span class="comment">   * &lt;/ul&gt;</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">int</span> <span class="variable">state</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * A cache that recognize which RelNode has invoked the passThrough method</span></span><br><span class="line"><span class="comment">   * so as to avoid duplicate invocation.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="meta">@Nullable</span> Set&lt;RelNode&gt; passThroughCache;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>在Planner的最后阶段，RelSubset中的CheapestPlanReplacer用于将该RelNode替换成由最优代价构成的新的RelNode：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">RelNode <span class="title function_">buildCheapestPlan</span><span class="params">(VolcanoPlanner planner)</span> &#123;</span><br><span class="line">  <span class="type">CheapestPlanReplacer</span> <span class="variable">replacer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CheapestPlanReplacer</span>(planner);</span><br><span class="line">  <span class="keyword">final</span> <span class="type">RelNode</span> <span class="variable">cheapest</span> <span class="operator">=</span> replacer.visit(<span class="built_in">this</span>, -<span class="number">1</span>, <span class="literal">null</span>);</span><br><span class="line">  <span class="comment">// inform the RelChosenEvent </span></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">return</span> cheapest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CheapestPlanReplacer会递归的通过visit()方法自底向上的替换RelNode为找到的best RelNode：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> RelNode <span class="title function_">visit</span><span class="params">(</span></span><br><span class="line"><span class="params">  RelNode p,</span></span><br><span class="line"><span class="params">  <span class="type">int</span> ordinal,</span></span><br><span class="line"><span class="params">  <span class="meta">@Nullable</span> RelNode parent)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (p <span class="keyword">instanceof</span> RelSubset) &#123;</span><br><span class="line">    <span class="type">RelSubset</span> <span class="variable">subset</span> <span class="operator">=</span> (RelSubset) p;</span><br><span class="line">    <span class="type">RelNode</span> <span class="variable">cheapest</span> <span class="operator">=</span> subset.best;</span><br><span class="line">    <span class="keyword">if</span> (cheapest == <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// Dump the planner&#x27;s expression pool so we can figure out why we reached impasse....</span></span><br><span class="line">    &#125;</span><br><span class="line">    p = cheapest;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// Inform the RelChosenEvent listener</span></span><br><span class="line">  <span class="keyword">if</span> (ordinal != -<span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (planner.getListener() != <span class="literal">null</span>) &#123;</span><br><span class="line">      RelOptListener.<span class="type">RelChosenEvent</span> <span class="variable">event</span> <span class="operator">=</span></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">RelOptListener</span>.RelChosenEvent(</span><br><span class="line">        planner,</span><br><span class="line">        p);</span><br><span class="line">      planner.getListener().relChosen(event);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// For each inputs(children), recursively call the visit() to replace the cheapest plan</span></span><br><span class="line">  List&lt;RelNode&gt; oldInputs = p.getInputs();</span><br><span class="line">  List&lt;RelNode&gt; inputs = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; oldInputs.size(); i++) &#123;</span><br><span class="line">    <span class="type">RelNode</span> <span class="variable">oldInput</span> <span class="operator">=</span> oldInputs.get(i);</span><br><span class="line">    <span class="type">RelNode</span> <span class="variable">input</span> <span class="operator">=</span> visit(oldInput, i, p);</span><br><span class="line">    inputs.add(input);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!inputs.equals(oldInputs)) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">RelNode</span> <span class="variable">pOld</span> <span class="operator">=</span> p;</span><br><span class="line">    p = p.copy(p.getTraitSet(), inputs);</span><br><span class="line">    planner.provenanceMap.put(</span><br><span class="line">      p, <span class="keyword">new</span> <span class="title class_">VolcanoPlanner</span>.DirectProvenance(pOld));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="VolcanoRuleMatch"><a href="#VolcanoRuleMatch" class="headerlink" title="VolcanoRuleMatch"></a>VolcanoRuleMatch</h3><p>VolcanoRuleMatch表示一个优化规则与目标的关系表达式匹配：</p>
+<blockquote>
+<p>A match of a rule to a particular set of target relational expressions, frozen in time.</p>
+</blockquote>
+<p>VolcanoRuleMatch继承自VolcanoRuleCall：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">VolcanoRuleMatch</span> <span class="keyword">extends</span> <span class="title class_">VolcanoRuleCall</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> String digest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>VolcanoRuleCall则继承自RelOptRuleCall抽象类。</p>
+<h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><p>VolcanoPlanner的定义如下，下面只包含了核心的数据结构：</p>
+<ul>
+<li>Root RelNode相关的root，originalRoot和rootConvention</li>
+<li>用于规则匹配的classOperands。由于Java并没有提供Scala模式匹配类似的语法，因此需要记录优化规则的操作数需要匹配的类型信息</li>
+<li>动态规划算法的核心状态：<ul>
+<li>mapRel2Subset，保存了一个RelNode对应的RelSubset。由上面的RelSubset介绍可知，它保存了当前该RelNode所有等价RelNode以及最小代价。</li>
+<li>prunedNodes，表示已经处于pruned状态的RelNodes。在这里可以理解为不需要再进行优化的RelNode（已经处于最优状态），不会再进行规制匹配。注意，Importance的概念已经在<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/CALCITE-3851">CALCITE-3851</a>中被deprecated，由prune()来代替。</li>
+</ul>
+</li>
+<li>优化流程相关的RuleDriver，ruleCallStack，zeroCost，infCost等</li>
+<li>视图和格相关的materializations，latticeByName等</li>
+</ul>
+<p>从AbstractRelOptPlanner继承的：</p>
+<ul>
+<li>优化规则：mapDescToRule</li>
+<li>代价工厂：RelOptCostFactory</li>
+<li>所有已经加载的RelNode的class：private final Set&lt;Class&lt;? extends RelNode&gt;&gt; classes &#x3D; new HashSet&lt;&gt;()和conventions</li>
+<li>RexExecutor: executor</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * VolcanoPlanner optimizes queries by transforming expressions selectively</span></span><br><span class="line"><span class="comment"> * according to a dynamic programming algorithm.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">VolcanoPlanner</span> <span class="keyword">extends</span> <span class="title class_">AbstractRelOptPlanner</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// The root RelNode related: </span></span><br><span class="line">  <span class="keyword">protected</span> <span class="meta">@MonotonicNonNull</span> RelSubset root;</span><br><span class="line">  <span class="keyword">private</span> <span class="meta">@MonotonicNonNull</span> RelNode originalRoot;</span><br><span class="line">  <span class="keyword">private</span> <span class="meta">@Nullable</span> Convention rootConvention;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Core data strucuture</span></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Operands that apply to a given class of &#123;<span class="doctag">@link</span> RelNode&#125;.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * &lt;p&gt;Any operand can be an &#x27;entry point&#x27; to a rule call, when a RelNode is</span></span><br><span class="line"><span class="comment">   * registered which matches the operand. This map allows us to narrow down</span></span><br><span class="line"><span class="comment">   * operands based on the class of the RelNode.&lt;/p&gt;</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Multimap&lt;Class&lt;? <span class="keyword">extends</span> <span class="title class_">RelNode</span>&gt;, RelOptRuleOperand&gt;</span><br><span class="line">      classOperands = LinkedListMultimap.create();</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Map each registered expression (&#123;<span class="doctag">@link</span> RelNode&#125;) to its equivalence set</span></span><br><span class="line"><span class="comment">   * (&#123;<span class="doctag">@link</span> RelSubset&#125;).</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * &lt;p&gt;We use an &#123;<span class="doctag">@link</span> IdentityHashMap&#125; to simplify the process of merging</span></span><br><span class="line"><span class="comment">   * &#123;<span class="doctag">@link</span> RelSet&#125; objects. Most &#123;<span class="doctag">@link</span> RelNode&#125; objects are identified by</span></span><br><span class="line"><span class="comment">   * their digest, which involves the set that their child relational</span></span><br><span class="line"><span class="comment">   * expressions belong to. If those children belong to the same set, we have</span></span><br><span class="line"><span class="comment">   * to be careful, otherwise it gets incestuous.&lt;/p&gt;</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> IdentityHashMap&lt;RelNode, RelSubset&gt; mapRel2Subset =</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">IdentityHashMap</span>&lt;&gt;();</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * The nodes to be pruned.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * &lt;p&gt;If a RelNode is pruned, all &#123;<span class="doctag">@link</span> RelOptRuleCall&#125;s using it</span></span><br><span class="line"><span class="comment">   * are ignored, and future RelOptRuleCalls are not queued up.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">final</span> Set&lt;RelNode&gt; prunedNodes = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;RelDigest, RelNode&gt; mapDigestToRel =</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Set&lt;RelOptSchema&gt; registeredSchemas = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="type">int</span> <span class="variable">nextSetId</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> List&lt;RelTraitDef&gt; traitDefs = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">	<span class="comment">// RuleDriver and optimization process:</span></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * A driver to manage rule and rule matches.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  RuleDriver ruleDriver;</span><br><span class="line">  <span class="comment">/** Track where a RelNode came from: UnknownProvenance, DirectProvenance and RulePrevoenance   */</span></span><br><span class="line">  <span class="keyword">final</span> Map&lt;RelNode, Provenance&gt; provenanceMap;</span><br><span class="line">  <span class="keyword">final</span> Deque&lt;VolcanoRuleCall&gt; ruleCallStack = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;();</span><br><span class="line">  <span class="comment">/** Zero and inf cost according to &#123;<span class="doctag">@link</span> #costFactory&#125;. Not necessarily a</span></span><br><span class="line"><span class="comment">   * &#123;<span class="doctag">@link</span> org.apache.calcite.plan.volcano.VolcanoCost&#125;. */</span></span><br><span class="line">  <span class="keyword">final</span> RelOptCost zeroCost;</span><br><span class="line">  <span class="keyword">final</span> RelOptCost infCost;</span><br><span class="line">  <span class="comment">/** Whether rels with Convention.NONE has infinite cost. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">noneConventionHasInfiniteCost</span> <span class="operator">=</span> <span class="literal">true</span>;</span><br><span class="line">  <span class="comment">/** Whether to enable top-down optimization or not. By default, this value is false, Calcite will execute a BOTTOM_UP optimization. */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="variable">topDownOpt</span> <span class="operator">=</span> CalciteSystemProperty.TOPDOWN_OPT.value();</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Materializations and Lattices</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> List&lt;RelOptMaterialization&gt; materializations =</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;List&lt;String&gt;, RelOptLattice&gt; latticeByName =</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">LinkedHashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">  Set&lt;RelSubset&gt; explorationRoots = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h2><h3 id="总体"><a href="#总体" class="headerlink" title="总体"></a>总体</h3><p> 优化关系表达式R的算法流程：</p>
+<ol>
+<li>注册R</li>
+<li>对于可以应用的RelOptRules，创建Rule-Calls（VolcanoRuleCall），并加入到RuleQueue中</li>
+<li>依次从RuleQueue中取出VolcanoRuleCall，并应用RelOptRule</li>
+<li>重复上述步骤</li>
+</ol>
+<h4 id="优化规则的触发过程"><a href="#优化规则的触发过程" class="headerlink" title="优化规则的触发过程"></a>优化规则的触发过程</h4><p>假设目前注册的优化规则：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1. PushFilterThroughProjectRule. Operands:</span><br><span class="line">	Filter</span><br><span class="line">  	Project</span><br><span class="line">2. CombineProjectsRule. Operands:</span><br><span class="line">	Project</span><br><span class="line">		Project</span><br></pre></td></tr></table></figure>
+
+<p>将要优化的关系表达式为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Project (deptno)                              [exp 1, subset A]</span><br><span class="line">   Filter (gender=&#x27;F&#x27;)                         [exp 2, subset B]</span><br><span class="line">     Project (deptno, gender, empno)           [exp 3, subset C]</span><br><span class="line">       Project (deptno, gender, empno, salary) [exp 4, subset D]</span><br><span class="line">         TableScan (emp)                       [exp 0, subset X]</span><br></pre></td></tr></table></figure>
+
+<p>在<code>exp2</code>和<code>exp3</code>上应用<code>PushFilterThroughProjectRule</code>，得到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Project (deptno)                              [exp 1, subset A]</span><br><span class="line">   Project (deptno, gender, empno)             [exp 5, subset B]</span><br><span class="line">     Filter (gender=&#x27;F&#x27;)                       [exp 6, subset E]</span><br><span class="line">       Project (deptno, gender, empno, salary) [exp 4, subset D]</span><br><span class="line">         TableScan (emp)                       [exp 0, subset X]</span><br></pre></td></tr></table></figure>
+
+<p>注意到，新的关系表达式中新增加了<code>exp5</code>和<code>exp6</code>，并且<code>exp5</code>在subset B中，<code>exp6</code>在subset E中。此时注册<code>exp5</code>和<code>exp6</code>将会触发一系列的优化规则：</p>
+<ul>
+<li><p>注册<code>exp5</code>可以触发<code>CombineProjectsRule</code>，得到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Project (deptno)                              [exp 7, subset A]</span><br><span class="line">   Filter (gender=&#x27;F&#x27;)                         [exp 6, subset E]</span><br><span class="line">     Project (deptno, gender, empno, salary)   [exp 4, subset D]</span><br><span class="line">       TableScan (emp)                         [exp 0, subset X]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>注册<code>exp6</code>可以触发<code>PushFilterThroughProjectRule</code>，得到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Project (deptno)                              [exp 1, subset A]</span><br><span class="line">   Project (deptno, gender, empno)             [exp 5, subset B]</span><br><span class="line">     Project (deptno, gender, empno, salary)   [exp 8, subset E]</span><br><span class="line">       Filter (gender=&#x27;F&#x27;)                     [exp 9, subset F]</span><br><span class="line">         TableScan (emp)                       [exp 0, subset X]</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>每次规则应用都可能会向已存在的subset中添加新的成员。此时，具有多个等价表达式的subset有：A{1, 7}、B{2, 5}和E{6, 8}，根据这些subset，可以构造新的组合。比如，对于<code>exp7</code>和<code>exp8</code>应用<code>CombineProjectsRule</code>规则，可以得到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Project (deptno)                          [exp 10, subset A]</span><br><span class="line">   Filter (gender=&#x27;F&#x27;)                     [exp 9, subset F]</span><br><span class="line">     TableScan (emp)                       [exp 0, subset X]</span><br></pre></td></tr></table></figure>
+
+<p>总结：</p>
+<ol>
+<li>一个优化规则可以被它的任意一个操作数（operand）触发</li>
+<li>如果一个subset的父亲不止一个，那么它可以触发任意父亲的subset的规则匹配</li>
+<li>注册一个新的关系表达式可以触发多条优化规则</li>
+<li>触发优化规则可能会使得多个subset合并</li>
+</ol>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>用户代码主要是通过Program来调用VolcanoPlanner，调用过程为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (RelOptRule rule : ruleSet) &#123;</span><br><span class="line">  planner.addRule(rule);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (RelOptMaterialization materialization : materializations) &#123;</span><br><span class="line">  planner.addMaterialization(materialization);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (RelOptLattice lattice : lattices) &#123;</span><br><span class="line">  planner.addLattice(lattice);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (!rel.getTraitSet().equals(requiredOutputTraits)) &#123;</span><br><span class="line">  rel = planner.changeTraits(rel, requiredOutputTraits);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// setRoot relNode, then call findBestExp() to do the optimization</span></span><br><span class="line">planner.setRoot(rel);</span><br><span class="line"><span class="keyword">return</span> planner.findBestExp();</span><br></pre></td></tr></table></figure>
+
+<p>主要的调用流程：</p>
+<pre class="mermaid">sequenceDiagram
+    participant user As User Code
+    participant VolcanoPlanner
+    participant RuleDriver
+    participant RuleQueue
+    participant RuleMatchCall
+    participant RelOptRule
+    user->>VolcanoPlanner: setRoot()
+    VolcanoPlanner-->>VolcanoPlanner: registerImpl()
+    user->>VolcanoPlanner: findBestExp()
+    loop (RuleQueue not empty) or (max iterations reached)
+    VolcanoPlanner->>RuleDriver: driver()
+    RuleDriver->>RuleQueue: popMatch()
+    RuleQueue->>RuleMatchCall: onMatch()
+    RuleMatchCall->>RelOptRule: onMatch()
+    RelOptRule->>RuleMatchCall: transformTo(RelNode)
+    RuleMatchCall->>VolcanoPlanner: ensureRegistered(RelNode)
+    VolcanoPlanner-->>VolcanoPlanner: registerImpl()
+    RuleDriver->>VolcanoPlanner: canonize()
+  end
+    VolcanoPlanner->>user: RelSubset.buildCheapestPlan()</pre>
+
+
+
+<h3 id="addRule"><a href="#addRule" class="headerlink" title="addRule()"></a>addRule()</h3><p>利用addRule()方法向Planner中添加优化规则。在添加的过程中，会将每条优化规则的操作数添加到classOperands中。对于ConverterRule，如果是感兴趣的Trait时，还会调用RelTraitDef.registerConverterRule()进行注册，该注册会向Trait的conversionGraph中添加对应的边：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">addRule</span><span class="params">(RelOptRule rule)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (locked) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!<span class="built_in">super</span>.addRule(rule)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Each of this rule&#x27;s operands is an &#x27;entry point&#x27; for a rule call.</span></span><br><span class="line">  <span class="comment">// Register each operand against all concrete sub-classes that could match</span></span><br><span class="line">  <span class="comment">// it.</span></span><br><span class="line">  <span class="keyword">for</span> (RelOptRuleOperand operand : rule.getOperands()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (Class&lt;? <span class="keyword">extends</span> <span class="title class_">RelNode</span>&gt; subClass</span><br><span class="line">         : subClasses(operand.getMatchedClass())) &#123;</span><br><span class="line">      <span class="keyword">if</span> (PhysicalNode.class.isAssignableFrom(subClass)</span><br><span class="line">          &amp;&amp; rule <span class="keyword">instanceof</span> TransformationRule) &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      classOperands.put(subClass, operand);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// If this is a converter rule, check that it operates on one of the</span></span><br><span class="line">  <span class="comment">// kinds of trait we are interested in, and if so, register the rule</span></span><br><span class="line">  <span class="comment">// with the trait.</span></span><br><span class="line">  <span class="keyword">if</span> (rule <span class="keyword">instanceof</span> ConverterRule) &#123;</span><br><span class="line">    <span class="type">ConverterRule</span> <span class="variable">converterRule</span> <span class="operator">=</span> (ConverterRule) rule;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">RelTrait</span> <span class="variable">ruleTrait</span> <span class="operator">=</span> converterRule.getInTrait();</span><br><span class="line">    <span class="keyword">final</span> <span class="type">RelTraitDef</span> <span class="variable">ruleTraitDef</span> <span class="operator">=</span> ruleTrait.getTraitDef();</span><br><span class="line">    <span class="keyword">if</span> (traitDefs.contains(ruleTraitDef)) &#123;</span><br><span class="line">      ruleTraitDef.registerConverterRule(<span class="built_in">this</span>, converterRule);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>与addRule()方法相对应的是removeRule()，removeRule()是addRule()的逆过程：从classOperands中删除属于该优化规则的操作数、如果是ConverterRule，调用RelTraitDef.deregisterConverterRule()取消注册。</p>
+<h3 id="setRoot"><a href="#setRoot" class="headerlink" title="setRoot()"></a>setRoot()</h3><p>setRoot()用于设置需要优化的关系表达式，在setRoot()中会执行：</p>
+<ol>
+<li>注册Metadata RelNodes，关于Metadata相关的信息，可以参考：<a target="_blank" rel="noopener" href="http://www.hydromatic.net/wiki/RelationalExpressionMetadata">Relational Expression Metadata</a></li>
+<li><strong>调用registerImpl()注册新的关系表达式，并触发规则匹配</strong></li>
+<li>初始化rootConvention并调用ensureRootConverters()来保证Root的RelNode有对应的ConverterRules</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setRoot</span><span class="params">(RelNode rel)</span> &#123;</span><br><span class="line">  <span class="comment">// We&#x27;ve registered all the rules, and therefore RelNode classes,</span></span><br><span class="line">  <span class="comment">// we&#x27;re interested in, and have not yet started calling metadata providers.</span></span><br><span class="line">  <span class="comment">// So now is a good time to tell the metadata layer what to expect.</span></span><br><span class="line">  registerMetadataRels();</span><br><span class="line">  </span><br><span class="line">  <span class="built_in">this</span>.root = registerImpl(rel, <span class="literal">null</span>);</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">this</span>.originalRoot == <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="built_in">this</span>.originalRoot = rel;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  rootConvention = <span class="built_in">this</span>.root.getConvention();</span><br><span class="line">  ensureRootConverters();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>registerImpl()是setRoot()的核心，整个过程较为复杂。主要有两个目的：</p>
+<ol>
+<li><strong>通过RelNode和RelSet构建该RelNode所属的RelSubset</strong>，如果一个RelNode的RelSubset已经构建，直接返回即可。</li>
+<li>对于新注册的RelNode，调用fireRules(RelNode)触发规则匹配。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> RelSubset <span class="title function_">registerImpl</span><span class="params">(</span></span><br><span class="line"><span class="params">  RelNode rel,</span></span><br><span class="line"><span class="params">  <span class="meta">@Nullable</span> RelSet set)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (rel <span class="keyword">instanceof</span> RelSubset) &#123;</span><br><span class="line">    <span class="keyword">return</span> registerSubset(set, (RelSubset) rel);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Check planner and validate Convention</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Ensure that its sub-expressions are registered.</span></span><br><span class="line">  rel = rel.onRegister(<span class="built_in">this</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Record its provenance. (Rule call may be null.)</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">VolcanoRuleCall</span> <span class="variable">ruleCall</span> <span class="operator">=</span> ruleCallStack.peek();</span><br><span class="line">  <span class="keyword">if</span> (ruleCall == <span class="literal">null</span>) &#123;</span><br><span class="line">    provenanceMap.put(rel, Provenance.EMPTY);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    provenanceMap.put(</span><br><span class="line">      rel,</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">RuleProvenance</span>(</span><br><span class="line">        ruleCall.rule,</span><br><span class="line">        ImmutableList.copyOf(ruleCall.rels),</span><br><span class="line">        ruleCall.id));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// If it is equivalent to an existing expression, return the set that</span></span><br><span class="line">  <span class="comment">// the equivalent expression belongs to.</span></span><br><span class="line">  <span class="type">RelDigest</span> <span class="variable">digest</span> <span class="operator">=</span> rel.getRelDigest();</span><br><span class="line">  <span class="type">RelNode</span> <span class="variable">equivExp</span> <span class="operator">=</span> mapDigestToRel.get(digest);</span><br><span class="line">  <span class="keyword">if</span> (equivExp == <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// do nothing</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (equivExp == rel) &#123;</span><br><span class="line">    <span class="comment">// The same rel is already registered, so return its subset</span></span><br><span class="line">    <span class="keyword">return</span> getSubsetNonNull(equivExp);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// </span></span><br><span class="line">    checkPruned(equivExp, rel);</span><br><span class="line">    <span class="type">RelSet</span> <span class="variable">equivSet</span> <span class="operator">=</span> getSet(equivExp);</span><br><span class="line">    <span class="keyword">if</span> (equivSet != <span class="literal">null</span>) &#123;</span><br><span class="line">      LOGGER.trace(<span class="string">&quot;Register: rel#&#123;&#125; is equivalent to &#123;&#125;&quot;</span>, rel.getId(), equivExp);</span><br><span class="line">      <span class="comment">// This may merge the two RelSets if they are in different RelSets</span></span><br><span class="line">      <span class="keyword">return</span> registerSubset(set, getSubsetNonNull(equivExp));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Converters are in the same set as their children.</span></span><br><span class="line">  <span class="keyword">if</span> (rel <span class="keyword">instanceof</span> Converter) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">RelNode</span> <span class="variable">input</span> <span class="operator">=</span> ((Converter) rel).getInput();</span><br><span class="line">    <span class="keyword">final</span> <span class="type">RelSet</span> <span class="variable">childSet</span> <span class="operator">=</span> castNonNull(getSet(input));</span><br><span class="line">    <span class="keyword">if</span> ((set != <span class="literal">null</span>)</span><br><span class="line">        &amp;&amp; (set != childSet)</span><br><span class="line">        &amp;&amp; (set.equivalentSet == <span class="literal">null</span>)) &#123;</span><br><span class="line">      LOGGER.trace(</span><br><span class="line">        <span class="string">&quot;Register #&#123;&#125; &#123;&#125; (and merge sets, because it is a conversion)&quot;</span>,</span><br><span class="line">        rel.getId(), rel.getRelDigest());</span><br><span class="line">      merge(set, childSet);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// During the mergers, the child set may have changed, and since</span></span><br><span class="line">      <span class="comment">// we&#x27;re not registered yet, we won&#x27;t have been informed. So</span></span><br><span class="line">      <span class="comment">// check whether we are now equivalent to an existing</span></span><br><span class="line">      <span class="comment">// expression.</span></span><br><span class="line">      <span class="keyword">if</span> (fixUpInputs(rel)) &#123;</span><br><span class="line">        digest = rel.getRelDigest();</span><br><span class="line">        <span class="type">RelNode</span> <span class="variable">equivRel</span> <span class="operator">=</span> mapDigestToRel.get(digest);</span><br><span class="line">        <span class="keyword">if</span> ((equivRel != rel) &amp;&amp; (equivRel != <span class="literal">null</span>)) &#123;</span><br><span class="line"></span><br><span class="line">          <span class="comment">// make sure this bad rel didn&#x27;t get into the</span></span><br><span class="line">          <span class="comment">// set in any way (fixupInputs will do this but it</span></span><br><span class="line">          <span class="comment">// doesn&#x27;t know if it should so it does it anyway)</span></span><br><span class="line">          set.obliterateRelNode(rel);</span><br><span class="line"></span><br><span class="line">          <span class="comment">// There is already an equivalent expression. Use that</span></span><br><span class="line">          <span class="comment">// one, and forget about this one.</span></span><br><span class="line">          <span class="keyword">return</span> getSubsetNonNull(equivRel);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      set = childSet;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Place the expression in the appropriate equivalence set.</span></span><br><span class="line">  <span class="keyword">if</span> (set == <span class="literal">null</span>) &#123;</span><br><span class="line">    set = <span class="keyword">new</span> <span class="title class_">RelSet</span>(</span><br><span class="line">      nextSetId++,</span><br><span class="line">      Util.minus(</span><br><span class="line">        RelOptUtil.getVariablesSet(rel),</span><br><span class="line">        rel.getVariablesSet()),</span><br><span class="line">      RelOptUtil.getVariablesUsed(rel));</span><br><span class="line">    <span class="built_in">this</span>.allSets.add(set);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Chain to find &#x27;live&#x27; equivalent set, just in case several sets are</span></span><br><span class="line">  <span class="comment">// merging at the same time. &lt;Union Find&gt;.</span></span><br><span class="line">  <span class="keyword">while</span> (set.equivalentSet != <span class="literal">null</span>) &#123;</span><br><span class="line">    set = set.equivalentSet;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Allow each rel to register its own rules.</span></span><br><span class="line">  registerClass(rel);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="type">int</span> <span class="variable">subsetBeforeCount</span> <span class="operator">=</span> set.subsets.size();</span><br><span class="line">  <span class="type">RelSubset</span> <span class="variable">subset</span> <span class="operator">=</span> addRelToSet(rel, set);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="type">RelNode</span> <span class="variable">xx</span> <span class="operator">=</span> mapDigestToRel.putIfAbsent(digest, rel);</span><br><span class="line">  <span class="comment">// This relational expression may have been registered while we</span></span><br><span class="line">  <span class="comment">// recursively registered its children. If this is the case, we&#x27;re done.</span></span><br><span class="line">  <span class="keyword">if</span> (xx != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> subset;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (RelNode input : rel.getInputs()) &#123;</span><br><span class="line">    <span class="type">RelSubset</span> <span class="variable">childSubset</span> <span class="operator">=</span> (RelSubset) input;</span><br><span class="line">    childSubset.set.parents.add(rel);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Queue up all rules triggered by this relexp&#x27;s creation.</span></span><br><span class="line">  fireRules(rel);</span><br><span class="line">  <span class="comment">// It&#x27;s a new subset.</span></span><br><span class="line">  <span class="keyword">if</span> (set.subsets.size() &gt; subsetBeforeCount</span><br><span class="line">      || subset.triggerRule) &#123;</span><br><span class="line">    fireRules(subset);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> subset;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="fireRules"><a href="#fireRules" class="headerlink" title="fireRules()"></a>fireRules()</h4><p>fireRules(RelNode)会触发与输入RelNode相匹配的规则。通过classOperands快速查找与该RelNode相关的RelOptRuleOeprand，并通过RelOptRuleOeprand.match()方法进行匹配。</p>
+<p>如果RelNode匹配了某一条优化规则，则创建VolcanoRuleCall和DeferringRuleCall，调用其match()方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Fires all rules matched by a relational expression.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> rel      Relational expression which has just been created (or maybe</span></span><br><span class="line"><span class="comment">   *                 from the queue)</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">fireRules</span><span class="params">(RelNode rel)</span> &#123;</span><br><span class="line">  <span class="keyword">for</span> (RelOptRuleOperand operand : classOperands.get(rel.getClass())) &#123;</span><br><span class="line">    <span class="keyword">if</span> (operand.matches(rel)) &#123;</span><br><span class="line">      <span class="keyword">final</span> VolcanoRuleCall ruleCall;</span><br><span class="line">      ruleCall = <span class="keyword">new</span> <span class="title class_">DeferringRuleCall</span>(<span class="built_in">this</span>, operand);</span><br><span class="line">      ruleCall.match(rel);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>DeferringRuleCall中，将该次规则匹配成功封装为VolcanoRuleMatch对象，并加入到RuleQueue队列中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * A rule call which defers its actions. Whereas &#123;<span class="doctag">@link</span> RelOptRuleCall&#125;</span></span><br><span class="line"><span class="comment"> * invokes the rule when it finds a match, a &lt;code&gt;DeferringRuleCall&lt;/code&gt;</span></span><br><span class="line"><span class="comment"> * creates a &#123;<span class="doctag">@link</span> VolcanoRuleMatch&#125; which can be invoked later.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">DeferringRuleCall</span> <span class="keyword">extends</span> <span class="title class_">VolcanoRuleCall</span> &#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Rather than invoking the rule (as the base method does), creates a</span></span><br><span class="line"><span class="comment">   * &#123;<span class="doctag">@link</span> VolcanoRuleMatch&#125; which can be invoked later.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="meta">@Override</span> <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onMatch</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">VolcanoRuleMatch</span> <span class="variable">match</span> <span class="operator">=</span></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">VolcanoRuleMatch</span>(</span><br><span class="line">            volcanoPlanner,</span><br><span class="line">            getOperand0(),</span><br><span class="line">            rels,</span><br><span class="line">            nodeInputs);</span><br><span class="line">    volcanoPlanner.ruleDriver.getRuleQueue().addMatch(match);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="findBestExp"><a href="#findBestExp" class="headerlink" title="findBestExp()"></a>findBestExp()</h3><p>findBestExp()用于获得以root RelNode的具有最小代价的关系表达式。findBestExp()通过RuleDriver不断地从RuleQueue中取出匹配的优化规则，并对RelNode按照优化规则进行转换，得到新的等价集合以及对应RelNode的最小代价（RelSubset表示）。之后，通过RelSubset.buildCheapestPlan()获得最小代价的执行计划：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Finds the most efficient expression to implement the query given via</span></span><br><span class="line"><span class="comment">  * &#123;<span class="doctag">@link</span> org.apache.calcite.plan.RelOptPlanner#setRoot(org.apache.calcite.rel.RelNode)&#125;.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> <span class="meta">@Override</span> <span class="keyword">public</span> RelNode <span class="title function_">findBestExp</span><span class="params">()</span> &#123;</span><br><span class="line">   <span class="keyword">assert</span> root != <span class="literal">null</span> : <span class="string">&quot;root must not be null&quot;</span>;</span><br><span class="line">   ensureRootConverters();</span><br><span class="line">   registerMaterializations();</span><br><span class="line">	<span class="comment">// Applies matched rules</span></span><br><span class="line">   ruleDriver.drive();</span><br><span class="line">   <span class="comment">// Dump the plan....</span></span><br><span class="line">   <span class="comment">// Build the cheapest plan</span></span><br><span class="line">   <span class="type">RelNode</span> <span class="variable">cheapest</span> <span class="operator">=</span> root.buildCheapestPlan(<span class="built_in">this</span>);</span><br><span class="line">   <span class="keyword">return</span> cheapest;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>RuleDriver用于根据给定的算法引用优化规则。VolcanoPlanner有两种RuleDriver：</p>
+<ol>
+<li>IterativeRuleDriver：重复执行多次，每条优化规则可能被执行多次。IterativeRuleDriver将会迭代RuleQueue中所有的VolcanoRuleMatch，直到IterativeRuleQueue为空。</li>
+<li>TopDownRuleDriver：以自顶向下地方式应用优化规则，从而保证应用优化规则的顺序。TopDownRuleDriver主要用于对空间进行剪枝，以及优化规则匹配互斥检查等。</li>
+</ol>
+<p>VolcanoPlanner使用配置CalciteSystemProperty.TOPDOWN_OPT来决定使用何种RuleDriver，默认情况下使用IterativeRuleDriver。</p>
+<h4 id="IterativeRuleDriver"><a href="#IterativeRuleDriver" class="headerlink" title="IterativeRuleDriver"></a>IterativeRuleDriver</h4><p>IterativeRuleDriver的driver()的方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">drive</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="type">VolcanoRuleMatch</span> <span class="variable">match</span> <span class="operator">=</span> ruleQueue.popMatch();</span><br><span class="line">    <span class="keyword">if</span> (match == <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">assert</span> match.getRule().matches(match);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      match.onMatch();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (VolcanoTimeoutException e) &#123;</span><br><span class="line">      LOGGER.warn(<span class="string">&quot;Volcano planning times out, cancels the subsequent optimization.&quot;</span>);</span><br><span class="line">      planner.canonize();</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// The root may have been merged with another</span></span><br><span class="line">    <span class="comment">// subset. Find the new root subset.</span></span><br><span class="line">    planner.canonize();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>VolcanoRuleMatch.onMatch()执行实际的RelOptRule.onMatch(RelOptPlanner):</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onMatch</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">assert</span> <span class="title function_">getRule</span><span class="params">()</span>.matches(<span class="built_in">this</span>);</span><br><span class="line">  volcanoPlanner.checkCancel();</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// Check whether this rule is excluded</span></span><br><span class="line">    <span class="keyword">if</span> (volcanoPlanner.isRuleExcluded(getRule())) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (isRuleExcluded()) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; rels.length; i++) &#123;</span><br><span class="line">      <span class="type">RelNode</span> <span class="variable">rel</span> <span class="operator">=</span> rels[i];</span><br><span class="line">      <span class="type">RelSubset</span> <span class="variable">subset</span> <span class="operator">=</span> volcanoPlanner.getSubset(rel);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (subset == <span class="literal">null</span>) &#123;</span><br><span class="line">        LOGGER.debug(</span><br><span class="line">          <span class="string">&quot;Rule [&#123;&#125;] not fired because operand #&#123;&#125; (&#123;&#125;) has no subset&quot;</span>,</span><br><span class="line">          getRule(), i, rel);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> ((subset.set.equivalentSet != <span class="literal">null</span>)</span><br><span class="line">          <span class="comment">// When rename RelNode via VolcanoPlanner#rename(RelNode rel),</span></span><br><span class="line">          <span class="comment">// we may remove rel from its subset: &quot;subset.set.rels.remove(rel)&quot;.</span></span><br><span class="line">          <span class="comment">// Skip rule match when the rel has been removed from set.</span></span><br><span class="line">          || (subset != rel &amp;&amp; !subset.getRelList().contains(rel))) &#123;</span><br><span class="line">        LOGGER.debug(</span><br><span class="line">          <span class="string">&quot;Rule [&#123;&#125;] not fired because operand #&#123;&#125; (&#123;&#125;) belongs to obsolete set&quot;</span>,</span><br><span class="line">          getRule(), i, rel);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (volcanoPlanner.prunedNodes.contains(rel)) &#123;</span><br><span class="line">        LOGGER.debug(<span class="string">&quot;Rule [&#123;&#125;] not fired because operand #&#123;&#125; (&#123;&#125;) has importance=0&quot;</span>,</span><br><span class="line">                     getRule(), i, rel);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Apply the rule</span></span><br><span class="line">    volcanoPlanner.ruleCallStack.push(<span class="built_in">this</span>);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      getRule().onMatch(<span class="built_in">this</span>);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      volcanoPlanner.ruleCallStack.pop();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;Error while applying rule &quot;</span> + getRule()</span><br><span class="line">                               + <span class="string">&quot;, args &quot;</span> + Arrays.toString(rels), e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="TopDownRuleDriver"><a href="#TopDownRuleDriver" class="headerlink" title="TopDownRuleDriver"></a>TopDownRuleDriver</h4><p>TODO</p>
+<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">select a.name</span><br><span class="line">from dept a</span><br><span class="line">left join dept b on b.deptno &gt; 10</span><br><span class="line">right join dept c on b.deptno &gt; 10</span><br><span class="line">LogicalProject(NAME=[$1])</span><br><span class="line">  LogicalJoin(condition=[$4], joinType=[right])</span><br><span class="line">    LogicalProject(DEPTNO=[$0], NAME=[$1], DEPTNO0=[$2], NAME0=[$3], $f4=[&gt;($2, 10)])</span><br><span class="line">      LogicalJoin(condition=[$4], joinType=[left])</span><br><span class="line">        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])</span><br><span class="line">        LogicalProject(DEPTNO=[$0], NAME=[$1], $f2=[&gt;($0, 10)])</span><br><span class="line">          LogicalTableScan(table=[[CATALOG, SALES, DEPT]])</span><br><span class="line">    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])</span><br><span class="line"></span><br><span class="line">&quot;select r.ename, s.sal from\n&quot;</span><br><span class="line">        + &quot;sales.emp r join sales.bonus s\n&quot;</span><br><span class="line">        + &quot;on r.ename=s.ename where r.sal+1=s.sal</span><br><span class="line">LogicalProject(ENAME=[$1], SAL=[$11])</span><br><span class="line">  LogicalFilter(subset=[rel#18:RelSubset#3.NONE.[]], condition=[=(+($5, 1), $11)])</span><br><span class="line">    LogicalJoin(subset=[rel#16:RelSubset#2.NONE.[]], condition=[=($1, $9)], joinType=[inner])</span><br><span class="line">      LogicalTableScan(subset=[rel#13:RelSubset#0.NONE.[]], table=[[CATALOG, SALES, EMP]])</span><br><span class="line">      LogicalTableScan(subset=[rel#14:RelSubset#1.NONE.[]], table=[[CATALOG, SALES, BONUS]])</span><br><span class="line">      </span><br><span class="line">EnumerableProject(ENAME=[$5], SAL=[$2])</span><br><span class="line">  EnumerableHashJoin(subset=[rel#94:RelSubset#8.ENUMERABLE.[]], condition=[AND(=($0, $5), =(+($9, 1), $2))], joinType=[inner])</span><br><span class="line">    EnumerableTableScan(subset=[rel#26:RelSubset#1.ENUMERABLE.[]], table=[[CATALOG, SALES, BONUS]])</span><br><span class="line">    EnumerableTableScan(subset=[rel#24:RelSubset#0.ENUMERABLE.[]], table=[[CATALOG, SALES, EMP]])</span><br><span class="line"></span><br><span class="line">        </span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://calcite.apache.org/javadocAggregate/org/apache/calcite/plan/volcano/package-summary.html">https://calcite.apache.org/javadocAggregate/org/apache/calcite/plan/volcano/package-summary.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://sfu-db.github.io/dbsystems/Lectures/VolcanoOptimizer.pdf">https://sfu-db.github.io/dbsystems/Lectures/VolcanoOptimizer.pdf</a></li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/12/23/Hudi/" title= "Hudi Overview">
+                    <div class="nextTitle">Hudi Overview</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/12/01/Calcite-Calcite-Planner/" title= "Calcite Planner">
+                    <div class="prevTitle">Calcite Planner</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2021/12/03/Calcite-Calcite-VolcanoPlanner/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Calcite Volcano Planner"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">1.</span> <span class="toc-text">基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RelSet"><span class="toc-number">1.1.</span> <span class="toc-text">RelSet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RelSubset"><span class="toc-number">1.2.</span> <span class="toc-text">RelSubset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VolcanoRuleMatch"><span class="toc-number">1.3.</span> <span class="toc-text">VolcanoRuleMatch</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">数据结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B"><span class="toc-number">3.</span> <span class="toc-text">流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E4%BD%93"><span class="toc-number">3.1.</span> <span class="toc-text">总体</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E8%A7%84%E5%88%99%E7%9A%84%E8%A7%A6%E5%8F%91%E8%BF%87%E7%A8%8B"><span class="toc-number">3.1.1.</span> <span class="toc-text">优化规则的触发过程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.2.</span> <span class="toc-text">实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addRule"><span class="toc-number">3.3.</span> <span class="toc-text">addRule()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setRoot"><span class="toc-number">3.4.</span> <span class="toc-text">setRoot()</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#fireRules"><span class="toc-number">3.4.1.</span> <span class="toc-text">fireRules()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#findBestExp"><span class="toc-number">3.5.</span> <span class="toc-text">findBestExp()</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#IterativeRuleDriver"><span class="toc-number">3.5.1.</span> <span class="toc-text">IterativeRuleDriver</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#TopDownRuleDriver"><span class="toc-number">3.5.2.</span> <span class="toc-text">TopDownRuleDriver</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Example"><span class="toc-number">4.</span> <span class="toc-text">Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number">5.</span> <span class="toc-text">Ref</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

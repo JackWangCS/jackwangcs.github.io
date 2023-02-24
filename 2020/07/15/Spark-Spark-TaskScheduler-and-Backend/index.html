@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Spark TaskScheduler and Backend · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Spark TaskScheduler and Backend</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Spark TaskScheduler and Backend
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Runtime">Runtime</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Spark">Spark</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Scheduler">Scheduler</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.6k</span>Reading time: <span class="post-count reading-time">23 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/07/15</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="TaskScheduler"><a href="#TaskScheduler" class="headerlink" title="TaskScheduler"></a>TaskScheduler</h2><p>TaskScheduler接口定义了调度任务的接口，TaskScheduler负责调度和执行来自DAGScheduler的任务，能够自动地对失败的任务进行重试，对straggle任务进行迁移。TaskScheduler会将各种任务调度事件返回给DAGScheduler，从而使得DAGScheduler知道各个任务运行的进度和结果。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">trait</span> <span class="title">TaskScheduler</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">rootPool</span></span>: <span class="type">Pool</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">schedulingMode</span></span>: <span class="type">SchedulingMode</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">start</span></span>(): <span class="type">Unit</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">stop</span></span>(): <span class="type">Unit</span></span><br><span class="line">  <span class="comment">// Invoked after system has successfully initialized (typically in spark context). Yarn uses this to bootstrap allocation of resources based on preferred locations,</span></span><br><span class="line">  <span class="comment">// wait for slave registrations, etc.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">postStartHook</span></span>(): <span class="type">Unit</span> = &#123; &#125;</span><br><span class="line">  <span class="comment">// Submit a sequence of tasks to run.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">submitTasks</span></span>(taskSet: <span class="type">TaskSet</span>): <span class="type">Unit</span></span><br><span class="line">  <span class="comment">// Kill all the tasks in a stage and fail the stage and all the jobs that depend on the stage. Throw UnsupportedOperationException if the backend doesn&#x27;t support kill tasks.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">cancelTasks</span></span>(stageId: <span class="type">Int</span>, interruptThread: <span class="type">Boolean</span>): <span class="type">Unit</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">applicationId</span></span>(): <span class="type">String</span> = appId</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">applicationAttemptId</span></span>(): <span class="type">Option</span>[<span class="type">String</span>]</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">killTaskAttempt</span></span>(taskId: <span class="type">Long</span>, interruptThread: <span class="type">Boolean</span>, reason: <span class="type">String</span>): <span class="type">Boolean</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">killAllTaskAttempts</span></span>(stageId: <span class="type">Int</span>, interruptThread: <span class="type">Boolean</span>, reason: <span class="type">String</span>): <span class="type">Unit</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Notify the corresponding `TaskSetManager`s of the stage, that a partition has already completed and they can skip running tasks for it.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">notifyPartitionCompletion</span></span>(stageId: <span class="type">Int</span>, partitionId: <span class="type">Int</span>): <span class="type">Unit</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// Set the DAG scheduler for upcalls. This is guaranteed to be set before submitTasks is called.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">setDAGScheduler</span></span>(dagScheduler: <span class="type">DAGScheduler</span>): <span class="type">Unit</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">// Executor related.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">executorHeartbeatReceived</span></span>(</span><br><span class="line">      execId: <span class="type">String</span>,</span><br><span class="line">      accumUpdates: <span class="type">Array</span>[(<span class="type">Long</span>, <span class="type">Seq</span>[<span class="type">AccumulatorV2</span>[_, _]])],</span><br><span class="line">      blockManagerId: <span class="type">BlockManagerId</span>,</span><br><span class="line">      executorUpdates: <span class="type">Map</span>[(<span class="type">Int</span>, <span class="type">Int</span>), <span class="type">ExecutorMetrics</span>]): <span class="type">Boolean</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">executorLost</span></span>(executorId: <span class="type">String</span>, reason: <span class="type">ExecutorLossReason</span>): <span class="type">Unit</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">workerRemoved</span></span>(workerId: <span class="type">String</span>, host: <span class="type">String</span>, message: <span class="type">String</span>): <span class="type">Unit</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>Spark提供的TaskScheduler实现为TaskSchedulerImpl。</p>
+<h2 id="TaskSchedulerImpl"><a href="#TaskSchedulerImpl" class="headerlink" title="TaskSchedulerImpl"></a>TaskSchedulerImpl</h2><p>TaskSchedulerImpl通过不同的SchedulerBackend来支持多种集群的任务调度，TaskSchedulerImpl处理了任务调度的常用逻辑，能够决定了不同任务的运行顺序以及在何时启动推测执行等。</p>
+<p>核心的数据结构包括：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> speculationScheduler =</span><br><span class="line"><span class="type">ThreadUtils</span>.newDaemonSingleThreadScheduledExecutor(<span class="string">&quot;task-scheduler-speculation&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// StageId-&gt;(StageAttemptId, TaskSet), record task sets of a given stage attempt</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> taskSetsByStageIdAndAttempt = <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">Int</span>, <span class="type">HashMap</span>[<span class="type">Int</span>, <span class="type">TaskSetManager</span>]]</span><br><span class="line"></span><br><span class="line"><span class="comment">// TaskId -&gt; ExecutorId, used by SchedulerBackend</span></span><br><span class="line"><span class="keyword">val</span> taskIdToExecutorId = <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">Long</span>, <span class="type">String</span>]</span><br><span class="line"><span class="comment">// IDs of the tasks running on each executor</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> executorIdToRunningTaskIds = <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">String</span>, <span class="type">HashSet</span>[<span class="type">Long</span>]]</span><br><span class="line"></span><br><span class="line"><span class="comment">// Used to detect starvation</span></span><br><span class="line"><span class="meta">@volatile</span> <span class="keyword">private</span> <span class="keyword">var</span> hasReceivedTask = <span class="literal">false</span></span><br><span class="line"><span class="meta">@volatile</span> <span class="keyword">private</span> <span class="keyword">var</span> hasLaunchedTask = <span class="literal">false</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> starvationTimer = <span class="keyword">new</span> <span class="type">Timer</span>(<span class="literal">true</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> dagScheduler: <span class="type">DAGScheduler</span> = <span class="literal">null</span></span><br><span class="line"><span class="comment">// Sheduling</span></span><br><span class="line"><span class="keyword">var</span> backend: <span class="type">SchedulerBackend</span> = <span class="literal">null</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> schedulableBuilder: <span class="type">SchedulableBuilder</span> = <span class="literal">null</span></span><br><span class="line"><span class="keyword">val</span> rootPool: <span class="type">Pool</span> = <span class="keyword">new</span> <span class="type">Pool</span>(<span class="string">&quot;&quot;</span>, schedulingMode, <span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// MapOutputTracker and TaskResultGetter</span></span><br><span class="line"><span class="keyword">val</span> mapOutputTracker = <span class="type">SparkEnv</span>.get.mapOutputTracker.asInstanceOf[<span class="type">MapOutputTrackerMaster</span>]</span><br><span class="line"><span class="keyword">private</span>[spark] <span class="keyword">var</span> taskResultGetter = <span class="keyword">new</span> <span class="type">TaskResultGetter</span>(sc.env, <span class="keyword">this</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Barriers</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">lazy</span> <span class="keyword">val</span> barrierSyncTimeout = conf.get(config.<span class="type">BARRIER_SYNC_TIMEOUT</span>)</span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="keyword">var</span> barrierCoordinator: <span class="type">RpcEndpoint</span> = <span class="literal">null</span></span><br></pre></td></tr></table></figure>
+
+<p>TaskSchedulerImpl支持<strong>三种子队列</strong>调度模式，由SchedulingMode定义：</p>
+<ul>
+<li>FIFO</li>
+<li>FAIR</li>
+<li>NONE</li>
+</ul>
+<p>在初始化时，TaskSchedulerImpl需要传入一个SchedulerBackend，并根据不同的调度模式，会通过SchedulerBuilder构建对应的树形队列。结果通过rootPool来引用：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.backend = backend</span><br><span class="line">schedulableBuilder = &#123;</span><br><span class="line">  schedulingMode <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">SchedulingMode</span>.<span class="type">FIFO</span> =&gt;</span><br><span class="line">    	<span class="keyword">new</span> <span class="type">FIFOSchedulableBuilder</span>(rootPool)</span><br><span class="line">    <span class="keyword">case</span> <span class="type">SchedulingMode</span>.<span class="type">FAIR</span> =&gt;</span><br><span class="line">    	<span class="keyword">new</span> <span class="type">FairSchedulableBuilder</span>(rootPool, conf)</span><br><span class="line">    <span class="keyword">case</span> _ =&gt;</span><br><span class="line">    	<span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">s&quot;Unsupported <span class="subst">$SCHEDULER_MODE_PROPERTY</span>: &quot;</span> + <span class="string">s&quot;<span class="subst">$schedulingMode</span>&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">schedulableBuilder.buildPools()</span><br></pre></td></tr></table></figure>
+
+<p>在启动TaskSchedulerImpl时，会判断<code>spark.speculation</code>是否开启，如果开启会启动后台的推测执行线程，周期性（周期由<code>spark.speculation.interval</code>指定）地的检查是否有需要推测执行的任务：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!isLocal &amp;&amp; conf.get(<span class="type">SPECULATION_ENABLED</span>)) &#123;</span><br><span class="line">  logInfo(<span class="string">&quot;Starting speculative execution thread&quot;</span>)</span><br><span class="line">  speculationScheduler.scheduleWithFixedDelay(</span><br><span class="line">    () =&gt; <span class="type">Utils</span>.tryOrStopSparkContext(sc) &#123; checkSpeculatableTasks() &#125;,</span><br><span class="line">    <span class="type">SPECULATION_INTERVAL_MS</span>, <span class="type">SPECULATION_INTERVAL_MS</span>, <span class="type">TimeUnit</span>.<span class="type">MILLISECONDS</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="任务提交"><a href="#任务提交" class="headerlink" title="任务提交"></a>任务提交</h3><p>任务以TaskSet的形式进行提交，TaskSet包含一组任务，由对应的stageId和stageAttemptId标识：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">TaskSet</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    val tasks: <span class="type">Array</span>[<span class="type">Task</span>[_]],</span></span></span><br><span class="line"><span class="params"><span class="class">    val stageId: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val stageAttemptId: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val priority: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val properties: <span class="type">Properties</span></span>) </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>值得注意的是，每一个Stage只能有一个active的TaskSet正在运行。</p>
+<p>在提交TaskSet时，会创建对应的TaskSetManager。<strong>TaskSet的任务运行和状态（成功&#x2F;失败）由TaskSetManager管理</strong>，并且TaskSetManager会自动重试失败的任务，在调度时考虑TaskSet的本地化（locality-aware）并实现了延迟调度策略。</p>
+<p>之后，会将TaskSetManager添加到SchedulerBuilder里面，并启动starvationTimer来对检测TaskSet是否饥饿。最后会通知SchedulerBackend有新的任务提交了。</p>
+<p>整个过程如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">submitTasks</span></span>(taskSet: <span class="type">TaskSet</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> tasks = taskSet.tasks</span><br><span class="line">  <span class="keyword">this</span>.synchronized &#123;</span><br><span class="line">    <span class="keyword">val</span> manager = createTaskSetManager(taskSet, maxTaskFailures)</span><br><span class="line">    <span class="keyword">val</span> stage = taskSet.stageId</span><br><span class="line">    <span class="keyword">val</span> stageTaskSets =</span><br><span class="line">    taskSetsByStageIdAndAttempt.getOrElseUpdate(stage, <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">Int</span>, <span class="type">TaskSetManager</span>])</span><br><span class="line">    <span class="comment">// Mark all the existing TaskSetManagers of this stage as zombie, as we are adding a new one. As a stage can&#x27;t have more than one active task set managers.</span></span><br><span class="line">    stageTaskSets.foreach &#123; <span class="keyword">case</span> (_, ts) =&gt;</span><br><span class="line">      ts.isZombie = <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    stageTaskSets(taskSet.stageAttemptId) = manager</span><br><span class="line">    <span class="comment">// Add TaskSetManager as a sub queue in the rootPool</span></span><br><span class="line">    schedulableBuilder.addTaskSetManager(manager, manager.taskSet.properties)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!isLocal &amp;&amp; !hasReceivedTask) &#123;</span><br><span class="line">      starvationTimer.scheduleAtFixedRate(<span class="keyword">new</span> <span class="type">TimerTask</span>() &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">run</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">          <span class="keyword">if</span> (!hasLaunchedTask) &#123;</span><br><span class="line">            logWarning(<span class="string">&quot;Initial job has not accepted any resources; check your cluster UI to ensure that workers are registered and have sufficient resources&quot;</span>)</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.cancel()</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;, <span class="type">STARVATION_TIMEOUT_MS</span>, <span class="type">STARVATION_TIMEOUT_MS</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    hasReceivedTask = <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Notify the SchedulerBackend that new tasks are arriving.</span></span><br><span class="line">  backend.reviveOffers()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="资源调度和分配"><a href="#资源调度和分配" class="headerlink" title="资源调度和分配"></a>资源调度和分配</h3><p>当有可用的Executor时，SchedulerBackend调用TaskSchedulerImpl的<code>resourceOffers(offers)</code>进行资源调度和分配。可用的Executor通过WorkerOffer进行封装：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">WorkerOffer</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">  executorId: <span class="type">String</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">  host: <span class="type">String</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">  cores: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">  // `address` is an optional used when multiple executors are launched on the same host.</span></span></span><br><span class="line"><span class="params"><span class="class">  address: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">  resources: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Buffer</span>[<span class="type">String</span>]] = <span class="type">Map</span>.empty</span>)</span></span><br></pre></td></tr></table></figure>
+
+<p><code>resourceOffers()</code>主要的步骤为：</p>
+<ol>
+<li><p>记录host和executor的关系，并判断是否有新的Executor加入（newExecAvail），<strong>更新Locality统计信息</strong>。</p>
+</li>
+<li><p>清除BlacklistTracker中超时的Executor和Node，并对offers进行blacklist过滤：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">blacklistTrackerOpt.foreach(_.applyBlacklistTimeout())</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> filteredOffers = blacklistTrackerOpt.map &#123; blacklistTracker =&gt;</span><br><span class="line">  offers.filter &#123; offer =&gt;</span><br><span class="line">    !blacklistTracker.isNodeBlacklisted(offer.host) &amp;&amp;</span><br><span class="line">    !blacklistTracker.isExecutorBlacklisted(offer.executorId)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;.getOrElse(offers)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>按照SchedulingAlgorithm对所有的TaskSetManager进行排序：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> shuffledOffers = shuffleOffers(filteredOffers)</span><br><span class="line"><span class="comment">// Build a list of tasks to assign to each worker.</span></span><br><span class="line"><span class="keyword">val</span> tasks = shuffledOffers.map(o =&gt; <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">TaskDescription</span>](o.cores / <span class="type">CPUS_PER_TASK</span>))</span><br><span class="line">...</span><br><span class="line"><span class="keyword">val</span> sortedTaskSets = rootPool.getSortedTaskSetQueue</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>getSortedTaskSetQueue()</code>则是按照SchedulingAlgorithm进行排序：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">getSortedTaskSetQueue</span></span>: <span class="type">ArrayBuffer</span>[<span class="type">TaskSetManager</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> sortedTaskSetQueue = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">TaskSetManager</span>]</span><br><span class="line">  <span class="keyword">val</span> sortedSchedulableQueue schedulableQueue.asScala.toSeq.sortWith(taskSetSchedulingAlgorithm.comparator)</span><br><span class="line">  <span class="keyword">for</span> (schedulable &lt;- sortedSchedulableQueue) &#123;</span><br><span class="line">    sortedTaskSetQueue ++= schedulable.getSortedTaskSetQueue</span><br><span class="line">  &#125;</span><br><span class="line">  sortedTaskSetQueue</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果有新的Executor加入，那么会触发所有的TaskSetManager重新计算Locality：</p>
+</li>
+</ol>
+  <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (taskSet &lt;- sortedTaskSets) &#123;</span><br><span class="line">  <span class="keyword">if</span> (newExecAvail) &#123;</span><br><span class="line">    taskSet.executorAdded()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  <code>executorAdded()</code>会根据<code>recomputeLocality()</code>重新计算TaskSetManager中的pendingTasks的Locality，保存到currentLocalityIndex中：</p>
+  <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">recomputeLocality</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> previousLocalityLevel = myLocalityLevels(currentLocalityIndex)</span><br><span class="line">  myLocalityLevels = computeValidLocalityLevels()</span><br><span class="line">  localityWaits = myLocalityLevels.map(getLocalityWait)</span><br><span class="line">  currentLocalityIndex = getLocalityIndex(previousLocalityLevel)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  <code>computeValidLocalityLevels()</code>则是遍历TaskSetManager中pendingTasks，按照PROCESS_LOCAL, NODE_LOCAL, NO_PREF, RACK_LOCAL, ANY的顺序依次查找可用的资源。</p>
+  <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">computeValidLocalityLevels</span></span>(): <span class="type">Array</span>[<span class="type">TaskLocality</span>.<span class="type">TaskLocality</span>] = &#123;</span><br><span class="line">    <span class="keyword">import</span> <span class="type">TaskLocality</span>.&#123;<span class="type">PROCESS_LOCAL</span>, <span class="type">NODE_LOCAL</span>, <span class="type">NO_PREF</span>, <span class="type">RACK_LOCAL</span>, <span class="type">ANY</span>&#125;</span><br><span class="line">    <span class="keyword">val</span> levels = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">TaskLocality</span>.<span class="type">TaskLocality</span>]</span><br><span class="line">    <span class="keyword">if</span> (!pendingTasks.forExecutor.isEmpty &amp;&amp; pendingTasks.forExecutor.keySet.exists(sched.isExecutorAlive(_))) &#123;</span><br><span class="line">      levels += <span class="type">PROCESS_LOCAL</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!pendingTasks.forHost.isEmpty &amp;&amp; pendingTasks.forHost.keySet.exists(sched.hasExecutorsAliveOnHost(_))) &#123;</span><br><span class="line">      levels += <span class="type">NODE_LOCAL</span></span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    levels += <span class="type">ANY</span></span><br><span class="line">    levels.toArray</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li><p>针对排序后的TaskSet进行资源分配。根据总的可用的CPU数量可以估算出总的可用的Slots：<code>val availableSlots = availableCpus.map(c =&gt; c / CPUS_PER_TASK).sum</code>。</p>
+<p>针对Barrier类型的TaskSet，需要一次性申请到满足所有TaskSet中所有任务同时运行的资源，如果没有则会轮到下一个TaskSet。</p>
+<p>之后，会按照Task的Locality顺序依次为pendingTask尝试分配Executor：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (currentMaxLocality &lt;- taskSet.myLocalityLevels) &#123;</span><br><span class="line">  <span class="keyword">var</span> launchedTaskAtCurrentMaxLocality = <span class="literal">false</span></span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    launchedTaskAtCurrentMaxLocality = resourceOfferSingleTaskSet(taskSet, currentMaxLocality, shuffledOffers, availableCpus, availableResources, tasks, addressesWithDescs)</span><br><span class="line">    launchedAnyTask |= launchedTaskAtCurrentMaxLocality</span><br><span class="line">  &#125; <span class="keyword">while</span> (launchedTaskAtCurrentMaxLocality)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>resourceOfferSingleTaskSet()</code>尝试在TaskSet寻找满足TaskLocality (需要小于等于currentMaxLocality)的Task进行分配：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i &lt;- <span class="number">0</span> until shuffledOffers.size) &#123;</span><br><span class="line">  <span class="keyword">if</span> (availableCpus(i) &gt;= <span class="type">CPUS_PER_TASK</span> &amp;&amp; resourcesMeetTaskRequirements(availableResources(i))) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">for</span> (task &lt;- taskSet.resourceOffer(execId, host, maxLocality, availableResources(i))) &#123;</span><br><span class="line">        tasks(i) += task</span><br><span class="line">        <span class="keyword">val</span> tid = task.taskId</span><br><span class="line">        ...</span><br><span class="line">        availableCpus(i) -= <span class="type">CPUS_PER_TASK</span></span><br><span class="line">        assert(availableCpus(i) &gt;= <span class="number">0</span>)</span><br><span class="line">        task.resources.foreach &#123; <span class="keyword">case</span> (rName, rInfo) =&gt;</span><br><span class="line">          availableResources(i).getOrElse(rName,</span><br><span class="line">                                          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">SparkException</span>(<span class="string">s&quot;Try to acquire resource <span class="subst">$rName</span> that doesn&#x27;t exist.&quot;</span>))</span><br><span class="line">          .remove(<span class="number">0</span>, rInfo.addresses.size)</span><br><span class="line">        &#125;</span><br><span class="line">        launchedTask = <span class="literal">true</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="延迟调度"><a href="#延迟调度" class="headerlink" title="延迟调度"></a>延迟调度</h4><p>在TaskSetManager中，会根据不同的Locality选择一个任务去分配：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">resourceOffer</span></span>(...)</span><br><span class="line">: <span class="type">Option</span>[<span class="type">TaskDescription</span>] =</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// Check the blacklist</span></span><br><span class="line">  <span class="keyword">val</span> offerBlacklisted = taskSetBlacklistHelperOpt.exists &#123; blacklist =&gt;</span><br><span class="line">    blacklist.isNodeBlacklistedForTaskSet(host) ||</span><br><span class="line">    blacklist.isExecutorBlacklistedForTaskSet(execId)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!isZombie &amp;&amp; !offerBlacklisted) &#123;</span><br><span class="line">		<span class="comment">// If NO_PREF is not specified, try to find a largest locality &lt;= maxLocality</span></span><br><span class="line">    <span class="keyword">var</span> allowedLocality = maxLocality</span><br><span class="line">    <span class="keyword">if</span> (maxLocality != <span class="type">TaskLocality</span>.<span class="type">NO_PREF</span>) &#123;</span><br><span class="line">      allowedLocality = getAllowedLocalityLevel(curTime)</span><br><span class="line">      <span class="keyword">if</span> (allowedLocality &gt; maxLocality) &#123;</span><br><span class="line">        <span class="comment">// We&#x27;re not allowed to search for farther-away tasks</span></span><br><span class="line">        allowedLocality = maxLocality</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    dequeueTask(execId, host, allowedLocality).map &#123; <span class="keyword">case</span> ((index, taskLocality, speculative)) =&gt;</span><br><span class="line">      <span class="comment">// Found a task; do some bookkeeping and return a task description</span></span><br><span class="line">      <span class="keyword">val</span> task = tasks(index)</span><br><span class="line">      <span class="keyword">val</span> taskId = sched.newTaskId()</span><br><span class="line">      <span class="comment">// Do various bookkeeping</span></span><br><span class="line">      copiesRunning(index) += <span class="number">1</span></span><br><span class="line">      ...</span><br><span class="line">      <span class="keyword">val</span> info = <span class="keyword">new</span> <span class="type">TaskInfo</span>(taskId, index, attemptNum, curTime,</span><br><span class="line">                              execId, host, taskLocality, speculative)</span><br><span class="line">      <span class="comment">// Update our locality level for delay scheduling</span></span><br><span class="line">      <span class="comment">// NO_PREF will not affect the variables related to delay scheduling</span></span><br><span class="line">      <span class="keyword">if</span> (maxLocality != <span class="type">TaskLocality</span>.<span class="type">NO_PREF</span>) &#123;</span><br><span class="line">        currentLocalityIndex = getLocalityIndex(taskLocality)</span><br><span class="line">        lastLaunchTime = curTime</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// Serialize and return the task</span></span><br><span class="line">      <span class="keyword">val</span> serializedTask: <span class="type">ByteBuffer</span> = <span class="keyword">try</span> &#123;</span><br><span class="line">        ser.serialize(task)</span><br><span class="line">      &#125; <span class="keyword">catch</span> &#123;&#125;</span><br><span class="line">      ....</span><br><span class="line">      addRunningTask(taskId)</span><br><span class="line">			<span class="comment">// Notify the DAGScheduler</span></span><br><span class="line">      sched.dagScheduler.taskStarted(task, info)</span><br><span class="line">      <span class="comment">// Return a task description</span></span><br><span class="line">      <span class="keyword">new</span> <span class="type">TaskDescription</span>(</span><br><span class="line">        taskId,</span><br><span class="line">        attemptNum,</span><br><span class="line">        execId,</span><br><span class="line">        taskName,</span><br><span class="line">        index,</span><br><span class="line">        task.partitionId,</span><br><span class="line">        addedFiles,</span><br><span class="line">        addedJars,</span><br><span class="line">        task.localProperties,</span><br><span class="line">        extraResources,</span><br><span class="line">        serializedTask)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="type">None</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>getAllowedLocalityLevel()</code>中，会尽量寻找Locality最高的任务去分配。当前的Locality级别保存在currentLocalityIndex中：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Delay scheduling variables: we keep track of our current locality level and the time we</span></span><br><span class="line">  <span class="comment">// last launched a task at that level, and move up a level when localityWaits[curLevel] expires.</span></span><br><span class="line">  <span class="comment">// We then move down if we manage to launch a &quot;more local&quot; task.</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> currentLocalityIndex = <span class="number">0</span> <span class="comment">// Index of our current locality level in validLocalityLevels</span></span><br></pre></td></tr></table></figure>
+
+<p>上文中，在每次添加Executor时，都会重新计算currentLocalityIndex的值。但是在一次调度中，currentLocalityIndex只能增加，不能减少。需要注意的是currentLocalityIndex越大，Locality越低。</p>
+<p>在<code>getAllowedLocalityLevel()</code>中实现了一个延迟调度策略：当一个任务以X Locality启动，但是该Locality对应的所有节点都没有空闲资源而启动失败，此时并不会马上增加Locality启动而是在某个时间长度内再次以X来启动该任务，若超过限时时间则降级启动。各个级别的等待时间由<code>spark.locality.wait.process</code>，<code>spark.locality.wait.node</code>和<code>spark.locality.wait.rack</code>确定。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">getAllowedLocalityLevel</span></span>(curTime: <span class="type">Long</span>): <span class="type">TaskLocality</span>.<span class="type">TaskLocality</span> = &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="comment">// Walk through the list of tasks that can be scheduled at each location and returns true</span></span><br><span class="line">  <span class="comment">// if there are any tasks that still need to be scheduled. Lazily cleans up tasks that have already been scheduled.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">moreTasksToRunIn</span></span>(pendingTasks: <span class="type">HashMap</span>[<span class="type">String</span>, <span class="type">ArrayBuffer</span>[<span class="type">Int</span>]]): <span class="type">Boolean</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> emptyKeys = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">String</span>]</span><br><span class="line">    <span class="keyword">val</span> hasTasks = pendingTasks.exists &#123;</span><br><span class="line">      <span class="keyword">case</span> (id: <span class="type">String</span>, tasks: <span class="type">ArrayBuffer</span>[<span class="type">Int</span>]) =&gt;</span><br><span class="line">      <span class="keyword">if</span> (tasksNeedToBeScheduledFrom(tasks)) &#123;</span><br><span class="line">        <span class="literal">true</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        emptyKeys += id</span><br><span class="line">        <span class="literal">false</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// The key could be executorId, host or rackId</span></span><br><span class="line">    emptyKeys.foreach(id =&gt; pendingTasks.remove(id))</span><br><span class="line">    hasTasks</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (currentLocalityIndex &lt; myLocalityLevels.length - <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">val</span> moreTasks = myLocalityLevels(currentLocalityIndex) <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">TaskLocality</span>.<span class="type">PROCESS_LOCAL</span> =&gt; moreTasksToRunIn(pendingTasks.forExecutor)</span><br><span class="line">      <span class="keyword">case</span> <span class="type">TaskLocality</span>.<span class="type">NODE_LOCAL</span> =&gt; moreTasksToRunIn(pendingTasks.forHost)</span><br><span class="line">      <span class="keyword">case</span> <span class="type">TaskLocality</span>.<span class="type">NO_PREF</span> =&gt; pendingTasks.noPrefs.nonEmpty</span><br><span class="line">      <span class="keyword">case</span> <span class="type">TaskLocality</span>.<span class="type">RACK_LOCAL</span> =&gt; moreTasksToRunIn(pendingTasks.forRack)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!moreTasks) &#123;</span><br><span class="line">      <span class="comment">// This is a performance optimization: if there are no more tasks that can be scheduled at a particular locality level, there is no point in waiting for the locality wait timeout (SPARK-4939).</span></span><br><span class="line">      lastLaunchTime = curTime</span><br><span class="line">      currentLocalityIndex += <span class="number">1</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (curTime - lastLaunchTime &gt;= localityWaits(currentLocalityIndex)) &#123;</span><br><span class="line">      <span class="comment">// Since we have alread waited a long time more than `spark.locality.wait.&lt;&gt;`</span></span><br><span class="line">      <span class="comment">// Jump to the next locality level, and reset lastLaunchTime so that the next locality wait timer doesn&#x27;t immediately expire</span></span><br><span class="line">      lastLaunchTime += localityWaits(currentLocalityIndex)</span><br><span class="line">      currentLocalityIndex += <span class="number">1</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> myLocalityLevels(currentLocalityIndex)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  myLocalityLevels(currentLocalityIndex)</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>在获得allowedLocality后，<code>dequeueTask()</code>会尝试按照从最高的Locality直到allowedLocality来分配任务。&#96;&#96;dequeueTask()&#96;会优先尝试给非speculative的任务分配，之后再给speculative任务分配：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Tries to schedule a regular task first; if it returns None, then schedules</span></span><br><span class="line"><span class="comment">// a speculative task</span></span><br><span class="line">dequeueTaskHelper(execId, host, maxLocality, <span class="literal">false</span>).orElse(</span><br><span class="line">dequeueTaskHelper(execId, host, maxLocality, <span class="literal">true</span>))</span><br></pre></td></tr></table></figure>
+
+<p><code>dequeueTaskHelper()</code>会从PROCESS_LOCAL开始进行尝试：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Dequeue task which has an attempt on the given host. Also, dequeueTaskFromList will check the blacklist of executor and node.</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dequeue</span></span>(list: <span class="type">ArrayBuffer</span>[<span class="type">Int</span>]): <span class="type">Option</span>[<span class="type">Int</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> task = dequeueTaskFromList(execId, host, list, speculative)</span><br><span class="line">  <span class="keyword">if</span> (speculative &amp;&amp; task.isDefined) &#123;</span><br><span class="line">    speculatableTasks -= task.get</span><br><span class="line">  &#125;</span><br><span class="line">  task</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dequeue(pendingTaskSetToUse.forExecutor.getOrElse(execId, <span class="type">ArrayBuffer</span>())).foreach &#123; index =&gt;</span><br><span class="line">  <span class="keyword">return</span> <span class="type">Some</span>((index, <span class="type">TaskLocality</span>.<span class="type">PROCESS_LOCAL</span>, speculative))</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (<span class="type">TaskLocality</span>.isAllowed(maxLocality, <span class="type">TaskLocality</span>.<span class="type">NODE_LOCAL</span>)) &#123;</span><br><span class="line">  dequeue(pendingTaskSetToUse.forHost.getOrElse(host, <span class="type">ArrayBuffer</span>())).foreach &#123; index =&gt;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Some</span>((index, <span class="type">TaskLocality</span>.<span class="type">NODE_LOCAL</span>, speculative))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="失败任务处理和任务取消"><a href="#失败任务处理和任务取消" class="headerlink" title="失败任务处理和任务取消"></a>失败任务处理和任务取消</h3><p>用户可以通过<code>cancelTasks()</code>来取消一个Stage的所有任务，或者<code>killTaskAttempt()</code>来取消单个任务。步骤都是首先通过TaskId获得对应的ExecutorId，然后利用SchedulerBackend的<code>killTask()</code>杀掉对应的正在运行的任务实例：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">killAllTaskAttempts</span></span>(</span><br><span class="line">  stageId: <span class="type">Int</span>,</span><br><span class="line">  interruptThread: <span class="type">Boolean</span>,</span><br><span class="line">  reason: <span class="type">String</span>): <span class="type">Unit</span> = synchronized &#123;</span><br><span class="line">  taskSetsByStageIdAndAttempt.get(stageId).foreach &#123; attempts =&gt;</span><br><span class="line">    attempts.foreach &#123; <span class="keyword">case</span> (_, tsm) =&gt;</span><br><span class="line">      <span class="comment">// Only need to kill running task</span></span><br><span class="line">      tsm.runningTasksSet.foreach &#123; tid =&gt;</span><br><span class="line">        taskIdToExecutorId.get(tid).foreach &#123; execId =&gt;</span><br><span class="line">          backend.killTask(tid, execId, interruptThread, reason)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="任务状态更新和完成"><a href="#任务状态更新和完成" class="headerlink" title="任务状态更新和完成"></a>任务状态更新和完成</h3><p>SchedulerBackend通过<code>statusUpdate()</code>对运行中的任务状态进行更新：</p>
+<ul>
+<li>任务丢失，清除executorIdToRunningTaskIds等数据结构，并更新BlacklistTracker</li>
+<li>任务完成，根据是否失败或成功，将执行结果添加到TaskResultGetter的对应队列中。</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">statusUpdate</span></span>(tid: <span class="type">Long</span>, state: <span class="type">TaskState</span>, serializedData: <span class="type">ByteBuffer</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">var</span> failedExecutor: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span></span><br><span class="line">  <span class="keyword">var</span> reason: <span class="type">Option</span>[<span class="type">ExecutorLossReason</span>] = <span class="type">None</span></span><br><span class="line">  synchronized &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">// Get the TaskSetManager of the task</span></span><br><span class="line">      <span class="type">Option</span>(taskIdToTaskSetManager.get(tid)) <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Some</span>(taskSet) =&gt;</span><br><span class="line">        <span class="keyword">if</span> (state == <span class="type">TaskState</span>.<span class="type">LOST</span>) &#123;</span><br><span class="line">          <span class="keyword">val</span> execId = taskIdToExecutorId.getOrElse(tid, <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalStateException</span>())</span><br><span class="line">          <span class="keyword">if</span> (executorIdToRunningTaskIds.contains(execId)) &#123;</span><br><span class="line">            reason = <span class="type">Some</span>(</span><br><span class="line">              <span class="type">SlaveLost</span>(<span class="string">s&quot;Task <span class="subst">$tid</span> was lost, so marking the executor as lost as well.&quot;</span>))</span><br><span class="line">            removeExecutor(execId, reason.get)</span><br><span class="line">            failedExecutor = <span class="type">Some</span>(execId)</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="type">TaskState</span>.isFinished(state)) &#123;</span><br><span class="line">          cleanupTaskState(tid)</span><br><span class="line">          taskSet.removeRunningTask(tid)</span><br><span class="line">          <span class="keyword">if</span> (state == <span class="type">TaskState</span>.<span class="type">FINISHED</span>) &#123;</span><br><span class="line">            taskResultGetter.enqueueSuccessfulTask(taskSet, tid, serializedData)</span><br><span class="line">          &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="type">Set</span>(<span class="type">TaskState</span>.<span class="type">FAILED</span>, <span class="type">TaskState</span>.<span class="type">KILLED</span>, <span class="type">TaskState</span>.<span class="type">LOST</span>).contains(state)) &#123;</span><br><span class="line">            taskResultGetter.enqueueFailedTask(taskSet, tid, state, serializedData)</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">None</span> =&gt; &#123;&#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Update the DAGScheduler without holding a lock on this, since that can deadlock</span></span><br><span class="line">  <span class="keyword">if</span> (failedExecutor.isDefined) &#123;</span><br><span class="line">    assert(reason.isDefined)</span><br><span class="line">    dagScheduler.executorLost(failedExecutor.get, reason.get)</span><br><span class="line">    backend.reviveOffers()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>TaskResultGetter维护了一个线程池来获取TaskResult。TaskResult分为：</p>
+<ul>
+<li><p>DirectTaskResult，结果直接包含在serializedData的ByteBuffer中，只需要直接反序列化即可：</p>
+</li>
+<li><p>IndirectTaskResult：serializedData中包含了一个blockId，实际的结果存储在BlockManager中。在获取结果时需要从BlockManager中抓取：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="type">IndirectTaskResult</span>(blockId, size) =&gt;</span><br><span class="line"><span class="keyword">if</span> (!taskSetManager.canFetchMoreResults(size)) &#123;</span><br><span class="line">  sparkEnv.blockManager.master.removeBlock(blockId)</span><br><span class="line">  scheduler.handleFailedTask(taskSetManager, tid, <span class="type">TaskState</span>.<span class="type">KILLED</span>, <span class="type">TaskKilled</span>(</span><br><span class="line">    <span class="string">&quot;Tasks result size has exceeded maxResultSize&quot;</span>))</span><br><span class="line">  <span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">scheduler.handleTaskGettingResult(taskSetManager, tid)</span><br><span class="line"><span class="keyword">val</span> serializedTaskResult = sparkEnv.blockManager.getRemoteBytes(blockId)</span><br><span class="line"><span class="keyword">if</span> (serializedTaskResult.isEmpty) &#123;</span><br><span class="line">  scheduler.handleFailedTask(</span><br><span class="line">    taskSetManager, tid, <span class="type">TaskState</span>.<span class="type">FINISHED</span>, <span class="type">TaskResultLost</span>)</span><br><span class="line">  <span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">val</span> deserializedResult = serializer.get().deserialize[<span class="type">DirectTaskResult</span>[_]](</span><br><span class="line">  serializedTaskResult.get.toByteBuffer)</span><br><span class="line"><span class="comment">// force deserialization of referenced value</span></span><br><span class="line">deserializedResult.value(taskResultSerializer.get())</span><br><span class="line"><span class="comment">// Remove the result block after getting.</span></span><br><span class="line">sparkEnv.blockManager.master.removeBlock(blockId)</span><br><span class="line">(deserializedResult, size)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>最终的状态更新都是在TaskSetManager中完成：</p>
+<ul>
+<li><p>使用<code>handleSuccessfulTask()</code>处理成功的任务，会检查任务之前的执行状态，避免重复状态更新。此外，还会通过SchedulerBackend主动杀掉现在正在运行的重复任务。最后会通过<code>endedTask()</code>将任务结果告知DAGScheduler。如果该TaskSetManager中所有任务已经完成，还会调用TaskSchedulerImpl的<code>taskSetFinished()</code>将该TaskSetManager从调度树中移除：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">taskSetFinished</span></span>(manager: <span class="type">TaskSetManager</span>): <span class="type">Unit</span> = synchronized &#123;</span><br><span class="line">  <span class="comment">// Clean up data structure</span></span><br><span class="line"> taskSetsByStageIdAndAttempt.get(manager.taskSet.stageId).foreach &#123; taskSetsForStage =&gt;</span><br><span class="line">    taskSetsForStage -= manager.taskSet.stageAttemptId</span><br><span class="line">    <span class="keyword">if</span> (taskSetsForStage.isEmpty) &#123;</span><br><span class="line">      taskSetsByStageIdAndAttempt -= manager.taskSet.stageId</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Remove the TaskSetManager from the parent pool</span></span><br><span class="line">  manager.parent.removeSchedulable(manager)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用<code>handleFailedTask()</code>处理失败的任务，会根据不同的失败原因进行处理：</p>
+<ul>
+<li>FetchFailed：更新BlacklistTracker，将BlockManager对应的Executor加入到Blacklist中</li>
+<li>ExceptionFailure：更新统计变量recentException</li>
+<li>TaskKilled或ExecutorLostFailure，直接跳过</li>
+</ul>
+<p>之后，也会通过<code>endedTask()</code>告知DAGScheduler，并且会根据是否超出maxTaskFailures阈值来决定是否进行重试（添加到<code>addPendingTask()</code>中）。</p>
+</li>
+</ul>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3><h2 id="SchedulerBackend"><a href="#SchedulerBackend" class="headerlink" title="SchedulerBackend"></a>SchedulerBackend</h2><p>SchedulerBackend接口定义了管理Backend的基本接口：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * A backend interface for scheduling systems that allows plugging in different ones under</span></span><br><span class="line"><span class="comment"> * TaskSchedulerImpl. We assume a Mesos-like model where the application gets resource offers as</span></span><br><span class="line"><span class="comment"> * machines become available and can launch tasks on them.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">trait</span> <span class="title">SchedulerBackend</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> appId = <span class="string">&quot;spark-application-&quot;</span> + <span class="type">System</span>.currentTimeMillis</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">start</span></span>(): <span class="type">Unit</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">stop</span></span>(): <span class="type">Unit</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">reviveOffers</span></span>(): <span class="type">Unit</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">defaultParallelism</span></span>(): <span class="type">Int</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">isReady</span></span>(): <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line">	<span class="comment">// Kill a executor</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">killTask</span></span>(</span><br><span class="line">      taskId: <span class="type">Long</span>,</span><br><span class="line">      executorId: <span class="type">String</span>,</span><br><span class="line">      interruptThread: <span class="type">Boolean</span>,</span><br><span class="line">      reason: <span class="type">String</span>): <span class="type">Unit</span> =</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">UnsupportedOperationException</span></span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">applicationId</span></span>(): <span class="type">String</span> = appId</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">applicationAttemptId</span></span>(): <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">getDriverLogUrls</span></span>: <span class="type">Option</span>[<span class="type">Map</span>[<span class="type">String</span>, <span class="type">String</span>]] = <span class="type">None</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">getDriverAttributes</span></span>: <span class="type">Option</span>[<span class="type">Map</span>[<span class="type">String</span>, <span class="type">String</span>]] = <span class="type">None</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">maxNumConcurrentTasks</span></span>(): <span class="type">Int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>主要实现有：</p>
+<ul>
+<li>CoarseGrainedSchedulerBackend<ul>
+<li>StandaloneSchedulerBackend</li>
+</ul>
+</li>
+<li>LocalSchedulerBackend</li>
+</ul>
+<p>我们主要关注CoarseGrainedSchedulerBackend。</p>
+<h2 id="CoarseGrainedSchedulerBackend"><a href="#CoarseGrainedSchedulerBackend" class="headerlink" title="CoarseGrainedSchedulerBackend"></a>CoarseGrainedSchedulerBackend</h2><p>CoarseGrainedSchedulerBackend负责从ClusterManager中请求Executors用于运行任务，CoarseGrainedSchedulerBackend会持有申请得到的Executor直到Spark Job结束，而不是在每次任务完成时归还Executor并在每次启动任务时再请求新的Executor。</p>
+<p>CoarseGrainedSchedulerBackend继承了ExecutorAllocationClient并实现了SchedulerBackend接口：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CoarseGrainedSchedulerBackend</span>(<span class="params">scheduler: <span class="type">TaskSchedulerImpl</span>, val rpcEnv: <span class="type">RpcEnv</span></span>)</span></span><br><span class="line">  <span class="keyword">extends</span> <span class="type">ExecutorAllocationClient</span> <span class="keyword">with</span> <span class="type">SchedulerBackend</span> <span class="keyword">with</span> <span class="type">Logging</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CoarseGrainedSchedulerBackend会记录和跟踪Executor的状态以及Task到Executor之间的调度信息：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Total number of executors that are currently registered</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">val</span> totalRegisteredExecutors = <span class="keyword">new</span> <span class="type">AtomicInteger</span>(<span class="number">0</span>)</span><br><span class="line"><span class="comment">// Keep the executor infos</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> executorDataMap = <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">String</span>, <span class="type">ExecutorData</span>]</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> requestedTotalExecutors = <span class="number">0</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> numPendingExecutors = <span class="number">0</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> executorsPendingToRemove = <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">String</span>, <span class="type">Boolean</span>]</span><br><span class="line"><span class="comment">// The number of pending tasks which is locality required</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">var</span> localityAwareTasks = <span class="number">0</span></span><br><span class="line"><span class="meta">@volatile</span> <span class="keyword">protected</span> <span class="keyword">var</span> currentExecutorIdCounter = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// A map to store hostname with its possible task number running on it</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">var</span> hostToLocalTaskCount: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>.empty</span><br></pre></td></tr></table></figure>
+
+<p>CoarseGrainedSchedulerBackend包含一个DriverEndpoint，用于与Executor进行通信，从而管理各个Executor（注册，移除，状态更新等），并提交新的任务：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> driverEndpoint = rpcEnv.setupEndpoint(<span class="type">ENDPOINT_NAME</span>, createDriverEndpoint())</span><br></pre></td></tr></table></figure>
+
+<h3 id="Executor申请和杀死"><a href="#Executor申请和杀死" class="headerlink" title="Executor申请和杀死"></a>Executor申请和杀死</h3><p>Executor申请分为两种：</p>
+<ul>
+<li><p>通过<code>requestTotalExecutors()</code>，<code>requestTotalExecutors()</code>会根据数量来更新当前的Executor统计信息:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">requestTotalExecutors</span></span>(</span><br><span class="line">  numExecutors: <span class="type">Int</span>,</span><br><span class="line">  localityAwareTasks: <span class="type">Int</span>,</span><br><span class="line">  hostToLocalTaskCount: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>]</span><br><span class="line">): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">val</span> response = synchronized &#123;</span><br><span class="line">    <span class="keyword">this</span>.requestedTotalExecutors = numExecutors</span><br><span class="line">    <span class="keyword">this</span>.localityAwareTasks = localityAwareTasks</span><br><span class="line">    <span class="keyword">this</span>.hostToLocalTaskCount = hostToLocalTaskCount</span><br><span class="line"></span><br><span class="line">    <span class="comment">// normal pending + pending to remove</span></span><br><span class="line">    numPendingExecutors =</span><br><span class="line">    math.max(numExecutors - numExistingExecutors + executorsPendingToRemove.size, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    doRequestTotalExecutors(numExecutors)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  defaultAskTimeout.awaitResult(response)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过<code>requestExecutors()</code>请求额外的Executor：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">requestExecutors</span></span>(numAdditionalExecutors: <span class="type">Int</span>): <span class="type">Boolean</span> = &#123;</span><br><span class="line"> ...</span><br><span class="line">  <span class="keyword">val</span> response = synchronized &#123;</span><br><span class="line">    requestedTotalExecutors += numAdditionalExecutors</span><br><span class="line">    numPendingExecutors += numAdditionalExecutors</span><br><span class="line">    <span class="comment">// Account for executors pending to be added or removed</span></span><br><span class="line">    doRequestTotalExecutors(requestedTotalExecutors)</span><br><span class="line">  &#125;</span><br><span class="line">  defaultAskTimeout.awaitResult(response)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>杀死Executor则通过<code>killExecutors()</code>完成，<code>killExecutors()</code>支持adjustTargetNumExecutors选项用于指明是否调整总的Executor的数量。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">killExecutors</span></span>(</span><br><span class="line">  executorIds: <span class="type">Seq</span>[<span class="type">String</span>],</span><br><span class="line">  adjustTargetNumExecutors: <span class="type">Boolean</span>,</span><br><span class="line">  countFailures: <span class="type">Boolean</span>,</span><br><span class="line">  force: <span class="type">Boolean</span>): <span class="type">Seq</span>[<span class="type">String</span>] = &#123;</span><br><span class="line">  logInfo(<span class="string">s&quot;Requesting to kill executor(s) <span class="subst">$&#123;executorIds.mkString(&quot;, &quot;)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> response = withLock &#123;</span><br><span class="line">		...</span><br><span class="line">    <span class="keyword">val</span> executorsToKill = knownExecutors</span><br><span class="line">    .filter &#123; id =&gt; !executorsPendingToRemove.contains(id) &#125;</span><br><span class="line">    .filter &#123; id =&gt; force || !scheduler.isExecutorBusy(id) &#125;</span><br><span class="line">    executorsToKill.foreach &#123; id =&gt; executorsPendingToRemove(id) = !countFailures &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// If we do not wish to replace the executors we kill, sync the target number of executors</span></span><br><span class="line">    <span class="comment">// with the cluster manager to avoid allocating new ones. </span></span><br><span class="line">    <span class="keyword">val</span> adjustTotalExecutors =</span><br><span class="line">    <span class="keyword">if</span> (adjustTargetNumExecutors) &#123;</span><br><span class="line">      requestedTotalExecutors = math.max(requestedTotalExecutors - executorsToKill.size, <span class="number">0</span>)</span><br><span class="line">     	<span class="comment">// Request the total numbers.</span></span><br><span class="line">      doRequestTotalExecutors(requestedTotalExecutors)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      numPendingExecutors += executorsToKill.size</span><br><span class="line">      <span class="type">Future</span>.successful(<span class="literal">true</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> killExecutors: <span class="type">Boolean</span> =&gt; <span class="type">Future</span>[<span class="type">Boolean</span>] =</span><br><span class="line">    <span class="keyword">if</span> (executorsToKill.nonEmpty) &#123;</span><br><span class="line">      _ =&gt; doKillExecutors(executorsToKill)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      _ =&gt; <span class="type">Future</span>.successful(<span class="literal">false</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> killResponse = adjustTotalExecutors.flatMap(killExecutors)(<span class="type">ThreadUtils</span>.sameThread)</span><br><span class="line">		...</span><br><span class="line">  &#125;</span><br><span class="line">  defaultAskTimeout.awaitResult(response)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="Executor状态管理"><a href="#Executor状态管理" class="headerlink" title="Executor状态管理"></a>Executor状态管理</h3><p>Executor的管理主要通过DriverEndpoint来完成， DriverEndpoint根据收到的来自Executor状态信息对Executor发送对应的命令信息或调度新的任务到Executor上去执行。</p>
+<p>DriverEndpoint启动时，会启动用于发送ReviveOffers的后台线程，从而触发TaskSchedulerImpl去调度任务执行。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onStart</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="comment">// Periodically revive offers to allow delay scheduling to work</span></span><br><span class="line">  <span class="keyword">val</span> reviveIntervalMs = conf.get(<span class="type">SCHEDULER_REVIVE_INTERVAL</span>).getOrElse(<span class="number">1000</span>L)</span><br><span class="line"></span><br><span class="line">  reviveThread.scheduleAtFixedRate(() =&gt; <span class="type">Utils</span>.tryLogNonFatalError &#123;</span><br><span class="line">    <span class="type">Option</span>(self).foreach(_.send(<span class="type">ReviveOffers</span>))</span><br><span class="line">  &#125;, <span class="number">0</span>, reviveIntervalMs, <span class="type">TimeUnit</span>.<span class="type">MILLISECONDS</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>启动后，会根据<code>receive()</code>和<code>receiveAndReply()</code>对收到的来自Executor或用户的信息进行处理。</p>
+<p>在<code>receive()</code>中，主要处理：</p>
+<ol>
+<li><p>Executor的状态更新：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="type">StatusUpdate</span>(executorId, taskId, state, data, resources) =&gt;</span><br><span class="line"><span class="comment">// TaskSchedulerImpl need to check and update the task status on this executor.</span></span><br><span class="line">scheduler.statusUpdate(taskId, state, data.value)</span><br><span class="line"><span class="keyword">if</span> (<span class="type">TaskState</span>.isFinished(state)) &#123;</span><br><span class="line">  <span class="comment">// Release resources</span></span><br><span class="line">  executorDataMap.get(executorId) <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Some</span>(executorInfo) =&gt;</span><br><span class="line">    executorInfo.freeCores += scheduler.<span class="type">CPUS_PER_TASK</span></span><br><span class="line">    resources.foreach &#123; <span class="keyword">case</span> (k, v) =&gt;</span><br><span class="line">      executorInfo.resourcesInfo.get(k).foreach &#123; r =&gt;</span><br><span class="line">        r.release(v.addresses)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Make offers on just one executor for delaying scheduling</span></span><br><span class="line">    makeOffers(executorId)</span><br><span class="line">    <span class="keyword">case</span> <span class="type">None</span> =&gt; ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ReviveOffers信息，触发<code>makeOffers()</code></p>
+</li>
+<li><p>杀死任务：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="type">KillTask</span>(taskId, executorId, interruptThread, reason) =&gt;</span><br><span class="line">executorDataMap.get(executorId) <span class="keyword">match</span> &#123;</span><br><span class="line">  <span class="comment">// Send KillTask message to the executor</span></span><br><span class="line">  <span class="keyword">case</span> <span class="type">Some</span>(executorInfo) =&gt;</span><br><span class="line">  executorInfo.executorEndpoint.send(</span><br><span class="line">    <span class="type">KillTask</span>(taskId, executorId, interruptThread, reason))</span><br><span class="line">  <span class="keyword">case</span> <span class="type">None</span> =&gt; &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>杀死位于某个host上所有Executors</p>
+</li>
+<li><p>更新DelegationToken</p>
+</li>
+<li><p>移除Executor：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="type">RemoveExecutor</span>(executorId, reason) =&gt;</span><br><span class="line"><span class="comment">// We will remove the executor&#x27;s state and cannot restore it. However, the connection</span></span><br><span class="line"><span class="comment">// between the driver and the executor may be still alive so that the executor won&#x27;t exit</span></span><br><span class="line"><span class="comment">// automatically, so try to tell the executor to stop itself. See SPARK-13519.</span></span><br><span class="line">executorDataMap.get(executorId).foreach(_.executorEndpoint.send(<span class="type">StopExecutor</span>))</span><br><span class="line">removeExecutor(executorId, reason)</span><br></pre></td></tr></table></figure>
+
+<p>在<code>removeExecutor()</code>中，会从executorDataMap中清除该Executor的信息，并且会更新各种Executor的统计信息。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Update the protected statistics</span></span><br><span class="line"><span class="keyword">val</span> killed = <span class="type">CoarseGrainedSchedulerBackend</span>.<span class="keyword">this</span>.synchronized &#123;</span><br><span class="line">  addressToExecutorId -= executorInfo.executorAddress</span><br><span class="line">  executorDataMap -= executorId</span><br><span class="line">  executorsPendingLossReason -= executorId</span><br><span class="line">  executorsPendingToRemove.remove(executorId).getOrElse(<span class="literal">false</span>)</span><br><span class="line">&#125;</span><br><span class="line">totalCoreCount.addAndGet(-executorInfo.totalCores)</span><br><span class="line">totalRegisteredExecutors.addAndGet(<span class="number">-1</span>)</span><br><span class="line"><span class="comment">// Info the TaskScheduler about the executor is lost</span></span><br><span class="line">scheduler.executorLost(executorId, <span class="keyword">if</span> (killed) <span class="type">ExecutorKilled</span> <span class="keyword">else</span> reason)</span><br><span class="line"></span><br><span class="line">listenerBus.post(</span><br><span class="line">  <span class="type">SparkListenerExecutorRemoved</span>(<span class="type">System</span>.currentTimeMillis(), executorId, reason.toString))</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>在<code>receiveAndReply()</code>中处理：</p>
+<ol>
+<li><p>Executor注册：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="type">RegisterExecutor</span>(executorId, executorRef, hostname, cores, logUrls,</span><br><span class="line">                      attributes, resources) =&gt;</span><br><span class="line"><span class="keyword">if</span> (executorDataMap.contains(executorId)) &#123;</span><br><span class="line">  executorRef.send(<span class="type">RegisterExecutorFailed</span>(<span class="string">&quot;Duplicate executor ID: &quot;</span> + executorId))</span><br><span class="line">  context.reply(<span class="literal">true</span>)</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (scheduler.nodeBlacklist.contains(hostname)) &#123;</span><br><span class="line">  executorRef.send(<span class="type">RegisterExecutorFailed</span>(<span class="string">s&quot;Executor is blacklisted: <span class="subst">$executorId</span>&quot;</span>))</span><br><span class="line">  context.reply(<span class="literal">true</span>)</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="comment">// Update statistics and data structures</span></span><br><span class="line">  addressToExecutorId(executorAddress) = executorId</span><br><span class="line">  totalCoreCount.addAndGet(cores)</span><br><span class="line">  totalRegisteredExecutors.addAndGet(<span class="number">1</span>)</span><br><span class="line">  <span class="keyword">val</span> resourcesInfo = ...</span><br><span class="line">  <span class="type">CoarseGrainedSchedulerBackend</span>.<span class="keyword">this</span>.synchronized &#123;</span><br><span class="line">    executorDataMap.put(executorId, data)</span><br><span class="line">    <span class="keyword">if</span> (currentExecutorIdCounter &lt; executorId.toInt) &#123;</span><br><span class="line">      currentExecutorIdCounter = executorId.toInt</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (numPendingExecutors &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      numPendingExecutors -= <span class="number">1</span></span><br><span class="line">      logDebug(<span class="string">s&quot;Decremented number of pending executors (<span class="subst">$numPendingExecutors</span> left)&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  executorRef.send(<span class="type">RegisteredExecutor</span>)</span><br><span class="line">  <span class="comment">// Note: some tests expect the reply to come after we put the executor in the map</span></span><br><span class="line">  context.reply(<span class="literal">true</span>)</span><br><span class="line">  </span><br><span class="line">  listenerBus.post(</span><br><span class="line">    <span class="type">SparkListenerExecutorAdded</span>(<span class="type">System</span>.currentTimeMillis(), executorId, data))</span><br><span class="line">  </span><br><span class="line">  makeOffers()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>停止Driver</p>
+</li>
+<li><p>停止所有的Executors</p>
+</li>
+<li><p>移除Worker</p>
+</li>
+<li><p>获得SparkConfig等</p>
+</li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/07/23/Spark-Spark-Broadcast/" title= "Spark Broadcast">
+                    <div class="nextTitle">Spark Broadcast</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/05/10/Spark-SparkQueryExecution/" title= "Spark Query Execution">
+                    <div class="prevTitle">Spark Query Execution</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Spark TaskScheduler and Backend"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#TaskScheduler"><span class="toc-number">1.</span> <span class="toc-text">TaskScheduler</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TaskSchedulerImpl"><span class="toc-number">2.</span> <span class="toc-text">TaskSchedulerImpl</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E6%8F%90%E4%BA%A4"><span class="toc-number">2.1.</span> <span class="toc-text">任务提交</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%92%8C%E5%88%86%E9%85%8D"><span class="toc-number">2.2.</span> <span class="toc-text">资源调度和分配</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BB%B6%E8%BF%9F%E8%B0%83%E5%BA%A6"><span class="toc-number">2.2.1.</span> <span class="toc-text">延迟调度</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%B1%E8%B4%A5%E4%BB%BB%E5%8A%A1%E5%A4%84%E7%90%86%E5%92%8C%E4%BB%BB%E5%8A%A1%E5%8F%96%E6%B6%88"><span class="toc-number">2.3.</span> <span class="toc-text">失败任务处理和任务取消</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E5%92%8C%E5%AE%8C%E6%88%90"><span class="toc-number">2.4.</span> <span class="toc-text">任务状态更新和完成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-number">2.5.</span> <span class="toc-text"></span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SchedulerBackend"><span class="toc-number">3.</span> <span class="toc-text">SchedulerBackend</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CoarseGrainedSchedulerBackend"><span class="toc-number">4.</span> <span class="toc-text">CoarseGrainedSchedulerBackend</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Executor%E7%94%B3%E8%AF%B7%E5%92%8C%E6%9D%80%E6%AD%BB"><span class="toc-number">4.1.</span> <span class="toc-text">Executor申请和杀死</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Executor%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86"><span class="toc-number">4.2.</span> <span class="toc-text">Executor状态管理</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

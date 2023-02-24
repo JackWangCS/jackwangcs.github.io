@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink DataStream · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink DataStream</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink DataStream
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Core">Core</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">5.1k</span>Reading time: <span class="post-count reading-time">25 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/09/17</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="DataStream"><a href="#DataStream" class="headerlink" title="DataStream"></a>DataStream</h2><p>DataStream表示具有相同类型的元素流（a stream of elements of the same type）。包含两个成员变量：</p>
+<ul>
+<li>StreamExecutionEnvironment</li>
+<li>Transformation</li>
+</ul>
+<p>Transformation表示能够创建DataStream的操作（operation that creates a DataStream），每一个DataStream都包含一个底层的Transformation，用于创建该DataStream。Transformation是一个逻辑概念，不是一定有对应的物理操作。</p>
+<p>StreamExecutionEnvironment则是streaming程序执行的上下文，提供了用于控制作业的执行（比如设定并行度、容错和checkpointing相关的参数）和用于外界交互（主要指数据访问）的方法。</p>
+<p>DataStream还定义了用于操作DataStream的各种变换方法，如map，filter，flatmap等，与Spark中的RDD类似。</p>
+<h2 id="Transformation"><a href="#Transformation" class="headerlink" title="Transformation"></a>Transformation</h2><p>Transformation表示能够创建DataStream的操作，多个Transformation可以互相连接，构成一个图。在执行时，StreamGraphGenerator会将这些Transformation翻译成一个StreamGraph。</p>
+<p>Transformation中包含了：</p>
+<ul>
+<li>id，用于在一个JVM中唯一标志该Transformation</li>
+<li>name，名字</li>
+<li>outputType，输出类型</li>
+<li>typeUsed，类型信息是否被使用过，如果使用过，则不能通过setOutput()来改变输出的类型信息</li>
+<li>parallelism，并行度</li>
+<li>maxParallelism，最大并行度，定义了key group状态分区的最大数量</li>
+<li>minResources，preferredResources：最小资源和偏好的资源（最大）</li>
+<li>managedMemoryWeight，对于UNKNOWN资源类型，定义该Transformation对managed memory的依赖比例</li>
+<li>uid，userProvidedNodeHash：用户提供的id，用于重启job等</li>
+<li>bufferTimeout</li>
+<li>slotSharingGroup</li>
+<li>coLocationGroupKey</li>
+</ul>
+<p>其中，涉及到几个重要的概念。</p>
+<h3 id="TypeInformation"><a href="#TypeInformation" class="headerlink" title="TypeInformation"></a>TypeInformation</h3><p>TypeInformation是Flink的类型系统的核心，TypeInformation可以用来生成Serializers、Comparators以及做语义检查。此外，TypeInformation是用于表达逻辑Schema，是编程语言对象之间的桥梁。TypeInformation可以将类型映射成对应的Column，主要有以下几种类型：</p>
+<ul>
+<li>基本类型：Strings，Date，Long等</li>
+<li>数组和集合</li>
+<li>元组和case class</li>
+</ul>
+<h3 id="ResourceSpec"><a href="#ResourceSpec" class="headerlink" title="ResourceSpec"></a>ResourceSpec</h3><p>ResourceSpec描述了operator需要的各种资源，主要包括：</p>
+<ul>
+<li>CPU cores</li>
+<li>Task Heap Memory</li>
+<li>Task Off-heap Memory</li>
+<li>Managed Memory</li>
+<li>Extended Resources</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** How many cpu cores are needed. Can be null only if it is unknown. */</span></span><br><span class="line"><span class="meta">@Nullable</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Resource cpuCores;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** How much task heap memory is needed. */</span></span><br><span class="line"><span class="meta">@Nullable</span> <span class="comment">// can be null only for UNKNOWN</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> MemorySize taskHeapMemory;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** How much task off-heap memory is needed. */</span></span><br><span class="line"><span class="meta">@Nullable</span> <span class="comment">// can be null only for UNKNOWN</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> MemorySize taskOffHeapMemory;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** How much managed memory is needed. */</span></span><br><span class="line"><span class="meta">@Nullable</span> <span class="comment">// can be null only for UNKNOWN</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> MemorySize managedMemory;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, Resource&gt; extendedResources = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<p>此外，ResourceSpec提供merge()、substract()、lessThanOrEqual()、等函数用于合并、比较ResourceSpec。</p>
+<p>ResourceSpec定义UNKNOWN用于表示某个operator的资源需求未知，以及DEFAULT，默认为UNKNOWN，表示默认情况下，各个operator的资源需求都未知。</p>
+<h2 id="StreamGraph"><a href="#StreamGraph" class="headerlink" title="StreamGraph"></a>StreamGraph</h2><p>StreamGraph表示了Streaming的拓扑结构，包含了构建用于执行的JobGraph的所有必须信息，StreamGraph实现了Pipeline接口，包含的执行、checkpoint、savepoint等信息如下：</p>
+<ul>
+<li>executionConfig</li>
+<li>checkpointConfig</li>
+<li>savepointRestoreSettings</li>
+<li>scheduleMode</li>
+<li>chaining</li>
+<li>timeCharacteristic</li>
+<li>globalDataExchangeMode</li>
+<li>allVerticesInSameSlotSharingGroupByDefault</li>
+<li>stateBackend</li>
+</ul>
+<p>用于表示StreamGraph的成员变量如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Map&lt;Integer, StreamNode&gt; streamNodes;</span><br><span class="line"><span class="keyword">private</span> Set&lt;Integer&gt; sources;</span><br><span class="line"><span class="keyword">private</span> Set&lt;Integer&gt; sinks; </span><br><span class="line"><span class="keyword">private</span> Map&lt;Integer, Tuple2&lt;Integer, List&lt;String&gt;&gt;&gt; virtualSelectNodes;</span><br><span class="line"><span class="keyword">private</span> Map&lt;Integer, Tuple2&lt;Integer, OutputTag&gt;&gt; virtualSideOutputNodes;</span><br><span class="line"><span class="keyword">private</span> Map&lt;Integer, Tuple3&lt;Integer, StreamPartitioner&lt;?&gt;, ShuffleMode&gt;&gt; virtualPartitionNodes;</span><br><span class="line"><span class="keyword">protected</span> Map&lt;Integer, String&gt; vertexIDtoBrokerID;</span><br><span class="line"><span class="keyword">protected</span> Map&lt;Integer, Long&gt; vertexIDtoLoopTimeout;</span><br><span class="line"><span class="keyword">private</span> Set&lt;Tuple2&lt;StreamNode, StreamNode&gt;&gt; iterationSourceSinkPairs;</span><br></pre></td></tr></table></figure>
+
+<p>StreamNode之间的依赖信息（StreamEdge）由各个StreamNode自己维护。</p>
+<h3 id="StreamNode"><a href="#StreamNode" class="headerlink" title="StreamNode"></a>StreamNode</h3><p>StreamNode表示streaming程序中的operator，包含了该operator所有相关的属性。StreamNode是由Transformation通过StreamGraphGenerator生成的，所以包含了Transformation中有关ResourceSpec，parallelism，slotSharingGroup等信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> parallelism;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> maxParallelism;</span><br><span class="line"><span class="keyword">private</span> <span class="type">ResourceSpec</span> <span class="variable">minResources</span> <span class="operator">=</span> ResourceSpec.DEFAULT;</span><br><span class="line"><span class="keyword">private</span> <span class="type">ResourceSpec</span> <span class="variable">preferredResources</span> <span class="operator">=</span> ResourceSpec.DEFAULT;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="variable">managedMemoryWeight</span> <span class="operator">=</span> Transformation.DEFAULT_MANAGED_MEMORY_WEIGHT;</span><br><span class="line"><span class="keyword">private</span> <span class="type">long</span> bufferTimeout;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String operatorName;</span><br><span class="line"><span class="keyword">private</span> <span class="meta">@Nullable</span> String slotSharingGroup;</span><br><span class="line"><span class="keyword">private</span> <span class="meta">@Nullable</span> String coLocationGroup;</span><br></pre></td></tr></table></figure>
+
+<p>用于描述该operator的信息包含：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// In and out edges for this StreamNode</span></span><br><span class="line"><span class="keyword">private</span> List&lt;StreamEdge&gt; inEdges = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;StreamEdge&gt;();</span><br><span class="line"><span class="keyword">private</span> List&lt;StreamEdge&gt; outEdges = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;StreamEdge&gt;();</span><br><span class="line"><span class="keyword">private</span> KeySelector&lt;?, ?&gt;[] statePartitioners = <span class="keyword">new</span> <span class="title class_">KeySelector</span>[<span class="number">0</span>];</span><br><span class="line"><span class="keyword">private</span> TypeSerializer&lt;?&gt; stateKeySerializer;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> StreamOperatorFactory&lt;?&gt; operatorFactory;</span><br><span class="line"><span class="keyword">private</span> List&lt;OutputSelector&lt;?&gt;&gt; outputSelectors;</span><br><span class="line"><span class="keyword">private</span> TypeSerializer&lt;?&gt;[] typeSerializersIn = <span class="keyword">new</span> <span class="title class_">TypeSerializer</span>[<span class="number">0</span>];</span><br><span class="line"><span class="keyword">private</span> TypeSerializer&lt;?&gt; typeSerializerOut;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Class&lt;? <span class="keyword">extends</span> <span class="title class_">AbstractInvokable</span>&gt; jobVertexClass;</span><br><span class="line"><span class="keyword">private</span> InputFormat&lt;?, ?&gt; inputFormat;</span><br><span class="line"><span class="keyword">private</span> OutputFormat&lt;?&gt; outputFormat;</span><br></pre></td></tr></table></figure>
+
+<h3 id="StreamEdge"><a href="#StreamEdge" class="headerlink" title="StreamEdge"></a>StreamEdge</h3><p>在Streaming拓扑表示一条边：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String edgeId;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> sourceId;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> targetId;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> typeNumber;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* A list of output names that the target vertex listens to (if there is</span></span><br><span class="line"><span class="comment">* output selection).</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;String&gt; selectedNames;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> OutputTag outputTag;</span><br><span class="line"><span class="keyword">private</span> StreamPartitioner&lt;?&gt; outputPartitioner;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String sourceOperatorName;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String targetOperatorName;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ShuffleMode shuffleMode;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ExecutionConfig"><a href="#ExecutionConfig" class="headerlink" title="ExecutionConfig"></a>ExecutionConfig</h3><p>ExecutionConfig定义了Flink执行时的行为，包括：</p>
+<ul>
+<li>默认的并行度parallelism</li>
+<li>执行失败时，重试的次数和重试的时间间隔</li>
+<li>ExecutionMode</li>
+<li>是否启用closure cleaner，closure cleaner可以清除匿名&#x2F;内部类中引用的未使用的外部引用，从而消除某些序列化错误并减少closure的大小</li>
+<li>The config allows to register types and serializers to increase the efficiency of handling <i>generic types</i> and <i>POJOs</i></li>
+</ul>
+<h4 id="ExecutionMode"><a href="#ExecutionMode" class="headerlink" title="ExecutionMode"></a>ExecutionMode</h4><p>ExecutionMode描述了<strong>批处理程序在数据交换时的执行模式</strong>：</p>
+<ul>
+<li>PIPELINED：Executes the program in a pipelined fashion (including shuffles and broadcasts) except for data exchanges that are susceptible to deadlocks when pipelining.</li>
+<li>PIPELINED_FORCED：Same as above but use PIPELINED always</li>
+<li>BATCH：This mode executes all shuffles and broadcasts in a batch fashion, while pipelining data between operations that exchange data only locally between one producer and one consumer.</li>
+<li>BATCH_FORCED</li>
+</ul>
+<h3 id="ScheduleMode-Deprecated-in-1-13"><a href="#ScheduleMode-Deprecated-in-1-13" class="headerlink" title="ScheduleMode(Deprecated in 1.13)"></a>ScheduleMode(Deprecated in 1.13)</h3><p>Flink目前拥有三种调度模式：</p>
+<ul>
+<li>LAZY_FROM_SOURCES： Schedule tasks lazily from the sources. Downstream tasks are started once their input data are ready</li>
+<li>LAZY_FROM_SOURCES_WITH_BATCH_SLOT_REQUEST：Same as LAZY_FROM_SOURCES just with the difference that it uses batch slot requests which support the execution of jobs with fewer slots than requested. However, the user needs to make sure that the job does not contain any pipelined shuffles (every pipelined region can be executed with a single slot).</li>
+<li>EAGER：Schedules all tasks immediately</li>
+</ul>
+<p>在引入PipelinedRegionScheduling以后，上面的方式已经被deprecated了，详细可以参考[FLINK-21580] Remove ScheduleMode from ExecutionGraph和[FLINK-21580] Remove ScheduleMode from JobGraph and its test。Flink可以通过JobType的类型，进行调度方式的设置。</p>
+<h3 id="CheckpointConfig-amp-SavepointRestoreConifg"><a href="#CheckpointConfig-amp-SavepointRestoreConifg" class="headerlink" title="CheckpointConfig &amp; SavepointRestoreConifg"></a>CheckpointConfig &amp; SavepointRestoreConifg</h3><h3 id="ShuflleMode"><a href="#ShuflleMode" class="headerlink" title="ShuflleMode"></a>ShuflleMode</h3><p>Flink的总共有两种Shuffle模式：</p>
+<ul>
+<li>PIPELINED：Producer and consumer are online at the same time. Produced data is received by consumer immediately.</li>
+<li>BATCH： The producer first produces its entire result and finishes.  After that, the consumer is started and may consume the data.</li>
+<li>UNDEFINED：Shuffle mode is undefined, the framework to decide which shuffle mode to use</li>
+</ul>
+<h3 id="GlobalDataExchangeMode"><a href="#GlobalDataExchangeMode" class="headerlink" title="GlobalDataExchangeMode"></a>GlobalDataExchangeMode</h3><p>在ShuffleMode为UNDEFINED的情况下，GlobalDataExchangeMode用于决定JobGraph中JobEdge的ResultPartitionType类型：</p>
+<ul>
+<li>ALL_EDGES_BLOCKING：Set all job edges to  be ResultPartitionType.BLOCKING</li>
+<li>FORWARD_EDGES_PIPELINED：Set job edges with ForwardPartitioner to be ResultPartitionType.PIPELINED_BOUNDED，and other edges to be ResultPartitionType.BLOCKING</li>
+<li>POINTWISE_EDGES_PIPELINED：Set job edges with ForwardPartitioner or RescalePartitioner to be ResultPartitionType.PIPELINED_BOUNDED，and other edges to be ResultPartitionType.BLOCKING</li>
+<li>ALL_EDGES_PIPELINED：Set all job edges ResultPartitionType.PIPELINED_BOUNDED</li>
+</ul>
+<p>在后文会详细介绍ResultPartitionType。</p>
+<h2 id="StreamGraphGenerator"><a href="#StreamGraphGenerator" class="headerlink" title="StreamGraphGenerator"></a>StreamGraphGenerator</h2><p>StreamGraphGenerator将输入的Transformation树从Sink端递归地转化为StreamGraph表示。<strong>在转化的时候，从Sink开始，对于每一个Transformation，首先递归转换它的输入，然后在StreamGraph中创建一个StreamNode节点，并添加一条由输入节点指向新创建的节点的StreamEdge。</strong></p>
+<p>在转换Partitioning、Split&#x2F;select和union时，并不会创建一个实际的节点，而是在StreamGraph中创建一个虚拟节点用来保存这些操作的相关属性。</p>
+<p>StreamGraphGenerator在构造时，需要传入需要转换的Transformations，ExecutionConfig和CheckpointConfig：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">StreamGraphGenerator</span><span class="params">(List&lt;Transformation&lt;?&gt;&gt; transformations, ExecutionConfig executionConfig, CheckpointConfig checkpointConfig)</span> &#123;</span><br><span class="line">  <span class="built_in">this</span>.transformations = checkNotNull(transformations);</span><br><span class="line">  <span class="built_in">this</span>.executionConfig = checkNotNull(executionConfig);</span><br><span class="line">  <span class="built_in">this</span>.checkpointConfig = checkNotNull(checkpointConfig);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>构造以后，调用StreamGraphGenerator#generate()方法生成对应的StreamGraph：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> StreamGraph <span class="title function_">generate</span><span class="params">()</span> &#123;</span><br><span class="line"> <span class="comment">// Set properties for StreamGraph</span></span><br><span class="line">  streamGraph = <span class="keyword">new</span> <span class="title class_">StreamGraph</span>(executionConfig, checkpointConfig, savepointRestoreSettings);</span><br><span class="line">  streamGraph.setStateBackend(stateBackend);</span><br><span class="line">  streamGraph.setChaining(chaining);</span><br><span class="line">  streamGraph.setScheduleMode(scheduleMode);</span><br><span class="line">  streamGraph.setUserArtifacts(userArtifacts);</span><br><span class="line">  streamGraph.setTimeCharacteristic(timeCharacteristic);</span><br><span class="line">  streamGraph.setJobName(jobName);</span><br><span class="line">  streamGraph.setGlobalDataExchangeMode(globalDataExchangeMode);</span><br><span class="line"></span><br><span class="line">  alreadyTransformed = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">  <span class="comment">// Do the tranformations</span></span><br><span class="line">  <span class="keyword">for</span> (Transformation&lt;?&gt; transformation: transformations) &#123;</span><br><span class="line">    transform(transformation);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="type">StreamGraph</span> <span class="variable">builtStreamGraph</span> <span class="operator">=</span> streamGraph;</span><br><span class="line">  <span class="comment">// Release the resources for GC explicitly</span></span><br><span class="line">  alreadyTransformed.clear();</span><br><span class="line">  alreadyTransformed = <span class="literal">null</span>;</span><br><span class="line">  streamGraph = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">return</span> builtStreamGraph;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>核心调用transform()方法，对输入的transformation进行转换。</p>
+<h3 id="transform"><a href="#transform" class="headerlink" title="transform()"></a>transform()</h3><p>transform()的主要步骤如下：</p>
+<ol>
+<li>因为Flink中允许回边（反馈）边的存在，首先会检查传入的transformation是否已经在alreadyTransformed，如果该transformation已经被transformed，直接返回即可。</li>
+<li>利用Transformation#getOutputType()方法去检查是否该Transformation的OutputType已经确定，否则抛出MissingTypeInfo异常</li>
+<li>根据Transformation的类型，委托给对应的transformXX()进行转换，并返回对应的StreamNode的ID集合</li>
+<li>将转换的结果添加到alreadyTransformed中，避免重复转换</li>
+<li>设置Uid、UserProvidedNodeHash，MinResources、preferredResources、<strong>ManagedMemoryWeight</strong>。</li>
+</ol>
+<p>transformXX()中，会递归的调用transform()对该Transformations的输入进行转换，从而完成最终的转换。</p>
+<p>重要的两点：</p>
+<ol>
+<li>关于operator的parallelism，要么是用户指定的，要么使用ExecutionConfig配置的parallelism。</li>
+<li>operator的SlotSharingGroup由determineSlotSharingGroup()决定</li>
+</ol>
+<h4 id="transfromSource"><a href="#transfromSource" class="headerlink" title="transfromSource()"></a>transfromSource()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; Collection&lt;Integer&gt; <span class="title function_">transformSource</span><span class="params">(SourceTransformation&lt;T&gt; source)</span> &#123;</span><br><span class="line">  <span class="comment">// 1. determine the Slot SharingGroup of the source. Note, a source dose not have any inputs</span></span><br><span class="line">  <span class="type">String</span> <span class="variable">slotSharingGroup</span> <span class="operator">=</span> determineSlotSharingGroup(source.getSlotSharingGroup(), Collections.emptyList());</span><br><span class="line">  <span class="comment">// 2. add source to StreamGraph</span></span><br><span class="line">  streamGraph.addSource(source.getId(),</span><br><span class="line">                        slotSharingGroup,</span><br><span class="line">                        source.getCoLocationGroupKey(),</span><br><span class="line">                        source.getOperatorFactory(),</span><br><span class="line">                        <span class="literal">null</span>,</span><br><span class="line">                        source.getOutputType(),</span><br><span class="line">                        <span class="string">&quot;Source: &quot;</span> + source.getName());</span><br><span class="line">  <span class="comment">// 2.1 add InputFormat if could</span></span><br><span class="line">  <span class="keyword">if</span> (source.getOperatorFactory() <span class="keyword">instanceof</span> InputFormatOperatorFactory) &#123;</span><br><span class="line">    streamGraph.setInputFormat(source.getId(),</span><br><span class="line">                               ((InputFormatOperatorFactory&lt;T&gt;) source.getOperatorFactory()).getInputFormat());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 3. Set parallelism: </span></span><br><span class="line">  <span class="comment">// if the parallelism of this source is set, then use the user provided parallelism</span></span><br><span class="line">  <span class="comment">// otherwise, use the executionConfig value</span></span><br><span class="line">  <span class="type">int</span> <span class="variable">parallelism</span> <span class="operator">=</span> source.getParallelism() != ExecutionConfig.PARALLELISM_DEFAULT ?</span><br><span class="line">    source.getParallelism() : executionConfig.getParallelism();</span><br><span class="line">  streamGraph.setParallelism(source.getId(), parallelism);</span><br><span class="line">  streamGraph.setMaxParallelism(source.getId(), source.getMaxParallelism());</span><br><span class="line">  <span class="keyword">return</span> Collections.singleton(source.getId());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="transfromSink"><a href="#transfromSink" class="headerlink" title="transfromSink()"></a>transfromSink()</h4><p>transformSink()方法与transformSource()方法相似，但是Sink有多个inputs：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; Collection&lt;Integer&gt; <span class="title function_">transformSink</span><span class="params">(SinkTransformation&lt;T&gt; sink)</span> &#123;</span><br><span class="line">  Collection&lt;Integer&gt; inputIds = transform(sink.getInput());</span><br><span class="line">  <span class="type">String</span> <span class="variable">slotSharingGroup</span> <span class="operator">=</span> determineSlotSharingGroup(sink.getSlotSharingGroup(), inputIds);</span><br><span class="line"></span><br><span class="line">  streamGraph.addSink(sink.getId(),</span><br><span class="line">    slotSharingGroup,</span><br><span class="line">    sink.getCoLocationGroupKey(),</span><br><span class="line">    sink.getOperatorFactory(),</span><br><span class="line">    sink.getInput().getOutputType(),</span><br><span class="line">    <span class="literal">null</span>,</span><br><span class="line">    <span class="string">&quot;Sink: &quot;</span> + sink.getName());</span><br><span class="line">    </span><br><span class="line">  <span class="type">StreamOperatorFactory</span> <span class="variable">operatorFactory</span> <span class="operator">=</span> sink.getOperatorFactory();</span><br><span class="line">  <span class="keyword">if</span> (operatorFactory <span class="keyword">instanceof</span> OutputFormatOperatorFactory) &#123;</span><br><span class="line">   streamGraph.setOutputFormat(sink.getId(), ((OutputFormatOperatorFactory) operatorFactory).getOutputFormat());</span><br><span class="line">  &#125;</span><br><span class="line">.....</span><br><span class="line">    <span class="comment">// Add input StreamEdges for the sink</span></span><br><span class="line">  <span class="keyword">for</span> (Integer inputId: inputIds) &#123;</span><br><span class="line">   streamGraph.addEdge(inputId,</span><br><span class="line">     sink.getId(),</span><br><span class="line">     <span class="number">0</span></span><br><span class="line">   );</span><br><span class="line">  &#125;</span><br><span class="line">    <span class="comment">// Create keySerializer for KeyedState</span></span><br><span class="line">  <span class="keyword">if</span> (sink.getStateKeySelector() != <span class="literal">null</span>) &#123;</span><br><span class="line">   TypeSerializer&lt;?&gt; keySerializer = sink.getStateKeyType().createSerializer(executionConfig);</span><br><span class="line">   streamGraph.setOneInputStateKey(sink.getId(), sink.getStateKeySelector(), keySerializer);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> Collections.emptyList();</span><br><span class="line"> &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="transformPartition"><a href="#transformPartition" class="headerlink" title="transformPartition()"></a>transformPartition()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; Collection&lt;Integer&gt; <span class="title function_">transformPartition</span><span class="params">(PartitionTransformation&lt;T&gt; partition)</span> &#123;</span><br><span class="line">  Transformation&lt;T&gt; input = partition.getInput();</span><br><span class="line">  List&lt;Integer&gt; resultIds = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">  <span class="comment">// Recursively transform the input firstly</span></span><br><span class="line">  Collection&lt;Integer&gt; transformedIds = transform(input);</span><br><span class="line">  <span class="keyword">for</span> (Integer transformedId: transformedIds) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">virtualId</span> <span class="operator">=</span> Transformation.getNewNodeId();</span><br><span class="line">    <span class="comment">// Create a virtual node in the StreamGraph</span></span><br><span class="line">    streamGraph.addVirtualPartitionNode(</span><br><span class="line">      transformedId, virtualId, partition.getPartitioner(), partition.getShuffleMode());</span><br><span class="line">    resultIds.add(virtualId);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> resultIds;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="determineSlotSharingGroup"><a href="#determineSlotSharingGroup" class="headerlink" title="determineSlotSharingGroup()"></a>determineSlotSharingGroup()</h3><p>determineSlotSharingGroup()用于决定一个operator的SlotSharingGroup：</p>
+<ol>
+<li>如果用户为该operator指定了SlotSharingGroup的名字，那么直接使用指定的SlotSharingGroup。</li>
+<li>否则，该operator的<strong>所有输入都具有相同</strong>的SlotSharingGroup，就使用该SlotSharingGroup</li>
+<li>最后，使用“default” DEFAULT_SLOT_SHARING_GROUP</li>
+</ol>
+<h2 id="JobGraph"><a href="#JobGraph" class="headerlink" title="JobGraph"></a>JobGraph</h2><p>JobGraph是Flink的Dataflow程序的底层表示，高层的Dataflow API都会转换成JobGraph用于在JobManager上执行。</p>
+<p>JobGraph是一个由顶点（vertices）和中间结果（intermediate results ）相互连接构成的DAG，注意：Iterations（拥有feedback edges）并没有在DAG中表示，而是包含在某些特殊顶点中。JobGraph定义了Job范围内的配置，每个顶点和中间结果定义了针对其特定的特征。</p>
+<p>JobGraph的主要成员如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** List of task vertices included in this job graph. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;JobVertexID, JobVertex&gt; taskVertices = <span class="keyword">new</span> <span class="title class_">LinkedHashMap</span>&lt;JobVertexID, JobVertex&gt;();</span><br><span class="line"><span class="comment">/** The job configuration attached to this job. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Configuration</span> <span class="variable">jobConfiguration</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Configuration</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> JobID jobID;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String jobName;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** The mode in which the job is scheduled */</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">ScheduleMode</span> <span class="variable">scheduleMode</span> <span class="operator">=</span> ScheduleMode.LAZY_FROM_SOURCES;</span><br><span class="line"></span><br><span class="line"><span class="comment">// --- checkpointing ---</span></span><br><span class="line"><span class="keyword">private</span> SerializedValue&lt;ExecutionConfig&gt; serializedExecutionConfig;</span><br><span class="line"><span class="keyword">private</span> JobCheckpointingSettings snapshotSettings;</span><br><span class="line"><span class="keyword">private</span> <span class="type">SavepointRestoreSettings</span> <span class="variable">savepointRestoreSettings</span> <span class="operator">=</span> SavepointRestoreSettings.none();</span><br><span class="line"></span><br><span class="line"><span class="comment">// --- attached resources ---</span></span><br><span class="line"><span class="comment">/** Set of JAR files required to run this job. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;Path&gt; userJars = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;Path&gt;();</span><br><span class="line"><span class="comment">/** Set of custom files required to run this job. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, DistributedCache.DistributedCacheEntry&gt; userArtifacts = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"><span class="comment">/** Set of blob keys identifying the JAR files required to run this job. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;PermanentBlobKey&gt; userJarBlobKeys = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"><span class="comment">/** List of classpaths required to run this job. */</span></span><br><span class="line"><span class="keyword">private</span> List&lt;URL&gt; classpaths = Collections.emptyList();</span><br></pre></td></tr></table></figure>
+
+<h3 id="JobVertex"><a href="#JobVertex" class="headerlink" title="JobVertex"></a>JobVertex</h3><p>JobVertex，包含：</p>
+<ol>
+<li><p>JobVertexID和一组包含的OperatorID，以及name相关信息</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The ID of the vertex. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> JobVertexID id;</span><br><span class="line"><span class="comment">/** The alternative IDs of the vertex. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;JobVertexID&gt; idAlternatives = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"><span class="comment">/** The IDs of all operators contained in this vertex. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;OperatorID&gt; operatorIDs = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"><span class="comment">/** The alternative IDs of all operators contained in this vertex. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;OperatorID&gt; operatorIdsAlternatives = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> String name;</span><br><span class="line"><span class="keyword">private</span> String operatorName;</span><br><span class="line"><span class="keyword">private</span> String operatorDescription;</span><br><span class="line"><span class="keyword">private</span> String operatorPrettyName;</span><br><span class="line"><span class="keyword">private</span> String resultOptimizerProperties;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>输入的JobEdge和输出的IntermediateDataSet</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** List of produced data sets, one per writer. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;IntermediateDataSet&gt; results = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"><span class="comment">/** List of edges with incoming data. One per Reader. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;JobEdge&gt; inputs = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Parallelism和ResourceSpec</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="variable">parallelism</span> <span class="operator">=</span> ExecutionConfig.PARALLELISM_DEFAULT;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="variable">maxParallelism</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="type">ResourceSpec</span> <span class="variable">minResources</span> <span class="operator">=</span> ResourceSpec.DEFAULT;</span><br><span class="line"><span class="keyword">private</span> <span class="type">ResourceSpec</span> <span class="variable">preferredResources</span> <span class="operator">=</span> ResourceSpec.DEFAULT;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SlotSharingGroup和CoLocationGroup</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Optionally, a sharing group that allows subtasks from different job vertices to run concurrently in one slot. */</span></span><br><span class="line"><span class="keyword">private</span> SlotSharingGroup slotSharingGroup;</span><br><span class="line"><span class="comment">/** The group inside which the vertex subtasks share slots. */</span></span><br><span class="line"><span class="keyword">private</span> CoLocationGroup coLocationGroup;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>InputDependencyConstraint</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The input dependency constraint to schedule this vertex. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">InputDependencyConstraint</span> <span class="variable">inputDependencyConstraint</span> <span class="operator">=</span> InputDependencyConstraint.ANY;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;SerializedValue&lt;OperatorCoordinator.Provider&gt;&gt; operatorCoordinators = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="JobEdge"><a href="#JobEdge" class="headerlink" title="JobEdge"></a>JobEdge</h3><p>JobEdge也称为Communication Channel，<strong>JobEdge总是从一个IntermediateDataSet指向一个JobVerterx</strong>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The vertex connected to this edge. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> JobVertex target;</span><br><span class="line"><span class="comment">/** The distribution pattern that should be used for this job edge. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> DistributionPattern distributionPattern;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** The data set at the source of the edge, may be null if the edge is not yet connected*/</span></span><br><span class="line"><span class="keyword">private</span> IntermediateDataSet source;</span><br><span class="line"><span class="comment">/** The id of the source intermediate data set */</span></span><br><span class="line"><span class="keyword">private</span> IntermediateDataSetID sourceId;</span><br></pre></td></tr></table></figure>
+
+<h4 id="DistributionPattern"><a href="#DistributionPattern" class="headerlink" title="DistributionPattern"></a>DistributionPattern</h4><p>DistributionPattern用于描述生产的operator的subtask与消费的operator的subtask之间如何连接：</p>
+<ul>
+<li>ALL_TO_ALL：Each producing sub task is connected to each sub task of the consuming task</li>
+<li>POINTWISE： Each producing sub task is connected to one or more subtask(s) of the consuming task</li>
+</ul>
+<h3 id="SlotSharingGroup"><a href="#SlotSharingGroup" class="headerlink" title="SlotSharingGroup"></a>SlotSharingGroup</h3><p>SlotSharingGroup用于描述哪些来自不同JobVertex的subtask可以一起部署到一个Slot中，是一个soft permission。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Set&lt;JobVertexID&gt; ids = <span class="keyword">new</span> <span class="title class_">TreeSet</span>&lt;&gt;();</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">SlotSharingGroupId</span> <span class="variable">slotSharingGroupId</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SlotSharingGroupId</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">/** Represents resources of all tasks in the group. Default to be zero.</span></span><br><span class="line"><span class="comment">  * Any task with UNKNOWN resources will turn it to be UNKNOWN. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">ResourceSpec</span> <span class="variable">resourceSpec</span> <span class="operator">=</span> ResourceSpec.ZERO;</span><br></pre></td></tr></table></figure>
+
+<p>当向SlotSharingGroup中添加和删除JobVertex，需要对resourceSpec进行相应的增加或者减除。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addVertexToGroup</span><span class="params">(<span class="keyword">final</span> JobVertexID id, <span class="keyword">final</span> ResourceSpec resource)</span> &#123;</span><br><span class="line">  ids.add(checkNotNull(id));</span><br><span class="line">  resourceSpec = resourceSpec.merge(checkNotNull(resource));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">removeVertexFromGroup</span><span class="params">(<span class="keyword">final</span> JobVertexID id, <span class="keyword">final</span> ResourceSpec resource)</span> &#123;</span><br><span class="line">  ids.remove(checkNotNull(id));</span><br><span class="line">  resourceSpec = resourceSpec.subtract(checkNotNull(resource));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="CoLocationGroup"><a href="#CoLocationGroup" class="headerlink" title="CoLocationGroup"></a>CoLocationGroup</h3><p>CoLocationGroup表示一组需要将第i个subtask部署到同一个TaskManager上执行的JobVertex集合。例如，在iteration中，iteration head和iteration tail必须在同一个TaskManager中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The ID that describes the slot co-location-constraint as a group */</span> </span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">AbstractID</span> <span class="variable">id</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AbstractID</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">/** The vertices participating in the co-location group */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;JobVertex&gt; vertices = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;JobVertex&gt;();</span><br><span class="line"></span><br><span class="line"><span class="comment">/** The constraints, which hold the shared slots for the co-located operators */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> ArrayList&lt;CoLocationConstraint&gt; constraints;</span><br></pre></td></tr></table></figure>
+
+<p>CoLocationConstraint则用于记录Co-Location的TaskManager和共享的Slot的位置：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CoLocationConstraint</span> &#123;</span><br><span class="line"> <span class="keyword">private</span> <span class="keyword">final</span> CoLocationGroup group;</span><br><span class="line"> <span class="keyword">private</span> <span class="keyword">volatile</span> TaskManagerLocation lockedLocation;</span><br><span class="line"> <span class="keyword">private</span> <span class="keyword">volatile</span> SlotRequestId slotRequestId;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="IntermediateDataSet"><a href="#IntermediateDataSet" class="headerlink" title="IntermediateDataSet"></a>IntermediateDataSet</h3><p>IntermediateDataSet表示由source或operator产生的数据集，可以被其他的operators读取，物化或丢弃。</p>
+<p>IntermediateDataSet包含了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> IntermediateDataSetID id;   <span class="comment">// the identifier</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> JobVertex producer;   <span class="comment">// the operation that produced this data set</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;JobEdge&gt; consumers = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;JobEdge&gt;();</span><br><span class="line"><span class="comment">// The type of partition to use at runtime</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ResultPartitionType resultType;</span><br></pre></td></tr></table></figure>
+
+<h4 id="ResultPartitionType"><a href="#ResultPartitionType" class="headerlink" title="ResultPartitionType"></a>ResultPartitionType</h4><p>ResultPartitionType描述了IntermediateDataSet结果的分区结果类型，每种类型包含四种属性：</p>
+<ul>
+<li>isPipelined：Can the partition be consumed while being produced?</li>
+<li>hasBackPressure：Does the partition produce back pressure when not consumed?</li>
+<li>isBounded：Does this partition use a limited number of (<strong>network</strong>) buffers?</li>
+<li>isPersistent：This partition will not be released after consuming if ‘isPersistent’ is true.</li>
+</ul>
+<p>四种类型分别为：</p>
+<ul>
+<li>BLOCKING(false, false, false, false)：Blocking partitions represent blocking data exchanges, where the data stream is first fully produced and then consumed. This is an option that is only applicable to bounded streams and can be used in  bounded stream runtime and recovery</li>
+<li>BLOCKING_PERSISTENT(false, false, false, true)：BLOCKING_PERSISTENT partitions are similar to BLOCKING partitions, but have a user-specified life cycle.</li>
+<li>PIPELINED(true, true, false, false)：A pipelined streaming data exchange. This is applicable to both <strong>bounded and unbounded</strong> streams. Pipelined results can be consumed <strong>only once by a single consumer</strong> and are <strong>automatically disposed</strong> when the stream has been consumed</li>
+<li>PIPELINED_BOUNDED(true, true, true, false)：Pipelined partitions with a <strong>bounded (local) buffer pool</strong>.</li>
+</ul>
+<h2 id="StreamingJobGraphGenerator"><a href="#StreamingJobGraphGenerator" class="headerlink" title="StreamingJobGraphGenerator"></a>StreamingJobGraphGenerator</h2><p>StreamingJobGraphGenerator将StreamGraph转换为JobGraph用于实际执行。通过调用createJobGraph()将一个StreamGraph转换成一个JobGraph：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> JobGraph <span class="title function_">createJobGraph</span><span class="params">(StreamGraph streamGraph)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> createJobGraph(streamGraph, <span class="literal">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CreateJobGraph()将一个StreamGraph转换为一个JobGraph的核心步骤如下：</p>
+<ol>
+<li>验证CheckpointConfig配置</li>
+<li>为所有的StreamNode计算唯一的Hash值，用于标志该节点</li>
+<li>设置StreamNode之间的Chaining，并将StreamGraph从Sources转换从由JobVertex表示的JobGraph</li>
+<li>设置物理的StreamEdge</li>
+<li>设置统一内存管理中各个内存之间的比例</li>
+<li>配置Checkpoint和SavePoint</li>
+<li>设置ExcutionConfig</li>
+</ol>
+<h3 id="DefaultStreamGraphHasher"><a href="#DefaultStreamGraphHasher" class="headerlink" title="DefaultStreamGraphHasher"></a>DefaultStreamGraphHasher</h3><h3 id="setChaining"><a href="#setChaining" class="headerlink" title="setChaining"></a>setChaining</h3><p>setChainin()用于从StreamGraph中的Source Stream Node构建Task chains，在这个过程中，会递归的创建所有的JobVertex。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">setChaining</span><span class="params">(Map&lt;Integer, <span class="type">byte</span>[]&gt; hashes, List&lt;Map&lt;Integer, <span class="type">byte</span>[]&gt;&gt; legacyHashes, Map&lt;Integer, List&lt;Tuple2&lt;<span class="type">byte</span>[], <span class="type">byte</span>[]&gt;&gt;&gt; chainedOperatorHashes)</span> &#123;</span><br><span class="line">  <span class="comment">// Start from the source nodes in StreamGraph</span></span><br><span class="line">  <span class="keyword">for</span> (Integer sourceNodeId : streamGraph.getSourceIDs()) &#123;</span><br><span class="line">    <span class="comment">// Create chain</span></span><br><span class="line">    createChain(sourceNodeId, sourceNodeId, hashes, legacyHashes, <span class="number">0</span>, chainedOperatorHashes);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么，什么条件下才可以将两个StreamNode连接到一起呢？</p>
+<h4 id="isChainable"><a href="#isChainable" class="headerlink" title="isChainable"></a>isChainable</h4><p>isChainable()用于判断两个StreamNode是否可以连接：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">boolean</span> <span class="title function_">isChainable</span><span class="params">(StreamEdge edge, StreamGraph streamGraph)</span> &#123;</span><br><span class="line">  <span class="type">StreamNode</span> <span class="variable">upStreamVertex</span> <span class="operator">=</span> streamGraph.getSourceVertex(edge);</span><br><span class="line">  <span class="type">StreamNode</span> <span class="variable">downStreamVertex</span> <span class="operator">=</span> streamGraph.getTargetVertex(edge);</span><br><span class="line">  <span class="keyword">return</span> downStreamVertex.getInEdges().size() == <span class="number">1</span></span><br><span class="line">    &amp;&amp; upStreamVertex.isSameSlotSharingGroup(downStreamVertex)</span><br><span class="line">    &amp;&amp; areOperatorsChainable(upStreamVertex, downStreamVertex, streamGraph)</span><br><span class="line">    &amp;&amp; (edge.getPartitioner() <span class="keyword">instanceof</span> ForwardPartitioner)</span><br><span class="line">    &amp;&amp; edge.getShuffleMode() != ShuffleMode.BATCH</span><br><span class="line">    &amp;&amp; upStreamVertex.getParallelism() == downStreamVertex.getParallelism()</span><br><span class="line">    &amp;&amp; streamGraph.isChainingEnabled();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>下游StreamNode的输入只有一个</li>
+<li>上下游StreamNode处于同一个SlotSharingGroup中</li>
+<li>上下游的Operator是可以连接的</li>
+<li>两者之间的StreamEdge的StreamPartitioner是ForwardPartitioner</li>
+<li>ShuffleMode不是BATCH方式</li>
+<li>上下游节点的并行度相同</li>
+<li>开启了Chaining</li>
+</ol>
+<h4 id="ChainingStrategy"><a href="#ChainingStrategy" class="headerlink" title="ChainingStrategy"></a>ChainingStrategy</h4><p>ChainingStrategy定义了operator的连接方式，<strong>如果一个operator与前一个operator连接在一起，那么他们可以在一个线程中运行</strong>，可以看做是一个具有多个步骤的operator。</p>
+<ul>
+<li>ALWAYS：Operators will be eagerly chained whenever <strong>possible</strong>. To optimize performance, <em>it is generally a good practice to allow maximal chaining and increase operator parallelism</em>.</li>
+<li>NEVER：The operator will not be chained to the preceding or succeeding operators</li>
+<li>HEAD：The operator will not be chained to the predecessor, but successors may chain to this operator</li>
+</ul>
+<p>默认的ChainingStrategy是HEAD，但是绝大多数的StreamOperator都会重写并设定为ALWAYS。</p>
+<h4 id="areOperatorsChainable"><a href="#areOperatorsChainable" class="headerlink" title="areOperatorsChainable"></a>areOperatorsChainable</h4><p>两个Operator只有在下面的情况才可以连接：</p>
+<ol>
+<li>两者的StreamOperatorFactory不为空</li>
+<li>上游Operator的ChainingStrategy不能为NEVER，下游Operator必须是ALWAYS</li>
+<li>下游Operator若是YieldingOperatorFactory，那么该Operator Chain的Head Operator不能是StreamSource</li>
+</ol>
+<h4 id="createChain"><a href="#createChain" class="headerlink" title="createChain"></a>createChain</h4><p>createChain()将从startNode开始，按照后序遍历的方式，顺着startNode的OutEdges递归地连接所有可以连接的StreamNode，以此创建一个JobVertex，并通过connect()方法以JobEdge连接所有的创建的JobVertex</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> List&lt;StreamEdge&gt; <span class="title function_">createChain</span><span class="params">(</span></span><br><span class="line"><span class="params">   Integer startNodeId,</span></span><br><span class="line"><span class="params">   Integer currentNodeId,</span></span><br><span class="line"><span class="params">   Map&lt;Integer, <span class="type">byte</span>[]&gt; hashes,</span></span><br><span class="line"><span class="params">   List&lt;Map&lt;Integer, <span class="type">byte</span>[]&gt;&gt; legacyHashes,</span></span><br><span class="line"><span class="params">   <span class="type">int</span> chainIndex,</span></span><br><span class="line"><span class="params">   Map&lt;Integer, List&lt;Tuple2&lt;<span class="type">byte</span>[], <span class="type">byte</span>[]&gt;&gt;&gt; chainedOperatorHashes)</span></span><br></pre></td></tr></table></figure>
+
+<p>核心的步骤：</p>
+<ol>
+<li><p>获取startNode的chainableOutputs和nonChainableOutputs，创建transitiveOutEdges用于保存整个Chain的外部StreamEdges</p>
+</li>
+<li><p>对于所有chainableOutputs，递归调用createChain()函数，将下游的StreamNode连接到一起，构成当前的JobVertex：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (StreamEdge chainable : chainableOutputs) &#123;</span><br><span class="line">  transitiveOutEdges.addAll(</span><br><span class="line">    createChain(startNodeId, chainable.getTargetId(), hashes, legacyHashes, chainIndex + <span class="number">1</span>, chainedOperatorHashes));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而对于nonChainableOutputs，则是重新以下游节点为Head，创建一个新的JobVertex：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (StreamEdge nonChainable : nonChainableOutputs) &#123;</span><br><span class="line">  transitiveOutEdges.add(nonChainable);</span><br><span class="line">  createChain(nonChainable.getTargetId(), nonChainable.getTargetId(), hashes, legacyHashes, <span class="number">0</span>, chainedOperatorHashes);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>计算ChainedOperator的hash值</p>
+</li>
+<li><p>为这个连接创建新的名字：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chainedNames.put(currentNodeId, createChainedName(currentNodeId, chainableOutputs));</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>计算MinResource和PreferredResource：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chainedMinResources.put(currentNodeId, createChainedMinResources(currentNodeId, chainableOutputs));</span><br><span class="line">   chainedPreferredResources.put(currentNodeId, createChainedPreferredResources(currentNodeId, chainableOutputs));</span><br></pre></td></tr></table></figure>
+
+<p>两者是整个连接中所有StreamNode的资源总和。</p>
+</li>
+<li><p>创建和设置InputFormat和OutputFormat</p>
+</li>
+<li><p>如果是整个Chain的开始，则创建表示整个Chain的JobVertex，并设置vertexConfig：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">StreamConfig</span> <span class="variable">config</span> <span class="operator">=</span> currentNodeId.equals(startNodeId)</span><br><span class="line">  ? createJobVertex(startNodeId, hashes, legacyHashes, chainedOperatorHashes)</span><br><span class="line">  : <span class="keyword">new</span> <span class="title class_">StreamConfig</span>(<span class="keyword">new</span> <span class="title class_">Configuration</span>());</span><br><span class="line"></span><br><span class="line">setVertexConfig(currentNodeId, config, chainableOutputs, nonChainableOutputs);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果是Chain中的StartNode，还会利用connect()连接到所有的transitiveOutEdges：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (currentNodeId.equals(startNodeId)) &#123;</span><br><span class="line">....</span><br><span class="line">  <span class="comment">// For all transitiveOutEdges, connect with the JobVertex</span></span><br><span class="line">  <span class="keyword">for</span> (StreamEdge edge : transitiveOutEdges) &#123;</span><br><span class="line">    connect(startNodeId, edge);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="connect"><a href="#connect" class="headerlink" title="connect"></a>connect</h4><p>在connect()会将新建的JobVertex作为一个新的输入添加到下游的节点中，并根据原有的StreamEdge中的StreamPartitioner、ShuffleMode等创建新的JobEdge：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">JobEdge jobEdge;</span><br><span class="line"><span class="keyword">if</span> (isPointwisePartitioner(partitioner)) &#123;</span><br><span class="line">  jobEdge = downStreamVertex.connectNewDataSetAsInput(</span><br><span class="line">    headVertex,</span><br><span class="line">    DistributionPattern.POINTWISE,</span><br><span class="line">    resultPartitionType);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  jobEdge = downStreamVertex.connectNewDataSetAsInput(</span><br><span class="line">    headVertex,</span><br><span class="line">    DistributionPattern.ALL_TO_ALL,</span><br><span class="line">    resultPartitionType);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># JobVerter#connectNewDataSetAsInput(), the JobEdge is from IntermediatedDataSet to a target Vertex</span><br><span class="line"><span class="keyword">public</span> JobEdge <span class="title function_">connectNewDataSetAsInput</span><span class="params">(</span></span><br><span class="line"><span class="params">   JobVertex input,</span></span><br><span class="line"><span class="params">   DistributionPattern distPattern,</span></span><br><span class="line"><span class="params">   ResultPartitionType partitionType)</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="type">IntermediateDataSet</span> <span class="variable">dataSet</span> <span class="operator">=</span> input.createAndAddResultDataSet(partitionType);</span><br><span class="line"></span><br><span class="line">  <span class="type">JobEdge</span> <span class="variable">edge</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">JobEdge</span>(dataSet, <span class="built_in">this</span>, distPattern);</span><br><span class="line">  <span class="built_in">this</span>.inputs.add(edge);</span><br><span class="line">  dataSet.addConsumer(edge);</span><br><span class="line">  <span class="keyword">return</span> edge;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="setSlotSharingAndCoLocation"><a href="#setSlotSharingAndCoLocation" class="headerlink" title="setSlotSharingAndCoLocation"></a>setSlotSharingAndCoLocation</h3><h4 id="setSlotSharing"><a href="#setSlotSharing" class="headerlink" title="setSlotSharing"></a>setSlotSharing</h4><p>对于每个JobVertex，设置其对应的SlotSharingGroup：</p>
+<ol>
+<li>如果该JobVertex并没有设置SlotSharingGroup，设置为null</li>
+<li>如果JobVertex的SlotSharingGroup为“default”，那么采用基于PipelinedRegion划分的SlotSharingGroup</li>
+<li>否则，采用设置的SlotSharingGroup</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (Entry&lt;Integer, JobVertex&gt; entry : jobVertices.entrySet()) &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">JobVertex</span> <span class="variable">vertex</span> <span class="operator">=</span> entry.getValue();</span><br><span class="line">  <span class="keyword">final</span> <span class="type">String</span> <span class="variable">slotSharingGroupKey</span> <span class="operator">=</span> streamGraph.getStreamNode(entry.getKey()).getSlotSharingGroup();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> SlotSharingGroup effectiveSlotSharingGroup;</span><br><span class="line">  <span class="keyword">if</span> (slotSharingGroupKey == <span class="literal">null</span>) &#123;</span><br><span class="line">    effectiveSlotSharingGroup = <span class="literal">null</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (slotSharingGroupKey.equals(StreamGraphGenerator.DEFAULT_SLOT_SHARING_GROUP)) &#123;</span><br><span class="line">    <span class="comment">// fallback to the region slot sharing group by default</span></span><br><span class="line">    effectiveSlotSharingGroup = vertexRegionSlotSharingGroups.get(vertex.getID());</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    effectiveSlotSharingGroup = specifiedSlotSharingGroups.computeIfAbsent(</span><br><span class="line">      slotSharingGroupKey, k -&gt; <span class="keyword">new</span> <span class="title class_">SlotSharingGroup</span>());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  vertex.setSlotSharingGroup(effectiveSlotSharingGroup);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么PipelinedRegion的计算以及如何根据PipelinedRegion划分SlotSharingGroup在buildVertexRegionSlotSharingGroups()中实现。</p>
+<h4 id="PipelinedRegions"><a href="#PipelinedRegions" class="headerlink" title="PipelinedRegions"></a>PipelinedRegions</h4><p>JobGraph的PipelinedRegions的计算主要分两步：</p>
+<ol>
+<li>基于JobGraph创建DefaultLogicalTopology。DefaultLogicalTopology是一个JobGraph对LogicalTopology的适配器，将JobVertex看做DefaultLogicalVertex，JobEdge中的IntermediateDataSet看做DefaultLogicalResult。</li>
+<li>利用PipelinedRegionComputeUtil#computePipelinedRegions()计算DefaultLogicalTopology中的各个PipelinedRegion</li>
+</ol>
+<p>computePipelinedRegions()中计算的PipelinedRegions的逻辑如下：</p>
+<ol>
+<li><p>如果LogicalTopology中有CoLocationConstraints，那么所有节点在一个PipelinedRegion中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// currently we let a job with co-location constraints fail as one region</span></span><br><span class="line"><span class="comment">// putting co-located vertices in the same region with each other can be a future improvement</span></span><br><span class="line"><span class="keyword">if</span> (topology.containsCoLocationConstraints()) &#123;</span><br><span class="line">  <span class="keyword">return</span> uniqueRegions(buildOneRegionForAllVertices(topology));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果两个节点之间通过之间的LogicalResult的ResultPartitionType是Pipelined，那么这个两个节点就在通过一个PipelinedRegion中。具体的做法是遍历所有的节点，如果两个节点同属于PipelinedRegion，那么将会合并这两个节点的之前的PipelinedRegion：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// iterate all the vertices which are topologically sorted</span></span><br><span class="line"><span class="keyword">for</span> (V vertex : topology.getVertices()) &#123;</span><br><span class="line">  Set&lt;V&gt; currentRegion = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">  currentRegion.add(vertex);</span><br><span class="line">  vertexToRegion.put(vertex, currentRegion);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (R consumedResult : vertex.getConsumedResults()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (consumedResult.getResultType().isPipelined()) &#123;</span><br><span class="line">      <span class="keyword">final</span> <span class="type">V</span> <span class="variable">producerVertex</span> <span class="operator">=</span> consumedResult.getProducer();</span><br><span class="line">      <span class="keyword">final</span> Set&lt;V&gt; producerRegion = vertexToRegion.get(producerVertex);</span><br><span class="line">      .....</span><br><span class="line">      <span class="comment">// check if it is the same as the producer region, if so skip the merge</span></span><br><span class="line">      <span class="keyword">if</span> (currentRegion != producerRegion) &#123;</span><br><span class="line">        <span class="comment">// merge current region and producer region</span></span><br><span class="line">        <span class="comment">// merge the smaller region into the larger one to reduce the cost</span></span><br><span class="line">        <span class="keyword">final</span> Set&lt;V&gt; smallerSet;</span><br><span class="line">        <span class="keyword">final</span> Set&lt;V&gt; largerSet;</span><br><span class="line">        <span class="keyword">if</span> (currentRegion.size() &lt; producerRegion.size()) &#123;</span><br><span class="line">          smallerSet = currentRegion;</span><br><span class="line">          largerSet = producerRegion;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          smallerSet = producerRegion;</span><br><span class="line">          largerSet = currentRegion;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (V v : smallerSet) &#123;</span><br><span class="line">          vertexToRegion.put(v, largerSet);</span><br><span class="line">        &#125;</span><br><span class="line">        largerSet.addAll(smallerSet);</span><br><span class="line">        currentRegion = largerSet;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="setCoLocation"><a href="#setCoLocation" class="headerlink" title="setCoLocation"></a>setCoLocation</h4><p>TODO</p>
+<h3 id="setManagedMemoryFraction"><a href="#setManagedMemoryFraction" class="headerlink" title="setManagedMemoryFraction"></a>setManagedMemoryFraction</h3><p>用设置各个JobVertex的ManagedMemoryFraction，针对每个SlotSharingGroup，根据setManagedMemoryFractionForSlotSharingGroup()计算各个SlotSharingGroup内的JobVertex的ManagedMemory：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (SlotSharingGroup slotSharingGroup : slotSharingGroups) &#123;</span><br><span class="line">  setManagedMemoryFractionForSlotSharingGroup(</span><br><span class="line">    slotSharingGroup,</span><br><span class="line">    vertexHeadOperators,</span><br><span class="line">    vertexOperators,</span><br><span class="line">    operatorConfigs,</span><br><span class="line">    vertexChainedConfigs,</span><br><span class="line">    operatorResourceRetriever, <span class="comment">// operator minRes</span></span><br><span class="line">    operatorManagedMemoryWeightRetriever); <span class="comment">// operator Managed Memory</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在setManagedMemoryFractionForSlotSharingGroup()中：</p>
+<ol>
+<li><p>计算整个Group总所有的JobVertex的ManagedMemoryWeight总和：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">int</span> <span class="variable">groupManagedMemoryWeight</span> <span class="operator">=</span> slotSharingGroup.getJobVertexIds().stream()</span><br><span class="line">  .flatMap(vid -&gt; vertexOperators.get(vid).stream())</span><br><span class="line"> .mapToInt(operatorManagedMemoryWeightRetriever::apply)</span><br><span class="line">  .sum();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>对于Group中的每个JobVertex，利用setManagedMemoryFractionForOperator()计算JobVertex中包含的所有Operator的ManagedMemoryFraction：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (JobVertexID jobVertexID : slotSharingGroup.getJobVertexIds()) &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> operatorNodeId : vertexOperators.get(jobVertexID)) &#123;</span><br><span class="line">    ....</span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="variable">operatorManagedMemoryWeight</span> <span class="operator">=</span> operatorManagedMemoryWeightRetriever.apply(operatorNodeId);</span><br><span class="line">    setManagedMemoryFractionForOperator(</span><br><span class="line">      operatorResourceSpec,</span><br><span class="line">      slotSharingGroup.getResourceSpec(),</span><br><span class="line">      operatorManagedMemoryWeight,</span><br><span class="line">      groupManagedMemoryWeight,</span><br><span class="line">      operatorConfig);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// need to refresh the chained task configs because they are serialized</span></span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>setManagedMemoryFractionForOperator()中：</p>
+<ol>
+<li>对于某个Operator，如果ResourceSpec为UNKNOWN，那么managedMemoryFraction为operatorManagedMemoryWeight &#x2F; groupManagedMemoryWeight</li>
+<li>否则，根据operator的ResourceSpecs中ManagedMemory &#x2F; GroupManagedMemory</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (groupResourceSpec.equals(ResourceSpec.UNKNOWN)) &#123;</span><br><span class="line">  managedMemoryFraction = groupManagedMemoryWeight &gt; <span class="number">0</span></span><br><span class="line">    ? getFractionRoundedDown(operatorManagedMemoryWeight, groupManagedMemoryWeight)</span><br><span class="line">    : <span class="number">0.0</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">long</span> <span class="variable">groupManagedMemoryBytes</span> <span class="operator">=</span> groupResourceSpec.getManagedMemory().getBytes();</span><br><span class="line">  managedMemoryFraction = groupManagedMemoryBytes &gt; <span class="number">0</span></span><br><span class="line">    ? getFractionRoundedDown(operatorResourceSpec.getManagedMemory().getBytes(), groupManagedMemoryBytes)</span><br><span class="line">    : <span class="number">0.0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="configureCheckpoint-amp-setSavepointRestoreSettings"><a href="#configureCheckpoint-amp-setSavepointRestoreSettings" class="headerlink" title="configureCheckpoint &amp; setSavepointRestoreSettings"></a>configureCheckpoint &amp; setSavepointRestoreSettings</h3><p>TODO</p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/09/17/Calcite-Planner/" title= "Calcite SQL Planner">
+                    <div class="nextTitle">Calcite SQL Planner</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/09/17/Flink-FlinkUnifiedMemory/" title= "Flink Unified Memory">
+                    <div class="prevTitle">Flink Unified Memory</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2020/09/17/Flink-Flink-DataStream/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink DataStream"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#DataStream"><span class="toc-number">1.</span> <span class="toc-text">DataStream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Transformation"><span class="toc-number">2.</span> <span class="toc-text">Transformation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#TypeInformation"><span class="toc-number">2.1.</span> <span class="toc-text">TypeInformation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ResourceSpec"><span class="toc-number">2.2.</span> <span class="toc-text">ResourceSpec</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#StreamGraph"><span class="toc-number">3.</span> <span class="toc-text">StreamGraph</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#StreamNode"><span class="toc-number">3.1.</span> <span class="toc-text">StreamNode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#StreamEdge"><span class="toc-number">3.2.</span> <span class="toc-text">StreamEdge</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ExecutionConfig"><span class="toc-number">3.3.</span> <span class="toc-text">ExecutionConfig</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ExecutionMode"><span class="toc-number">3.3.1.</span> <span class="toc-text">ExecutionMode</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ScheduleMode-Deprecated-in-1-13"><span class="toc-number">3.4.</span> <span class="toc-text">ScheduleMode(Deprecated in 1.13)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CheckpointConfig-amp-SavepointRestoreConifg"><span class="toc-number">3.5.</span> <span class="toc-text">CheckpointConfig &amp; SavepointRestoreConifg</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ShuflleMode"><span class="toc-number">3.6.</span> <span class="toc-text">ShuflleMode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GlobalDataExchangeMode"><span class="toc-number">3.7.</span> <span class="toc-text">GlobalDataExchangeMode</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#StreamGraphGenerator"><span class="toc-number">4.</span> <span class="toc-text">StreamGraphGenerator</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#transform"><span class="toc-number">4.1.</span> <span class="toc-text">transform()</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#transfromSource"><span class="toc-number">4.1.1.</span> <span class="toc-text">transfromSource()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#transfromSink"><span class="toc-number">4.1.2.</span> <span class="toc-text">transfromSink()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#transformPartition"><span class="toc-number">4.1.3.</span> <span class="toc-text">transformPartition()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#determineSlotSharingGroup"><span class="toc-number">4.2.</span> <span class="toc-text">determineSlotSharingGroup()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JobGraph"><span class="toc-number">5.</span> <span class="toc-text">JobGraph</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JobVertex"><span class="toc-number">5.1.</span> <span class="toc-text">JobVertex</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JobEdge"><span class="toc-number">5.2.</span> <span class="toc-text">JobEdge</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#DistributionPattern"><span class="toc-number">5.2.1.</span> <span class="toc-text">DistributionPattern</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SlotSharingGroup"><span class="toc-number">5.3.</span> <span class="toc-text">SlotSharingGroup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CoLocationGroup"><span class="toc-number">5.4.</span> <span class="toc-text">CoLocationGroup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IntermediateDataSet"><span class="toc-number">5.5.</span> <span class="toc-text">IntermediateDataSet</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ResultPartitionType"><span class="toc-number">5.5.1.</span> <span class="toc-text">ResultPartitionType</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#StreamingJobGraphGenerator"><span class="toc-number">6.</span> <span class="toc-text">StreamingJobGraphGenerator</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#DefaultStreamGraphHasher"><span class="toc-number">6.1.</span> <span class="toc-text">DefaultStreamGraphHasher</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setChaining"><span class="toc-number">6.2.</span> <span class="toc-text">setChaining</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#isChainable"><span class="toc-number">6.2.1.</span> <span class="toc-text">isChainable</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ChainingStrategy"><span class="toc-number">6.2.2.</span> <span class="toc-text">ChainingStrategy</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#areOperatorsChainable"><span class="toc-number">6.2.3.</span> <span class="toc-text">areOperatorsChainable</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#createChain"><span class="toc-number">6.2.4.</span> <span class="toc-text">createChain</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#connect"><span class="toc-number">6.2.5.</span> <span class="toc-text">connect</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setSlotSharingAndCoLocation"><span class="toc-number">6.3.</span> <span class="toc-text">setSlotSharingAndCoLocation</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#setSlotSharing"><span class="toc-number">6.3.1.</span> <span class="toc-text">setSlotSharing</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PipelinedRegions"><span class="toc-number">6.3.2.</span> <span class="toc-text">PipelinedRegions</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#setCoLocation"><span class="toc-number">6.3.3.</span> <span class="toc-text">setCoLocation</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setManagedMemoryFraction"><span class="toc-number">6.4.</span> <span class="toc-text">setManagedMemoryFraction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#configureCheckpoint-amp-setSavepointRestoreSettings"><span class="toc-number">6.5.</span> <span class="toc-text">configureCheckpoint &amp; setSavepointRestoreSettings</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Spark BlockManager · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Spark BlockManager</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Spark BlockManager
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Runtime">Runtime</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Spark">Spark</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">3.9k</span>Reading time: <span class="post-count reading-time">19 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/10/18</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>BlockManager用于分布地存储Block，是Spark的核心组件之一。每个节点（Driver和Executor）上的BlockManager负责存储和返回本地或者远程的数据块，BlockManager支持多种的存储，包括内存，磁盘和堆外内存等。采用Master-Slave的架构，Master和Slave之间通过RPC进行通信：</p>
+<p><img src="https://zx150842.gitbooks.io/spark-1-6-1-source-code/content/assets/report.png" alt="img"></p>
+<p>BlockManagerMaster位于Driver端，用于跟踪和管理所有的BlockManager中存储的Block的状态信息。</p>
+<p>BlockManager管理的Block分为两大类：</p>
+<ul>
+<li>RDD的缓存数据，根据StorageLevel的不同，可以在内存、磁盘或者两者</li>
+<li>Shuffle数据，保存在磁盘中</li>
+</ul>
+<h2 id="BlockManager"><a href="#BlockManager" class="headerlink" title="BlockManager"></a>BlockManager</h2><p>BlockManager的签名如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">BlockManager</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    executorId: <span class="type">String</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    rpcEnv: <span class="type">RpcEnv</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    // <span class="type">BlockManagerMaster</span>, which is the master of <span class="type">BlockManagers</span></span></span></span><br><span class="line"><span class="params"><span class="class">    val master: <span class="type">BlockManagerMaster</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val serializerManager: <span class="type">SerializerManager</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val conf: <span class="type">SparkConf</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    memoryManager: <span class="type">MemoryManager</span>, // used for <span class="type">MemoryStore</span></span></span></span><br><span class="line"><span class="params"><span class="class">    mapOutputTracker: <span class="type">MapOutputTracker</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    shuffleManager: <span class="type">ShuffleManager</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val blockTransferService: <span class="type">BlockTransferService</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    securityManager: <span class="type">SecurityManager</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    numUsableCores: <span class="type">Int</span></span>)</span></span><br><span class="line">  <span class="keyword">extends</span> <span class="type">BlockDataManager</span> <span class="keyword">with</span> <span class="type">BlockEvictionHandler</span> <span class="keyword">with</span> <span class="type">Logging</span></span><br></pre></td></tr></table></figure>
+
+<p>BlockManager实现了BlockDataManager接口，BlockDataManager定义了用于get，put和lock数据块的方法:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">BlockDataManager</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">getHostLocalShuffleData</span></span>(blockId: <span class="type">BlockId</span>, dirs: <span class="type">Array</span>[<span class="type">String</span>]): <span class="type">ManagedBuffer</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">getLocalBlockData</span></span>(blockId: <span class="type">BlockId</span>): <span class="type">ManagedBuffer</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">putBlockData</span></span>(</span><br><span class="line">        blockId: <span class="type">BlockId</span>,</span><br><span class="line">        data: <span class="type">ManagedBuffer</span>,</span><br><span class="line">        level: <span class="type">StorageLevel</span>,</span><br><span class="line">        classTag: <span class="type">ClassTag</span>[_]): <span class="type">Boolean</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">putBlockDataAsStream</span></span>(</span><br><span class="line">        blockId: <span class="type">BlockId</span>,</span><br><span class="line">        level: <span class="type">StorageLevel</span>,</span><br><span class="line">        classTag: <span class="type">ClassTag</span>[_]): <span class="type">StreamCallbackWithID</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">releaseLock</span></span>(blockId: <span class="type">BlockId</span>, taskAttemptId: <span class="type">Option</span>[<span class="type">Long</span>]): <span class="type">Unit</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>BlockEvictionHandler则是用于从内存中删除一个数据块。</p>
+<p>BlockManager的核心组件：</p>
+<ul>
+<li>DiskBlockManager：创建和维护逻辑磁盘和物理文件之间的映射关系，每一个block对应一个以BlockId命名的文件。文件通过哈希分散在<code>spark.local.dir</code>设定的目录中</li>
+<li>BlockInfoManager：记录blocks的原信息，利用readers-writer锁的方式实现了线程安全</li>
+<li>MemoryStore：用于在内存中存储blocks，block以Java对象数组或者序列化的ByteBuffer的形式进行存储</li>
+<li>DiskStore：用于在磁盘上存储blocks</li>
+<li>ShuffleClient：用于读取其他Executor的shuffle文件的客户端。可以是一个外部服务，或者BlockTransferService实例</li>
+</ul>
+<h3 id="initialize"><a href="#initialize" class="headerlink" title="initialize()"></a>initialize()</h3><p>BlockManagerMaster实例内部包含一个连接到Driver中的BlockManagerRPC客户端<code>driverEndpoint: RpcEndpointRef</code>，所有BlockManager的请求通过RPC调用实现。</p>
+<p>BlockManager在初始化时，会向BlockManagerMaster进行注册，从而获得一个BlockManagerId：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> id =</span><br><span class="line"><span class="type">BlockManagerId</span>(executorId, blockTransferService.hostName, blockTransferService.port, <span class="type">None</span>)</span><br><span class="line"><span class="keyword">val</span> idFromMaster = master.registerBlockManager(</span><br><span class="line">  id,</span><br><span class="line">  maxOnHeapMemory,</span><br><span class="line">  maxOffHeapMemory,</span><br><span class="line">  slaveEndpoint)</span><br><span class="line"><span class="comment">// Update the blockId</span></span><br><span class="line">blockManagerId = <span class="keyword">if</span> (idFromMaster != <span class="literal">null</span>) idFromMaster <span class="keyword">else</span> id</span><br></pre></td></tr></table></figure>
+
+<p>BlockManager会与Master以心跳的方式保持连接，如果发现该BlockManager没有失败，BlockManager会尝试重新注册，并上报所有的Block信息：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">reregister</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">  master.registerBlockManager(blockManagerId, maxOnHeapMemory, maxOffHeapMemory, slaveEndpoint)</span><br><span class="line">  reportAllBlocks()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>另外，如果使用的是ExternalShuffleService，那么在初始化中会获取shuffleServerId，并向ExternalShufflerServer进行注册：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (externalShuffleServiceEnabled &amp;&amp; !blockManagerId.isDriver) &#123;</span><br><span class="line">  registerWithExternalShuffleServer()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Get-x2F-Put-on-Local"><a href="#Get-x2F-Put-on-Local" class="headerlink" title="Get&#x2F;Put on Local"></a>Get&#x2F;Put on Local</h3><h4 id="getLocalBlockData"><a href="#getLocalBlockData" class="headerlink" title="getLocalBlockData()"></a>getLocalBlockData()</h4><p><code>getLocalBlockData(blockId)</code>用于在本地获取一个数据块，如果该数据块的类型是shuffle数据块，那么会交给ShuffleManager进行处理（ShuffleManager获取了ShuffleBlock的位置后，依然是通过BlockManager进行获取实际数据块），否则通过<code>getLocalBytes()</code>:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (blockId.isShuffle) &#123;</span><br><span class="line">  shuffleManager.shuffleBlockResolver.getBlockData(blockId)</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  getLocalBytes(blockId) <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Some</span>(blockData) =&gt;</span><br><span class="line">    <span class="keyword">new</span> <span class="type">BlockManagerManagedBuffer</span>(blockInfoManager, blockId, blockData, <span class="literal">true</span>)</span><br><span class="line">    <span class="keyword">case</span> <span class="type">None</span> =&gt;</span><br><span class="line">    <span class="comment">// the master has outdated block status, report it to master</span></span><br><span class="line">    reportBlockStatus(blockId, <span class="type">BlockStatus</span>.empty)</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">BlockNotFoundException</span>(blockId.toString)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>getLocalBytes()</code>中，需要先从blockInfoManager获取读锁，之后通过<code>doGetLocalBytes()</code>进一步读取：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">blockInfoManager.lockForReading(blockId).map &#123; info =&gt; doGetLocalBytes(blockId, info)</span><br></pre></td></tr></table></figure>
+
+<p><code>doGetLocalBytes()</code>会根据block的StorageLevel进行分别处理：</p>
+<ul>
+<li>Deserialized：优先从DiskStore中读取，如果没有则尝试从MemoryStore中读取。由于memoryStore中的是deserialized，需要通过serializerManager进行序列化。<strong>在Spark Tungsten启用后，内存中的数据都是serialized的形式进行处理</strong>。</li>
+<li>Serialized：优先从MemoryStore中读取，如果不存在，则尝试从DiskStore中读取。<code>maybeCacheDiskBytesInMemory()</code>会进一步检查该block是否已经在MemoryStore中缓存了，如果已经在内存中缓存，则从MemoryStore中读取；否则，尝试将diskData缓存到MemoryStore中，如果缓存成功，依然从MemoryStore中读取，否则，回退到使用磁盘读取。</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (level.deserialized) &#123;</span><br><span class="line">  <span class="comment">// Try to avoid expensive serialization by reading a pre-serialized copy from disk:</span></span><br><span class="line">  <span class="keyword">if</span> (level.useDisk &amp;&amp; diskStore.contains(blockId)) &#123;</span><br><span class="line">    diskStore.getBytes(blockId)</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (level.useMemory &amp;&amp; memoryStore.contains(blockId)) &#123;</span><br><span class="line">    <span class="comment">// The block was not found on disk, so serialize an in-memory copy:</span></span><br><span class="line">    <span class="keyword">new</span> <span class="type">ByteBufferBlockData</span>(serializerManager.dataSerializeWithExplicitClassTag(</span><br><span class="line">      blockId, memoryStore.getValues(blockId).get, info.classTag), <span class="literal">true</span>)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    handleLocalReadFailure(blockId)</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;  <span class="comment">// storage level is serialized</span></span><br><span class="line">  <span class="keyword">if</span> (level.useMemory &amp;&amp; memoryStore.contains(blockId)) &#123;</span><br><span class="line">    <span class="keyword">new</span> <span class="type">ByteBufferBlockData</span>(memoryStore.getBytes(blockId).get, <span class="literal">false</span>)</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (level.useDisk &amp;&amp; diskStore.contains(blockId)) &#123;</span><br><span class="line">    <span class="keyword">val</span> diskData = diskStore.getBytes(blockId)</span><br><span class="line">    maybeCacheDiskBytesInMemory(info, blockId, level, diskData)</span><br><span class="line">    .map(<span class="keyword">new</span> <span class="type">ByteBufferBlockData</span>(_, <span class="literal">false</span>))</span><br><span class="line">    .getOrElse(diskData)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    handleLocalReadFailure(blockId)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果读取失败，都会调用<code>handleLocalReadFailure(blockId)</code>释放该blockId对应读锁，并从BlockManager中删除该block，并抛出异常。</p>
+<h4 id="putBlockData"><a href="#putBlockData" class="headerlink" title="putBlockData()"></a>putBlockData()</h4><p><code>putBlockData()</code>用于将数据块基于给定的StorageLevel存储在本地BlockManager中。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">putBlockData</span></span>(</span><br><span class="line">  blockId: <span class="type">BlockId</span>,</span><br><span class="line">  data: <span class="type">ManagedBuffer</span>, <span class="comment">// Serialized block</span></span><br><span class="line">  level: <span class="type">StorageLevel</span>,</span><br><span class="line">  classTag: <span class="type">ClassTag</span>[_]): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  putBytes(blockId, <span class="keyword">new</span> <span class="type">ChunkedByteBuffer</span>(data.nioByteBuffer()), level)(classTag)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>putBytes()</code>会使用<code>ByteBufferBlockStoreUpdater</code>进行更新：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> blockStoreUpdater =</span><br><span class="line"><span class="type">ByteBufferBlockStoreUpdater</span>(blockId, level, implicitly[<span class="type">ClassTag</span>[<span class="type">T</span>]], bytes, tellMaster)</span><br><span class="line">blockStoreUpdater.save()</span><br></pre></td></tr></table></figure>
+
+<p><code>ByteBufferBlockStoreUpdater</code>是<code>BlockStoreUpdater</code>的子类，<code>BlockStoreUpdater</code>的<code>save()</code>提供了更新操作的具体实现：</p>
+<ol>
+<li>首先检查Block的replication数量，如果需要replication，则先在后台启动replicate。因为数据已经是序列化的形式，可以直接发送到其他的BlockManager</li>
+<li>之后，对于StorageLevel为Memory的数据块，根据是否序列化分别调用<code>saveDeserializedValuesToMemoryStore()</code>和<code>saveSerializedValuesToMemoryStore()</code>。对于需要落盘的数据块，调用<code>saveToDiskStore()</code>存储到磁盘</li>
+<li>如果需要通知BlockManagerMaster，则会调用<code>reportBlockStatus()</code>上报数据块信息</li>
+<li>最后等待replicate完成</li>
+</ol>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">save</span></span>(): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  doPut(blockId, level, classTag, tellMaster, keepReadLock) &#123; info =&gt;</span><br><span class="line">    <span class="comment">// Since we&#x27;re storing bytes, initiate the replication before storing them locally. This is faster as data is already serialized and ready to send.</span></span><br><span class="line">    <span class="keyword">val</span> replicationFuture = <span class="keyword">if</span> (level.replication &gt; <span class="number">1</span>) &#123;</span><br><span class="line">      <span class="type">Future</span> &#123;</span><br><span class="line">        replicate(blockId, blockData(), level, classTag)</span><br><span class="line">      &#125;(futureExecutionContext)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="literal">null</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (level.useMemory) &#123;</span><br><span class="line">      <span class="comment">// Put it in memory first, even if it also has useDisk set to true; We will drop it to disk later if the memory store can&#x27;t hold it.</span></span><br><span class="line">      <span class="keyword">val</span> putSucceeded = <span class="keyword">if</span> (level.deserialized) &#123;</span><br><span class="line">     saveDeserializedValuesToMemoryStore(blockData().toInputStream())</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        saveSerializedValuesToMemoryStore(readToByteBuffer())</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// Fallback to disk if failed</span></span><br><span class="line">      <span class="keyword">if</span> (!putSucceeded &amp;&amp; level.useDisk) &#123;</span><br><span class="line">        saveToDiskStore()</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (level.useDisk) &#123;</span><br><span class="line">      saveToDiskStore()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">val</span> putBlockStatus = getCurrentBlockStatus(blockId, info)</span><br><span class="line">    <span class="keyword">val</span> blockWasSuccessfullyStored = putBlockStatus.storageLevel.isValid</span><br><span class="line">    <span class="keyword">if</span> (blockWasSuccessfullyStored) &#123;</span><br><span class="line">      <span class="comment">// Now that the block is in either the memory or disk store, tell the master about it.</span></span><br><span class="line">      info.size = blockSize</span><br><span class="line">      <span class="keyword">if</span> (tellMaster &amp;&amp; info.tellMaster) &#123;</span><br><span class="line">        reportBlockStatus(blockId, putBlockStatus)</span><br><span class="line">      &#125;</span><br><span class="line">      addUpdatedBlockStatusToTaskMetrics(blockId, putBlockStatus)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (level.replication &gt; <span class="number">1</span>) &#123;</span><br><span class="line">      <span class="comment">// Wait for asynchronous replication to finish</span></span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">ThreadUtils</span>.awaitReady(replicationFuture, <span class="type">Duration</span>.<span class="type">Inf</span>)</span><br><span class="line">      &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">NonFatal</span>(t) =&gt;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">Exception</span>(<span class="string">&quot;Error occurred while waiting for replication to finish&quot;</span>, t)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (blockWasSuccessfullyStored) &#123;</span><br><span class="line">      <span class="type">None</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="type">Some</span>(blockSize)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;.isEmpty</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="putBlockDataAsStream"><a href="#putBlockDataAsStream" class="headerlink" title="putBlockDataAsStream()"></a>putBlockDataAsStream()</h4><p><code>putBlockDataAsStream()</code>用于从网络中接收一个Block，并存储在BlockManager中。<code>putBlockDataAsStream()</code>会构造一个StreamCallbackWithID对象，用于处理网络流事件。StreamCallbackWithID会将在<code>onData()</code>事件接收的数据先写入到一个本地的临时Block的文件中，在完成<code>onComplete()</code>完成接收将该文件作为Block存储在DiskStore中。</p>
+<h2 id="DiskBlockManager"><a href="#DiskBlockManager" class="headerlink" title="DiskBlockManager"></a>DiskBlockManager</h2><p>DiskBlockManager管理了block在节点上的文件。目录与文件的存储关系使用<code>subDirs</code>保存：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The content of subDirs is immutable but the content of subDirs(i) is mutable. And the content of subDirs(i) is protected by the lock of subDirs(i)</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> subDirs = <span class="type">Array</span>.fill(localDirs.length)(<span class="keyword">new</span> <span class="type">Array</span>[<span class="type">File</span>](subDirsPerLocalDir))</span><br></pre></td></tr></table></figure>
+
+<p>DiskBlockManager在SPARK_LOCAL_DIRS的各个目录下，分别创建<code>spark.diskStore.subDirectories</code>个子目录用于保存各个文件。为了防止某个目录成为热点，会根据文件名的哈希值均匀地分散到各个子目录。最核心的逻辑根据一个BlockId获取对应的文件：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Looks up a file by hashing it into one of our local subdirectories. */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getFile</span></span>(filename: <span class="type">String</span>): <span class="type">File</span> = &#123;</span><br><span class="line">  <span class="comment">// Figure out which local directory it hashes to, and which subdirectory in that</span></span><br><span class="line">  <span class="keyword">val</span> hash = <span class="type">Utils</span>.nonNegativeHash(filename)</span><br><span class="line">  <span class="keyword">val</span> dirId = hash % localDirs.length</span><br><span class="line">  <span class="keyword">val</span> subDirId = (hash / localDirs.length) % subDirsPerLocalDir</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Create the subdirectory if it doesn&#x27;t already exist</span></span><br><span class="line">  <span class="keyword">val</span> subDir = subDirs(dirId).synchronized &#123;</span><br><span class="line">    <span class="keyword">val</span> old = subDirs(dirId)(subDirId)</span><br><span class="line">    <span class="keyword">if</span> (old != <span class="literal">null</span>) &#123;</span><br><span class="line">      old</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">val</span> newDir = <span class="keyword">new</span> <span class="type">File</span>(localDirs(dirId), <span class="string">&quot;%02x&quot;</span>.format(subDirId))</span><br><span class="line">      <span class="keyword">if</span> (!newDir.exists() &amp;&amp; !newDir.mkdir()) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IOException</span>(<span class="string">s&quot;Failed to create local dir in <span class="subst">$newDir</span>.&quot;</span>)</span><br><span class="line">      &#125;</span><br><span class="line">      subDirs(dirId)(subDirId) = newDir</span><br><span class="line">      newDir</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">new</span> <span class="type">File</span>(subDir, filename)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="BlockInfoManager"><a href="#BlockInfoManager" class="headerlink" title="BlockInfoManager"></a>BlockInfoManager</h2><p>BlockInfoManager的核心是实现了一个readers-writer锁来使得多个Task可以同时访问管理的BlockInfo信息。<code>infos</code>存储了各个block的BlockInfo：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">private[this] val infos = new mutable.HashMap[BlockId, BlockInfo]</span><br></pre></td></tr></table></figure>
+
+<p>BlockInfo主要包括：StorageLevel，ClassTag，size等字段，并记录该BlockInfo的reader数量以及writer。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[storage] <span class="class"><span class="keyword">class</span> <span class="title">BlockInfo</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    val level: <span class="type">StorageLevel</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val classTag: <span class="type">ClassTag</span>[_],</span></span></span><br><span class="line"><span class="params"><span class="class">    val tellMaster: <span class="type">Boolean</span></span>) </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">size</span></span>: <span class="type">Long</span> = _size</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">readerCount</span></span>: <span class="type">Int</span> = _readerCount</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">writerTask</span></span>: <span class="type">Long</span> = _writerTask</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后使用<code>writeLocksByTask</code>以及<code>readLocksByTask</code>来分别记录各个Task持有读或者写的block。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">val</span> writeLocksByTask =</span><br><span class="line">	<span class="keyword">new</span> mutable.<span class="type">HashMap</span>[<span class="type">TaskAttemptId</span>, mutable.<span class="type">Set</span>[<span class="type">BlockId</span>]]</span><br><span class="line">		<span class="keyword">with</span> mutable.<span class="type">MultiMap</span>[<span class="type">TaskAttemptId</span>, <span class="type">BlockId</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// Read locks are re-entrant, so use Multiset instead of set</span></span><br><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">val</span> readLocksByTask =</span><br><span class="line">	<span class="keyword">new</span> mutable.<span class="type">HashMap</span>[<span class="type">TaskAttemptId</span>,</span><br><span class="line">                      <span class="type">ConcurrentHashMultiset</span>[<span class="type">BlockId</span>]]</span><br></pre></td></tr></table></figure>
+
+<p>主要四个方法实现了readers-writer lock逻辑：</p>
+<ol>
+<li><p>用于获取读锁的<code>lockForReading()</code>，只有当该block当前没有writer时才能成功，并且支持阻塞：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lockForReading</span></span>(</span><br><span class="line">      blockId: <span class="type">BlockId</span>,</span><br><span class="line">      blocking: <span class="type">Boolean</span> = <span class="literal">true</span>): <span class="type">Option</span>[<span class="type">BlockInfo</span>] = synchronized &#123;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">      infos.get(blockId) <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">None</span> =&gt; <span class="keyword">return</span> <span class="type">None</span></span><br><span class="line">        <span class="keyword">case</span> <span class="type">Some</span>(info) =&gt;</span><br><span class="line">          <span class="comment">// If there is no writer, the read lock is granted.</span></span><br><span class="line">          <span class="keyword">if</span> (info.writerTask == <span class="type">BlockInfo</span>.<span class="type">NO_WRITER</span>) &#123;</span><br><span class="line">            info.readerCount += <span class="number">1</span></span><br><span class="line">            readLocksByTask(currentTaskAttemptId).add(blockId)</span><br><span class="line">            <span class="keyword">return</span> <span class="type">Some</span>(info)</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (blocking) &#123;</span><br><span class="line">        wait()</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">while</span> (blocking)</span><br><span class="line">    <span class="type">None</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>用于获取写锁的<code>lockForWriting()</code>，写锁是互斥锁，只有同时没有reader和writer时才成功：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// No writer and reader</span></span><br><span class="line"><span class="keyword">if</span> (info.writerTask == <span class="type">BlockInfo</span>.<span class="type">NO_WRITER</span> &amp;&amp; info.readerCount == <span class="number">0</span>) &#123;</span><br><span class="line">  info.writerTask = currentTaskAttemptId</span><br><span class="line">  writeLocksByTask.addBinding(currentTaskAttemptId, blockId)</span><br><span class="line">  <span class="keyword">return</span> <span class="type">Some</span>(info)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>释放锁，优先释放写锁的<code>unlock()</code>：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">unlock</span></span>(blockId: <span class="type">BlockId</span>, taskAttemptId: <span class="type">Option</span>[<span class="type">TaskAttemptId</span>] = <span class="type">None</span>): <span class="type">Unit</span> = synchronized &#123;</span><br><span class="line">  <span class="keyword">val</span> taskId = taskAttemptId.getOrElse(currentTaskAttemptId)</span><br><span class="line">  <span class="keyword">val</span> info = get(blockId).getOrElse &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalStateException</span>(<span class="string">s&quot;Block <span class="subst">$blockId</span> not found&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// If the write lock is acquired by the task, release it</span></span><br><span class="line">  <span class="keyword">if</span> (info.writerTask != <span class="type">BlockInfo</span>.<span class="type">NO_WRITER</span>) &#123;</span><br><span class="line">    info.writerTask = <span class="type">BlockInfo</span>.<span class="type">NO_WRITER</span></span><br><span class="line">    writeLocksByTask.removeBinding(taskId, blockId)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Release the read lock</span></span><br><span class="line">    assert(info.readerCount &gt; <span class="number">0</span>, <span class="string">s&quot;Block <span class="subst">$blockId</span> is not locked for reading&quot;</span>)</span><br><span class="line">    info.readerCount -= <span class="number">1</span></span><br><span class="line">    <span class="keyword">val</span> countsForTask = readLocksByTask(taskId)</span><br><span class="line">    <span class="keyword">val</span> newPinCountForTask: <span class="type">Int</span> = countsForTask.remove(blockId, <span class="number">1</span>) - <span class="number">1</span></span><br><span class="line">    assert(newPinCountForTask &gt;= <span class="number">0</span>,</span><br><span class="line">           <span class="string">s&quot;Task <span class="subst">$taskId</span> release lock on block <span class="subst">$blockId</span> more times than it acquired it&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  notifyAll()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>有写锁降级为读锁<code>downgradeLock()</code>，首先释放写锁，然后在尝试添加读锁：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">downgradeLock</span></span>(blockId: <span class="type">BlockId</span>): <span class="type">Unit</span> = synchronized &#123;</span><br><span class="line">  <span class="keyword">val</span> info = get(blockId).get</span><br><span class="line">  require(info.writerTask == currentTaskAttemptId,</span><br><span class="line">          <span class="string">s&quot;Task <span class="subst">$currentTaskAttemptId</span> tried to downgrade a write lock that it does not hold on&quot;</span> +</span><br><span class="line">          <span class="string">s&quot; block <span class="subst">$blockId</span>&quot;</span>)</span><br><span class="line">  unlock(blockId)</span><br><span class="line">  <span class="keyword">val</span> lockOutcome = lockForReading(blockId, blocking = <span class="literal">false</span>)</span><br><span class="line">  assert(lockOutcome.isDefined)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>其他方法则是对<code>infos</code>的读写接口，内部都会获取对应的锁。</p>
+<h2 id="MemoryStore"><a href="#MemoryStore" class="headerlink" title="MemoryStore"></a>MemoryStore</h2><p><img src="https://jaceklaskowski.gitbooks.io/mastering-apache-spark/images/spark-MemoryStore.png"></p>
+<p>MemoryStore在内存中以序列化&#x2F;反序列化的方式保存Block。每个Block的数据用一个MemoryEntry表示：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">sealed</span> <span class="class"><span class="keyword">trait</span> <span class="title">MemoryEntry</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">size</span></span>: <span class="type">Long</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">memoryMode</span></span>: <span class="type">MemoryMode</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">classTag</span></span>: <span class="type">ClassTag</span>[<span class="type">T</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其子类为DeserializedMemoryEntry和SerializedMemoryEntry。DeserializedMemoryEntry存储一个<code>Array[T]</code>数组，而SerializedMemoryEntry存储的是<code>ChunkedByteBuffer</code>:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">DeserializedMemoryEntry</span>[<span class="type">T</span>](<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    value: <span class="type">Array</span>[<span class="type">T</span>],</span></span></span><br><span class="line"><span class="params"><span class="class">    size: <span class="type">Long</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    classTag: <span class="type">ClassTag</span>[<span class="type">T</span>]</span>) <span class="keyword">extends</span> <span class="title">MemoryEntry</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">  <span class="keyword">val</span> memoryMode: <span class="type">MemoryMode</span> = <span class="type">MemoryMode</span>.<span class="type">ON_HEAP</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">SerializedMemoryEntry</span>[<span class="type">T</span>](<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    buffer: <span class="type">ChunkedByteBuffer</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    memoryMode: <span class="type">MemoryMode</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    classTag: <span class="type">ClassTag</span>[<span class="type">T</span>]</span>) <span class="keyword">extends</span> <span class="title">MemoryEntry</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">size</span></span>: <span class="type">Long</span> = buffer.size</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>MemoryStore使用一个<code>LinkedHashMap</code>来在内存中保存所有的Block：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> entries = <span class="keyword">new</span> <span class="type">LinkedHashMap</span>[<span class="type">BlockId</span>, <span class="type">MemoryEntry</span>[_]](<span class="number">32</span>, <span class="number">0.75</span>f, <span class="literal">true</span>)</span><br></pre></td></tr></table></figure>
+
+<p><code>LinkedHashMap</code>初始化时，指定了<code>accessOrder=true</code>，实现了LRU缓存。</p>
+<p>另外，跟踪了每个TaskAttempt展开Block所占用的堆上和堆外内存大小：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A mapping from taskAttemptId to amount of memory used for unrolling a block (in bytes)</span></span><br><span class="line"><span class="comment">// All accesses of this map are assumed to have manually synchronized on `memoryManager`</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> onHeapUnrollMemoryMap = mutable.<span class="type">HashMap</span>[<span class="type">Long</span>, <span class="type">Long</span>]()</span><br><span class="line"><span class="comment">// Note: off-heap unroll memory is only used in putIteratorAsBytes() because off-heap caching</span></span><br><span class="line"><span class="comment">// always stores serialized values.</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> offHeapUnrollMemoryMap = mutable.<span class="type">HashMap</span>[<span class="type">Long</span>, <span class="type">Long</span>]()</span><br></pre></td></tr></table></figure>
+
+<h3 id="put"><a href="#put" class="headerlink" title="put"></a>put</h3><p>首先是添加SerializedMemoryEntry的<code>putBytes()</code>，用于将序列化为<code>ByteBuffer</code>的block添加到MemoryStore中：首先检查block是否已经添加，并尝试向<code>memoryManager</code>请求内存大小为<code>size</code>的空间。如果成功，则会添加到<code>entries</code>中。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">putBytes</span></span>[<span class="type">T</span>: <span class="type">ClassTag</span>](blockId: <span class="type">BlockId</span>, size: <span class="type">Long</span>, memoryMode: <span class="type">MemoryMode</span>, _bytes: () =&gt; <span class="type">ChunkedByteBuffer</span>): <span class="type">Boolean</span> = &#123;</span><br><span class="line">    require(!contains(blockId), <span class="string">s&quot;Block <span class="subst">$blockId</span> is already present in the MemoryStore&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> (memoryManager.acquireStorageMemory(blockId, size, memoryMode)) &#123;</span><br><span class="line">      <span class="comment">// We acquired enough memory for the block, so go ahead and put it</span></span><br><span class="line">      <span class="keyword">val</span> bytes = _bytes()</span><br><span class="line">      assert(bytes.size == size)</span><br><span class="line">      <span class="keyword">val</span> entry = <span class="keyword">new</span> <span class="type">SerializedMemoryEntry</span>[<span class="type">T</span>](bytes, memoryMode, implicitly[<span class="type">ClassTag</span>[<span class="type">T</span>]])</span><br><span class="line">      entries.synchronized &#123;</span><br><span class="line">        entries.put(blockId, entry)</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="literal">true</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的是添加DeserializedMemoryEntry的<code>putIteratorAsValues()</code>，用于以值数组的形式将block添加到MemoryStore中。因为输入的值数组<code>Iterator[T]</code>可能非常大以至于不能全部存放到内存中，<code>putIteratorAsValues()</code>以渐进的方式逐渐对<code>Iterator[T]</code>进行展开。如果能够全部物化，那么就会返回估计的内存占用，否则，返回一个包含了部分展开项以及原始输入的<code>PartiallyUnrolledIterator[T]</code>。需要注意的是：</p>
+<ul>
+<li><p>对于每个block，初始申请的内存大小由<code>spark.storage.unrollMemoryThreshold</code>指定，默认为1MB</p>
+</li>
+<li><p>占用的内存的增长由<code>memoryGrowthFactor = 1.5</code>确定，每过<code>memoryCheckPeriod = 16</code>个值检查一次：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Unroll this block safely, checking whether we have exceeded our threshold periodically</span></span><br><span class="line"><span class="keyword">while</span> (values.hasNext &amp;&amp; keepUnrolling) &#123;</span><br><span class="line">  vector += values.next()</span><br><span class="line">  <span class="keyword">if</span> (elementsUnrolled % memoryCheckPeriod == <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">val</span> currentSize = vector.estimateSize()</span><br><span class="line">    <span class="keyword">if</span> (currentSize &gt;= memoryThreshold) &#123;</span><br><span class="line">      <span class="keyword">val</span> amountToRequest = (currentSize * memoryGrowthFactor - memoryThreshold).toLong</span><br><span class="line">      keepUnrolling =</span><br><span class="line">      reserveUnrollMemoryForThisTask(blockId, amountToRequest, <span class="type">MemoryMode</span>.<span class="type">ON_HEAP</span>)</span><br><span class="line">      <span class="keyword">if</span> (keepUnrolling) &#123;</span><br><span class="line">        unrollMemoryUsedByThisBlock += amountToRequest</span><br><span class="line">      &#125;</span><br><span class="line">      memoryThreshold += amountToRequest</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  elementsUnrolled += <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果全部展开成功，那么会通过<code>transferUnrollToStorage()</code>将用于展开的内存转移给将要保存的DeserializedMemoryEntry：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">transferUnrollToStorage</span></span>(amount: <span class="type">Long</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="comment">// Synchronize so that transfer is atomic</span></span><br><span class="line">  memoryManager.synchronized &#123;</span><br><span class="line">    releaseUnrollMemoryForThisTask(<span class="type">MemoryMode</span>.<span class="type">ON_HEAP</span>, amount)</span><br><span class="line">    <span class="keyword">val</span> success = memoryManager.acquireStorageMemory(blockId, amount, <span class="type">MemoryMode</span>.<span class="type">ON_HEAP</span>)</span><br><span class="line">    assert(success, <span class="string">&quot;transferring unroll memory to storage memory failed&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>并且会根据实际<code>entry.size</code>对之前用于展开的申请的内存进行修正（获取或释放）。再次获取内存时可能失败。</p>
+</li>
+</ul>
+<p>此外，还有实现类似的<code>putIteratorAsBytes()</code>，两者的差异是：<code>putIteratorAsValues()</code>将展开的值用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// Underlying vector for unrolling the block</span><br><span class="line">var vector = new SizeTrackingVector[T]()(classTag)</span><br></pre></td></tr></table></figure>
+
+<p>保存，而后者是直接写入到序列化流中：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Underlying buffer for unrolling the block</span></span><br><span class="line"><span class="keyword">val</span> redirectableStream = <span class="keyword">new</span> <span class="type">RedirectableOutputStream</span></span><br><span class="line"><span class="keyword">val</span> bbos = <span class="keyword">new</span> <span class="type">ChunkedByteBufferOutputStream</span>(initialMemoryThreshold.toInt, allocator)</span><br><span class="line">redirectableStream.setOutputStream(bbos)</span><br><span class="line"><span class="keyword">val</span> serializationStream: <span class="type">SerializationStream</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> autoPick = !blockId.isInstanceOf[<span class="type">StreamBlockId</span>]</span><br><span class="line">  <span class="keyword">val</span> ser = serializerManager.getSerializer(classTag, autoPick).newInstance()</span><br><span class="line">  ser.serializeStream(serializerManager.wrapStream(blockId, redirectableStream))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Eviction"><a href="#Eviction" class="headerlink" title="Eviction"></a>Eviction</h3><p>MemoryStore基于LRU方式淘汰旧的block，由<code>evictBlocksToFreeSpace()</code>实现：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="function"><span class="keyword">def</span> <span class="title">evictBlocksToFreeSpace</span></span>(</span><br><span class="line">     blockId: <span class="type">Option</span>[<span class="type">BlockId</span>], <span class="comment">// New Blocks need to store</span></span><br><span class="line">     space: <span class="type">Long</span>, <span class="comment">// Space needed</span></span><br><span class="line">     memoryMode: <span class="type">MemoryMode</span>): <span class="type">Long</span> = &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>首先按照访问顺序便利<code>entries</code>，寻找可以清除的block，直到可以释放的内存重量超过<code>space</code>或者遍历结束：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Synchronized to ensure the the entries is not changed</span></span><br><span class="line">entries.synchronized &#123;</span><br><span class="line">  <span class="keyword">val</span> iterator = entries.entrySet().iterator()</span><br><span class="line">  <span class="keyword">while</span> (freedMemory &lt; space &amp;&amp; iterator.hasNext) &#123;</span><br><span class="line">    <span class="keyword">val</span> pair = iterator.next()</span><br><span class="line">    <span class="keyword">val</span> blockId = pair.getKey</span><br><span class="line">    <span class="keyword">val</span> entry = pair.getValue</span><br><span class="line">    <span class="keyword">if</span> (blockIsEvictable(blockId, entry)) &#123;</span><br><span class="line">      <span class="comment">// We don&#x27;t want to evict blocks which are currently being read, so we need to obtain</span></span><br><span class="line">      <span class="comment">// an exclusive write lock on blocks which are candidates for eviction. We perform a</span></span><br><span class="line">      <span class="comment">// non-blocking &quot;tryLock&quot; here in order to ignore blocks which are locked for reading:</span></span><br><span class="line">      <span class="keyword">if</span> (blockInfoManager.lockForWriting(blockId, blocking = <span class="literal">false</span>).isDefined) &#123;</span><br><span class="line">        selectedBlocks += blockId</span><br><span class="line">        freedMemory += pair.getValue.size</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>dropBlock()</code>实际通过<code>BlockEvictionHandler.dropFromMemory()</code>进行处理：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dropBlock</span></span>[<span class="type">T</span>](blockId: <span class="type">BlockId</span>, entry: <span class="type">MemoryEntry</span>[<span class="type">T</span>]): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> data = entry <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">DeserializedMemoryEntry</span>(values, _, _) =&gt; <span class="type">Left</span>(values)</span><br><span class="line">    <span class="keyword">case</span> <span class="type">SerializedMemoryEntry</span>(buffer, _, _) =&gt; <span class="type">Right</span>(buffer)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">val</span> newEffectiveStorageLevel =</span><br><span class="line">  blockEvictionHandler.dropFromMemory(blockId, () =&gt; data)(entry.classTag)</span><br><span class="line">  <span class="keyword">if</span> (newEffectiveStorageLevel.isValid) &#123;</span><br><span class="line">    <span class="comment">// The block is still present in at least one store, so release the lock</span></span><br><span class="line">    <span class="comment">// but don&#x27;t delete the block info</span></span><br><span class="line">    blockInfoManager.unlock(blockId)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// The block isn&#x27;t present in any store, so delete the block info so that the</span></span><br><span class="line">    <span class="comment">// block can be stored again</span></span><br><span class="line">    blockInfoManager.removeBlock(blockId)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在MemoryStore中，<code>blockEvictionHandler</code>会从<code>memoryStore</code>中删除该block</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> blockEvictionHandler = <span class="keyword">new</span> <span class="type">BlockEvictionHandler</span> &#123;</span><br><span class="line">  <span class="keyword">var</span> memoryStore: <span class="type">MemoryStore</span> = _</span><br><span class="line">  <span class="keyword">override</span> <span class="keyword">private</span>[storage] <span class="function"><span class="keyword">def</span> <span class="title">dropFromMemory</span></span>[<span class="type">T</span>: <span class="type">ClassTag</span>](</span><br><span class="line">    blockId: <span class="type">BlockId</span>,</span><br><span class="line">    data: () =&gt; <span class="type">Either</span>[<span class="type">Array</span>[<span class="type">T</span>], <span class="type">ChunkedByteBuffer</span>]): <span class="type">StorageLevel</span> = &#123;</span><br><span class="line">    memoryStore.remove(blockId)</span><br><span class="line">    <span class="type">StorageLevel</span>.<span class="type">NONE</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于被选择清理的Block，会逐一的调用<code>dropBlock()</code>释放内存。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="DiskStore"><a href="#DiskStore" class="headerlink" title="DiskStore"></a>DiskStore</h2><p>DiskStore用于存储BlockManager中的block到磁盘中。<code>putBytes()</code>将Block存储到磁盘文件中：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">putBytes</span></span>(blockId: <span class="type">BlockId</span>, bytes: <span class="type">ChunkedByteBuffer</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  put(blockId) &#123; fileOutputStream =&gt;</span><br><span class="line">    <span class="keyword">val</span> channel = fileOutputStream.getChannel</span><br><span class="line">    <span class="type">Utils</span>.tryWithSafeFinally &#123;</span><br><span class="line">      bytes.writeFully(channel)</span><br><span class="line">    &#125; &#123;</span><br><span class="line">      channel.close()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>put()</code>中会委托DiskBlockManager创建名为<code>blockId.name</code>的文件，并打开输出流，以channel的方式写入数据。</p>
+<p>对应的<code>getBytes()</code>用于读取block的数据，如果文件的大小小于需要文件映射的阈值<code>spark.storage.memoryMapThreshold</code>(默认为2MB)，那么在内存中创建一个ChunkedByteBuffer，否则以文件映射的方式打开：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getBytes</span></span>(blockId: <span class="type">BlockId</span>): <span class="type">ChunkedByteBuffer</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> file = diskManager.getFile(blockId.name)</span><br><span class="line">  <span class="keyword">val</span> channel = <span class="keyword">new</span> <span class="type">RandomAccessFile</span>(file, <span class="string">&quot;r&quot;</span>).getChannel</span><br><span class="line">  <span class="type">Utils</span>.tryWithSafeFinally &#123;</span><br><span class="line">    <span class="comment">// For small files, directly read rather than memory map</span></span><br><span class="line">    <span class="keyword">if</span> (file.length &lt; minMemoryMapBytes) &#123;</span><br><span class="line">      <span class="keyword">val</span> buf = <span class="type">ByteBuffer</span>.allocate(file.length.toInt)</span><br><span class="line">      channel.position(<span class="number">0</span>)</span><br><span class="line">      <span class="keyword">while</span> (buf.remaining() != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (channel.read(buf) == <span class="number">-1</span>) &#123; <span class="keyword">throw</span> ...&#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// Prepare for reading</span></span><br><span class="line">      buf.flip()</span><br><span class="line">      <span class="keyword">new</span> <span class="type">ChunkedByteBuffer</span>(buf)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">new</span> <span class="type">ChunkedByteBuffer</span>(channel.map(<span class="type">MapMode</span>.<span class="type">READ_ONLY</span>, <span class="number">0</span>, file.length))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; &#123;</span><br><span class="line">    channel.close()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ShuffleClient"><a href="#ShuffleClient" class="headerlink" title="ShuffleClient"></a>ShuffleClient</h2><p>ShuffleClient抽象类定义了用于读取shuffle文件的<code>fetchBlocks()</code>方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">fetchBlocks</span><span class="params">(</span></span><br><span class="line"><span class="params">  String host,</span></span><br><span class="line"><span class="params">  <span class="type">int</span> port,</span></span><br><span class="line"><span class="params">  String execId,</span></span><br><span class="line"><span class="params">  String[] blockIds,</span></span><br><span class="line"><span class="params">  BlockFetchingListener listener)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>有两种具体实现：</p>
+<ul>
+<li>ExternalShuffleClient，从一个外部（非Executor内部）中读取，使得shuffle文件的生命周期长于Executors，避免Executor关闭或故障时，需要重新计算shuffle文件</li>
+<li>BlockTransferService，从Executors中读取</li>
+</ul>
+<h2 id="Refs"><a href="#Refs" class="headerlink" title="Refs:"></a>Refs:</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/cenglinjinran/p/8476639.html">https://www.cnblogs.com/cenglinjinran/p/8476639.html</a></li>
+<li></li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2019/10/20/Spark-spark-internal/" title= "Spark Internals Basics">
+                    <div class="nextTitle">Spark Internals Basics</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/09/22/Spark-Spark-Tungsten/" title= "Spark Tungsten">
+                    <div class="prevTitle">Spark Tungsten</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2019/10/18/Spark-Spark-BlockManager/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Spark BlockManager"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#BlockManager"><span class="toc-number">1.</span> <span class="toc-text">BlockManager</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#initialize"><span class="toc-number">1.1.</span> <span class="toc-text">initialize()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Get-x2F-Put-on-Local"><span class="toc-number">1.2.</span> <span class="toc-text">Get&#x2F;Put on Local</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#getLocalBlockData"><span class="toc-number">1.2.1.</span> <span class="toc-text">getLocalBlockData()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#putBlockData"><span class="toc-number">1.2.2.</span> <span class="toc-text">putBlockData()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#putBlockDataAsStream"><span class="toc-number">1.2.3.</span> <span class="toc-text">putBlockDataAsStream()</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DiskBlockManager"><span class="toc-number">2.</span> <span class="toc-text">DiskBlockManager</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BlockInfoManager"><span class="toc-number">3.</span> <span class="toc-text">BlockInfoManager</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MemoryStore"><span class="toc-number">4.</span> <span class="toc-text">MemoryStore</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#put"><span class="toc-number">4.1.</span> <span class="toc-text">put</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Eviction"><span class="toc-number">4.2.</span> <span class="toc-text">Eviction</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DiskStore"><span class="toc-number">5.</span> <span class="toc-text">DiskStore</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ShuffleClient"><span class="toc-number">6.</span> <span class="toc-text">ShuffleClient</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Refs"><span class="toc-number">7.</span> <span class="toc-text">Refs:</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

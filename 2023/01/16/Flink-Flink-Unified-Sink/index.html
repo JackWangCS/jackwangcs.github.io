@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink Unified Sink · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink Unified Sink</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink Unified Sink
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SQL">SQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Runtime">Runtime</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">2.1k</span>Reading time: <span class="post-count reading-time">10 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2023/01/16</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="Sink-Interface"><a href="#Sink-Interface" class="headerlink" title="Sink Interface"></a>Sink Interface</h2><p>在<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-95%3A+New+TableSource+and+TableSink+interfaces">FLIP-95: New TableSource and TableSink interfaces</a>中，引入了Flink Table Sink的基本接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">DynamicTableSink</span> &#123;</span><br><span class="line">    ChangelogMode <span class="title function_">getChangelogMode</span><span class="params">(ChangelogMode requestedMode)</span>;</span><br><span class="line">    <span class="comment">// Runtime implementation for writing data</span></span><br><span class="line">    SinkRuntimeProvider <span class="title function_">getSinkRuntimeProvider</span><span class="params">(Context context)</span>;</span><br><span class="line">    DynamicTableSink <span class="title function_">copy</span><span class="params">()</span>;</span><br><span class="line">    String <span class="title function_">asSummaryString</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Context for creating runtime implementation via a SinkRuntimeProvider</span></span><br><span class="line">    <span class="keyword">interface</span> <span class="title class_">Context</span> &#123;</span><br><span class="line">        <span class="type">boolean</span> <span class="title function_">isBounded</span><span class="params">()</span>;</span><br><span class="line">        &lt;T&gt; TypeInformation&lt;T&gt; <span class="title function_">createTypeInformation</span><span class="params">(DataType consumedDataType)</span>;</span><br><span class="line">        &lt;T&gt; TypeInformation&lt;T&gt; <span class="title function_">createTypeInformation</span><span class="params">(LogicalType consumedLogicalType)</span>;</span><br><span class="line">        DataStructureConverter <span class="title function_">createDataStructureConverter</span><span class="params">(DataType consumedDataType)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PublicEvolving</span></span><br><span class="line">    <span class="keyword">interface</span> <span class="title class_">DataStructureConverter</span> <span class="keyword">extends</span> <span class="title class_">RuntimeConverter</span> &#123;</span><br><span class="line">        <span class="comment">/** Converts the given internal structure into an external object. */</span></span><br><span class="line">        <span class="meta">@Nullable</span></span><br><span class="line">        Object <span class="title function_">toExternal</span><span class="params">(<span class="meta">@Nullable</span> Object internalStructure)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PublicEvolving</span></span><br><span class="line">    <span class="keyword">interface</span> <span class="title class_">SinkRuntimeProvider</span> &#123;</span><br><span class="line">        <span class="comment">// marker interface</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在实现Sink时，核心是实现对应的SinkRuntimeProvider。SinkRuntimeProvider描述了在Runtime时，对底层的DataStream如何变换和消费。</p>
+<h3 id="FLIP-146-改进TableSource和TableSink接口"><a href="#FLIP-146-改进TableSource和TableSink接口" class="headerlink" title="FLIP-146 改进TableSource和TableSink接口"></a>FLIP-146 改进TableSource和TableSink接口</h3><p>在FLIP-95中，虽然引入了TableSink相关接口，但是还有下面的几点不足：</p>
+<ul>
+<li>对于Source和Sink，用户经常需要自定义并行度。并且有些Connector具有能力来推断并行度，而且推断出的并行度在大多数情况下都更合适。</li>
+<li>Connector需要能通过DataStream拓扑的能力，而不是简单的通过一个SourceFunction或者SinkFunction。比如：PartitionCommit，File Compaction等features。</li>
+</ul>
+<p>因此在<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-146%3A+Improve+new+TableSource+and+TableSink+interfaces">FLIP-146: Improve new TableSource and TableSink interfaces</a> (<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-19720">FLINK-19720</a>)中，引入了</p>
+<ul>
+<li><p>ParallelismProvider接口，SourceRuntimeProvider和SinkRuntimeProvider都实现了该接口，Source和Sink实现能够提供自定义的并行度。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ParallelismProvider</span> &#123;</span><br><span class="line">    <span class="keyword">default</span> Optional&lt;Integer&gt; <span class="title function_">getParallelism</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Optional.empty();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SourceProvider</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> SourceProvider <span class="title function_">of</span><span class="params">(Source&lt;RowData, ?, ?&gt; source)</span> &#123;...&#125;</span><br><span class="line">Source&lt;RowData, ?, ?&gt; createSource();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>DataStream Provider</p>
+<ul>
+<li><p>DataStreamScanProvider</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">default</span> DataStream&lt;RowData&gt; <span class="title function_">produceDataStream</span><span class="params">(</span></span><br><span class="line"><span class="params">  ProviderContext providerContext, StreamExecutionEnvironment execEnv)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> produceDataStream(execEnv);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>DataStreamSinkProvider</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">default</span> DataStreamSink&lt;?&gt; consumeDataStream(</span><br><span class="line">  ProviderContext providerContext, DataStream&lt;RowData&gt; dataStream) &#123;</span><br><span class="line">  <span class="keyword">return</span> consumeDataStream(dataStream);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<h3 id="SinkRuntimeProvider实现"><a href="#SinkRuntimeProvider实现" class="headerlink" title="SinkRuntimeProvider实现"></a>SinkRuntimeProvider实现</h3><p>SinkRuntimeProvider的实现有：</p>
+<ul>
+<li><p>OutputFormatProvider：由FLIP-95(<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-16988">FLINK-16988</a>)引入，通过一个<code>OutputFormat&lt;RowData&gt;</code>来构造。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> OutputFormatProvider <span class="title function_">of</span><span class="params">(OutputFormat&lt;RowData&gt; outputFormat, Integer sinkParallelism)</span> &#123;....&#125;;</span><br><span class="line">OutputFormat&lt;RowData&gt; <span class="title function_">createOutputFormat</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SinkFunctionProvider：由FLIP-95(<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-16988">FLINK-16988</a>)引入，通过<code>SinkFunction&lt;RowData&gt;</code>来构造：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> SinkFunctionProvider <span class="title function_">of</span><span class="params">(</span></span><br><span class="line"><span class="params">            SinkFunction&lt;RowData&gt; sinkFunction, <span class="meta">@Nullable</span> Integer sinkParallelism)</span> &#123;...&#125;;</span><br><span class="line">SinkFunction&lt;RowData&gt; <span class="title function_">createSinkFunction</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SinkProvider：在FLIP-146(<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-21005">FLINK-21005</a>)中引入，通过Sink V1构造一个SinkRuntimeProvider，已经处于Deprecated状态。新的Sink实现需要使用SinkV2Provider。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> SinkProvider <span class="title function_">of</span><span class="params">(Sink&lt;RowData, ?, ?, ?&gt; sink, <span class="meta">@Nullable</span> Integer sinkParallelism)</span> &#123;...&#125;</span><br><span class="line">Sink&lt;RowData, ?, ?, ?&gt; createSink();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>DataStreamSinkProvider：在FLIP-146(<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-19720">FLINK-19720</a>)中引入，支持消费<code>DataStream&lt;RowData&gt;</code>，使得Sink的实现更加灵活，能够添加额外的DataStream处理拓扑。DataStreamProvider使用Connector高级开发者，因为在实现时，需要注意底层的Shuffle逻辑，需要保证不能搞混每个并行的subtask上的change log。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">default</span> DataStreamSink&lt;?&gt; consumeDataStream(</span><br><span class="line">  ProviderContext providerContext, DataStream&lt;RowData&gt; dataStream)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>TransformationSinkProvider：由FLIP-136(FLINK-21934)引入，为了提高Table API和DataStream之间的互操作性。为了实现<code>StreamTableEnvironment.toDataStream</code>，创建了一个基于Transformation的ExternalDynamicSink实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Transformation&lt;?&gt; createTransformation(Context context);</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Context</span> <span class="keyword">extends</span> <span class="title class_">ProviderContext</span> &#123;</span><br><span class="line">  Transformation&lt;RowData&gt; <span class="title function_">getInputTransformation</span><span class="params">()</span>;</span><br><span class="line">  <span class="type">int</span> <span class="title function_">getRowtimeIndex</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当前，DataStream API并原生地支持changelog处理，因此toDataStream的转换也支持append-only&#x2F;insert-only。</p>
+</li>
+<li><p>SinkV2Provider：由FLIP-191(<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-25573">FLINK-25573</a>)引入，用于支持Sink V2的Provider实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> SinkV2Provider <span class="title function_">of</span><span class="params">(Sink&lt;RowData&gt; sink)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> () -&gt; sink;</span><br><span class="line">&#125;</span><br><span class="line">Sink&lt;RowData&gt; <span class="title function_">createSink</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="Sink-V1"><a href="#Sink-V1" class="headerlink" title="Sink V1"></a>Sink V1</h2><p>在<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-143%3A+Unified+Sink+API">FLIP-143: Unified Sink API</a>中，Sink V1版本中引入了Sink相关的接口：</p>
+<ul>
+<li>Sink</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Sink</span>&lt;InputT, CommT, WriterStateT, GlobalCommT&gt; <span class="keyword">extends</span> <span class="title class_">Serializable</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>SinkWriter</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SinkWriter</span>&lt;InputT, CommT, WriterStateT&gt; <span class="keyword">extends</span> <span class="title class_">AutoCloseable</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">write</span><span class="params">(InputT element, Context context)</span> <span class="keyword">throws</span> IOException, InterruptedException;</span><br><span class="line">    <span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">writeWatermark</span><span class="params">(Watermark watermark)</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;&#125;</span><br><span class="line">    List&lt;CommT&gt; <span class="title function_">prepareCommit</span><span class="params">(<span class="type">boolean</span> flush)</span> <span class="keyword">throws</span> IOException, InterruptedException;</span><br><span class="line">    <span class="keyword">default</span> List&lt;WriterStateT&gt; <span class="title function_">snapshotState</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="keyword">return</span> Collections.emptyList();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">default</span> List&lt;WriterStateT&gt; <span class="title function_">snapshotState</span><span class="params">(<span class="type">long</span> checkpointId)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="keyword">return</span> snapshotState();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">interface</span> <span class="title class_">Context</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="title function_">currentWatermark</span><span class="params">()</span>;</span><br><span class="line">        Long <span class="title function_">timestamp</span><span class="params">()</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Committer</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Committer</span>&lt;CommT&gt; <span class="keyword">extends</span> <span class="title class_">AutoCloseable</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>GlobalCommiter</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">GlobalCommitter</span>&lt;CommT, GlobalCommT&gt; <span class="keyword">extends</span> <span class="title class_">AutoCloseable</span> </span><br></pre></td></tr></table></figure>
+
+<p>可以看到Sink V1的接口定义比较具体，对于不需要实现事务提交的Sink来说，并不需要Commiter和GlobalCommitter，但是依然要求在实现代码中引用，这是一个设计上的缺陷。</p>
+<p>在设计顶层接口时，我们应该更加关注抽象的语义，并且尽量保证接口的抽象是通用的，而不是为了支持具体的某种实现。目前Sink V1在Flink 1.12 release，但目前已经被Deprecated了，不再继续使用。</p>
+<h2 id="Sink-Improvements"><a href="#Sink-Improvements" class="headerlink" title="Sink Improvements"></a>Sink Improvements</h2><h3 id="Sink-Watermark-Support"><a href="#Sink-Watermark-Support" class="headerlink" title="Sink Watermark Support"></a>Sink Watermark Support</h3><p>在引入Sink V1时，Flink并不支持将Watermarks发送到Sink中。<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-167%3A+Watermarks+for+Sink+API?src=contextnavpagetreemode">FLIP-167: Watermarks for Sink API</a>中提出将Watermark发送到Sink中，因此在SinkWriter和SinkFunction中添加了处理Watermark的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">writeWatermark</span><span class="params">(Watermark watermark)</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的Operator实现为：</p>
+<ul>
+<li>SinkFunction -&gt; StreamSink</li>
+<li>SinkWriter -&gt; SinkWriterOperator</li>
+</ul>
+<h3 id="Extend-Sink-API"><a href="#Extend-Sink-API" class="headerlink" title="Extend Sink API"></a>Extend Sink API</h3><p><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-177%3A+Extend+Sink+API?src=contextnavpagetreemode">FLIP-177: Extend Sink API</a>对Sink进行了拓展：</p>
+<ul>
+<li>调整SinkWriter接口，允许interruptible writes</li>
+<li>拓展Sink#InitContext，提供给用户更多的信息。包括：<ul>
+<li>UserCodeClassLoader：可以用于加载Serialization Schema</li>
+<li>Number of ParallelSubtask：和已经存在的<code>getSubtaskId()</code>一起，用于分配工作</li>
+<li>MailboxExecutor：用于支持异步处理</li>
+</ul>
+</li>
+</ul>
+<p>从而移植SinkFunctions到新的Sink接口和支持AsyncSink。</p>
+<h3 id="Async-Sink"><a href="#Async-Sink" class="headerlink" title="Async Sink"></a>Async Sink</h3><p>Flink具有丰富的Connector系统，原生支持Kafka，Kinesis Data Stream，Elasticsearch，HBase等。这些Connectors的基本功能非常相似：</p>
+<blockquote>
+<p>They batch events according to user defined buffering hints, sign requests and send them to the respective endpoint, retry unsuccessful or throttled requests, and participate in checkpointing. They primarily just differ in the way they interface with the destination. </p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-171%3A+Async+Sink?src=contextnavpagetreemode">FLIP-171: Async Sink</a>中提出了AsyncSinkBase，将这些共同的功能抽象到一个通用的基类中。AsyncSinkBase的设计主要关注它的扩展性以及对各种Sink目的地的支持。AsyncSinkBase会处理checkpointing，提供at-least once语义保证，但是只适用于了提供了async requests的Sink。</p>
+<h4 id="接口设计"><a href="#接口设计" class="headerlink" title="接口设计"></a>接口设计</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// This interface specifies the mapping between elements of a stream to request entries that can be sent to the destination</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ElementConverter</span>&lt;InputT, RequestEntryT&gt; <span class="keyword">extends</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    RequestEntryT <span class="title function_">apply</span><span class="params">(InputT element, SinkWriter.Context context)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* A generic sink writer that handles the general behaviour of a sink such as batching and flushing,</span></span><br><span class="line"><span class="comment"> * and allows extenders to implement the logic for persisting individual request elements, with</span></span><br><span class="line"><span class="comment"> * allowance for retries.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AsyncSinkWriter</span>&lt;InputT, RequestEntryT <span class="keyword">extends</span> <span class="title class_">Serializable</span>&gt;</span><br><span class="line">        <span class="keyword">implements</span> <span class="title class_">StatefulSink</span>.StatefulSinkWriter&lt;InputT, BufferedRequestState&lt;RequestEntryT&gt;&gt; &#123;</span><br><span class="line">      <span class="comment">//  This method specifies how to persist buffered request entries into the destination. It is</span></span><br><span class="line">      <span class="comment">// implemented when support for a new destination is added.</span></span><br><span class="line">      <span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">submitRequestEntries</span><span class="params">(</span></span><br><span class="line"><span class="params">            List&lt;RequestEntryT&gt; requestEntries, Consumer&lt;List&lt;RequestEntryT&gt;&gt; requestToRetry)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="AsyncSinkWriter内部实现"><a href="#AsyncSinkWriter内部实现" class="headerlink" title="AsyncSinkWriter内部实现"></a>AsyncSinkWriter内部实现</h4><p>AsyncSinkWriter内部会根据提供的buffering hints，使用一个Deque来缓存请求RequestEntryT，然后调用<code>submitRequestEntries()</code>异步的发送请求到Sink。此外，AsyncSinkWriter会跟踪in-flight的请求，在checkpoint提交时，会将已经完成的请求和缓存在Deque的请求持久化到checkpoint中。</p>
+<h4 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h4><ul>
+<li>只支持提供了async client的Sink</li>
+<li>持久化到Sink的请求可能会是乱序的（因为重试引起的）</li>
+<li>目前并不支持exactly-once，只支持基本的upsert和幂等的Sink</li>
+</ul>
+<h2 id="Sink-V2"><a href="#Sink-V2" class="headerlink" title="Sink V2"></a>Sink V2</h2><p>由<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-191%3A+Extend+unified+Sink+interface+to+support+small+file+compaction">FLIP-191: Extend unified Sink interface to support small file compaction</a>中提出的，主要目的是解决Sink V1不能覆盖的部分use case。对于FLIP-191，特别关注于小文件压缩(small-file-compaction)问题。</p>
+<p>在Sink V1中，通过Writer和Committer的抽象来实现两阶段提交非常有帮助，但是当前的GlobalCommitter无法完成所有必要的职责。为了不破坏已经存在的Sink，因此提出了Sink V2，吸收了当前Sink的接口并提供相似的功能。</p>
+<p>Sink V2采用了<strong>Mix-In的方式</strong>来满足不同的Sink设置。主要分为三种：</p>
+<ul>
+<li>最基本的 Sink</li>
+<li>需要保存状态的 StatefulSink</li>
+<li>需要提交的 TwoPhaseCommittingSink</li>
+</ul>
+<h3 id="Simple-Sink"><a href="#Simple-Sink" class="headerlink" title="Simple Sink"></a>Simple Sink</h3><p>如果Sink V1的实现中，没有使用GlobalCommitter，可以非常容易地迁移到Sink V2上来，因为Committer和SinkWriter的所有方法在Sink V2都存在且保持不变。</p>
+<p>Sink的接口定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Sink</span>&lt;InputT&gt; <span class="keyword">extends</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    SinkWriter&lt;InputT&gt; <span class="title function_">createWriter</span><span class="params">(InitContext context)</span> <span class="keyword">throws</span> IOException;</span><br><span class="line">    <span class="comment">/** The interface exposes some runtime info for creating a &#123;<span class="doctag">@link</span> SinkWriter&#125;. */</span></span><br><span class="line">    <span class="meta">@PublicEvolving</span></span><br><span class="line">    <span class="keyword">interface</span> <span class="title class_">InitContext</span> &#123;.....&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>StatefulSink是Sink接口的子类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">StatefulSink</span>&lt;InputT, WriterStateT&gt; <span class="keyword">extends</span> <span class="title class_">Sink</span>&lt;InputT&gt; &#123;</span><br><span class="line">    StatefulSinkWriter&lt;InputT, WriterStateT&gt; <span class="title function_">createWriter</span><span class="params">(InitContext context)</span> <span class="keyword">throws</span> IOException;</span><br><span class="line">    StatefulSinkWriter&lt;InputT, WriterStateT&gt; <span class="title function_">restoreWriter</span><span class="params">(</span></span><br><span class="line"><span class="params">            InitContext context, Collection&lt;WriterStateT&gt; recoveredState)</span> <span class="keyword">throws</span> IOException;</span><br><span class="line">    SimpleVersionedSerializer&lt;WriterStateT&gt; <span class="title function_">getWriterStateSerializer</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PublicEvolving</span></span><br><span class="line">    <span class="keyword">interface</span> <span class="title class_">WithCompatibleState</span> &#123;</span><br><span class="line">        Collection&lt;String&gt; <span class="title function_">getCompatibleWriterStateNames</span><span class="params">()</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PublicEvolving</span></span><br><span class="line">    <span class="keyword">interface</span> <span class="title class_">StatefulSinkWriter</span>&lt;InputT, WriterStateT&gt; <span class="keyword">extends</span> <span class="title class_">SinkWriter</span>&lt;InputT&gt; &#123;</span><br><span class="line">        List&lt;WriterStateT&gt; <span class="title function_">snapshotState</span><span class="params">(<span class="type">long</span> checkpointId)</span> <span class="keyword">throws</span> IOException;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>TwoPhaseCommittingSink：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">TwoPhaseCommittingSink</span>&lt;InputT, CommT&gt; <span class="keyword">extends</span> <span class="title class_">Sink</span>&lt;InputT&gt; &#123;</span><br><span class="line">    PrecommittingSinkWriter&lt;InputT, CommT&gt; <span class="title function_">createWriter</span><span class="params">(InitContext context)</span> <span class="keyword">throws</span> IOException;</span><br><span class="line">    Committer&lt;CommT&gt; <span class="title function_">createCommitter</span><span class="params">()</span> <span class="keyword">throws</span> IOException;</span><br><span class="line">    SimpleVersionedSerializer&lt;CommT&gt; <span class="title function_">getCommittableSerializer</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">interface</span> <span class="title class_">PrecommittingSinkWriter</span>&lt;InputT, CommT&gt; <span class="keyword">extends</span> <span class="title class_">SinkWriter</span>&lt;InputT&gt; &#123;</span><br><span class="line">        Collection&lt;CommT&gt; <span class="title function_">prepareCommit</span><span class="params">()</span> <span class="keyword">throws</span> IOException, InterruptedException;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Advanced-Sink"><a href="#Advanced-Sink" class="headerlink" title="Advanced Sink"></a>Advanced Sink</h3><p>为了支持在Commit不同阶段引入自定义的拓扑逻辑，Flink提供了高级的接口：<br><img src="https://raw.githubusercontent.com/jieww/RawImages/master/20221106214953.png"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">WithPreWriteTopology</span>&lt;InputT&gt; <span class="keyword">extends</span> <span class="title class_">Sink</span>&lt;InputT&gt; &#123;</span><br><span class="line">    DataStream&lt;InputT&gt; <span class="title function_">addPreWriteTopology</span><span class="params">(DataStream&lt;InputT&gt; inputDataStream)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">WithPreCommitTopology</span>&lt;InputT, CommT&gt;</span><br><span class="line">        <span class="keyword">extends</span> <span class="title class_">TwoPhaseCommittingSink</span>&lt;InputT, CommT&gt; &#123;</span><br><span class="line">    DataStream&lt;CommittableMessage&lt;CommT&gt;&gt; <span class="title function_">addPreCommitTopology</span><span class="params">(</span></span><br><span class="line"><span class="params">            DataStream&lt;CommittableMessage&lt;CommT&gt;&gt; committables)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">WithPostCommitTopology</span>&lt;InputT, CommT&gt;</span><br><span class="line">        <span class="keyword">extends</span> <span class="title class_">TwoPhaseCommittingSink</span>&lt;InputT, CommT&gt; &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">addPostCommitTopology</span><span class="params">(DataStream&lt;CommittableMessage&lt;CommT&gt;&gt; committables)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中CommittableMessage包含了该Committable所属的Checkpoint以及发送它的subtask：</p>
+<ul>
+<li>CommittableMessageWithLineage</li>
+<li>CommittableSummary：在一次Checkpoint中发送的最后一条消息，当下游算子收到CommittableSummary时，表示上游的subtask将不会收到更多来自该Checkpoint的消息。</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" title= "Flink DeduplicateFunction">
+                    <div class="prevTitle">Flink DeduplicateFunction</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2023/01/16/Flink-Flink-Unified-Sink/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink Unified Sink"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Sink-Interface"><span class="toc-number">1.</span> <span class="toc-text">Sink Interface</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#FLIP-146-%E6%94%B9%E8%BF%9BTableSource%E5%92%8CTableSink%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.1.</span> <span class="toc-text">FLIP-146 改进TableSource和TableSink接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SinkRuntimeProvider%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.2.</span> <span class="toc-text">SinkRuntimeProvider实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sink-V1"><span class="toc-number">2.</span> <span class="toc-text">Sink V1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sink-Improvements"><span class="toc-number">3.</span> <span class="toc-text">Sink Improvements</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Sink-Watermark-Support"><span class="toc-number">3.1.</span> <span class="toc-text">Sink Watermark Support</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Extend-Sink-API"><span class="toc-number">3.2.</span> <span class="toc-text">Extend Sink API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Async-Sink"><span class="toc-number">3.3.</span> <span class="toc-text">Async Sink</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.3.1.</span> <span class="toc-text">接口设计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AsyncSinkWriter%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.3.2.</span> <span class="toc-text">AsyncSinkWriter内部实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%99%90%E5%88%B6"><span class="toc-number">3.3.3.</span> <span class="toc-text">限制</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sink-V2"><span class="toc-number">4.</span> <span class="toc-text">Sink V2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Simple-Sink"><span class="toc-number">4.1.</span> <span class="toc-text">Simple Sink</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Advanced-Sink"><span class="toc-number">4.2.</span> <span class="toc-text">Advanced Sink</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

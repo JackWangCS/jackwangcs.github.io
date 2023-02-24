@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Spark Query Execution · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Spark Query Execution</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Spark Query Execution
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SQL">SQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Runtime">Runtime</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Spark">Spark</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">1.5k</span>Reading time: <span class="post-count reading-time">7 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/05/10</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="Spark-Query-Execution"><a href="#Spark-Query-Execution" class="headerlink" title="Spark Query Execution"></a>Spark Query Execution</h1><p>Spark3.0的架构如下：</p>
+<p><img src="https://www.iteblog.com/pic/spark/spark_architecture-iteblog.png"></p>
+<p>SQL、Spark ML、Spark Streaming等都基于底层统一的SQL Engine。整个流程如下：</p>
+<p><img src="https://www.iteblog.com/pic/spark/spark_catalyst-iteblog.jpg"></p>
+<ul>
+<li>Parse：解析SQL语句，得到语法树并生成Unresolved Logical Plan</li>
+<li>Analysis：利用Session Catalog信息，解析Logical Plan的数据库名，表名， 函数等信息</li>
+<li>Logical plan Optimizations：利用Optimizer优化Logical Plan</li>
+<li>Physical planning：将Logical plan转换成多个Physical plan，并根据Cost Model选择最近的Physical plan</li>
+<li>Code Generation：将Physical Plan中的部分生成Java字节码，从而提高执行效率</li>
+<li>Execution：基于Spark Core执行底层RDD计算</li>
+</ul>
+<p>前三部也称为Front-end，后部分为backend。</p>
+<h2 id="Parse"><a href="#Parse" class="headerlink" title="Parse"></a>Parse</h2><p>Spark 2.0以后引入了ANTLR语法解析工具来解析SQL语句，常见的大数据组件如Hive，Cassandra，Pig和Presto等都是用ANTLR来解析SQL。Spark基于Presto定义了SparkSQL的语法文件SqlBase.g4(sql\catalyst\src\main\antlr4\org\apache\spark\sql\catalyst\parser\SqlBase.g4)。根据SqlBase.g4，利用ANTLR可以生成词法分析器SqlBaseLexer.java和语法分析器SqlBaseParser.java。</p>
+<p>词法分析器用于机械关键词和各种标志符，语法分析器用于分析语法并构建语法树。</p>
+<p><img src="https://www.iteblog.com/pic/spark/antlr4_iteblog.jpg"></p>
+<p>Spark会利用AstBuilder将语法树转换成Logical Plan，此时的Logical Plan因为没有Catalog信息，因此是Unresolved Logical Plan。</p>
+<h2 id="Analysis"><a href="#Analysis" class="headerlink" title="Analysis"></a>Analysis</h2><p>Analysis阶段会使用事先定义好的 Rule 以及 SessionCatalog 等信息对 Unresolved LogicalPlan 进行 转换，得到Analyzed Logical Plan。SessionCatalog 主要用于各种函数资源信息和元数据信息（数据库、数据表、数据视图、数据分区与函数等）的统一管理。</p>
+<p>Analyzer的定义如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Analyzer</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    override val catalogManager: <span class="type">CatalogManager</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    conf: <span class="type">SQLConf</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    maxIterations: <span class="type">Int</span></span>)</span></span><br><span class="line">  <span class="keyword">extends</span> <span class="type">RuleExecutor</span>[<span class="type">LogicalPlan</span>] <span class="keyword">with</span> <span class="type">CheckAnalysis</span> <span class="keyword">with</span> <span class="type">LookupCatalog</span></span><br></pre></td></tr></table></figure>
+
+<p>Analyzer继承了RuleExecutor框架，只需要定义和实现各种Rule Batches即可。</p>
+<h3 id="RuleExecutor"><a href="#RuleExecutor" class="headerlink" title="RuleExecutor"></a>RuleExecutor</h3><p>RuleExecutor用于将多个Rule进行组合，从而将一个Plan转换成具有同样类型的另外一种Plan。Batch是Rule的集合，具有对应的执行Strategy：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Batch</span>(<span class="params">name: <span class="type">String</span>, strategy: <span class="type">Strategy</span>, rules: <span class="type">Rule</span>[<span class="type">TreeType</span>]*</span>)</span></span><br></pre></td></tr></table></figure>
+
+<p>每个Strategy描述了Rule执行的终止条件，即通过maxIterations来定义最大的执行次数。Spark提供了Once, FixedPoint两种Strategy。</p>
+<p>RuleExecutor执行时，会一次按照Batch的顺序进行执行，根据各个Batch的不同Strategy来决定是否完成当前Batch的执行，从而执行下一个Batch。</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20200324214029.png"></p>
+<h3 id="Analysis-Rules"><a href="#Analysis-Rules" class="headerlink" title="Analysis Rules"></a>Analysis Rules</h3><p>在Analyzer中，定义了如下的Batches：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">lazy</span> <span class="keyword">val</span> batches: <span class="type">Seq</span>[<span class="type">Batch</span>] = <span class="type">Seq</span>(</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;Hints&quot;</span>, fixedPoint,</span><br><span class="line">     <span class="keyword">new</span> <span class="type">ResolveHints</span>.<span class="type">ResolveJoinStrategyHints</span>(conf),</span><br><span class="line">     <span class="keyword">new</span> <span class="type">ResolveHints</span>.<span class="type">ResolveCoalesceHints</span>(conf)),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;Simple Sanity Check&quot;</span>, <span class="type">Once</span>,</span><br><span class="line">     <span class="type">LookupFunctions</span>),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;Substitution&quot;</span>, fixedPoint,</span><br><span class="line">     <span class="type">CTESubstitution</span>,</span><br><span class="line">     <span class="type">WindowsSubstitution</span>,</span><br><span class="line">     <span class="type">EliminateUnions</span>,</span><br><span class="line">     <span class="keyword">new</span> <span class="type">SubstituteUnresolvedOrdinals</span>(conf)),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;Resolution&quot;</span>, fixedPoint,</span><br><span class="line">     <span class="type">ResolveTableValuedFunctions</span> ::</span><br><span class="line">     <span class="type">ResolveNamespace</span>(catalogManager) ::</span><br><span class="line">     <span class="keyword">new</span> <span class="type">ResolveCatalogs</span>(catalogManager) ::</span><br><span class="line">     <span class="type">ResolveInsertInto</span> ::</span><br><span class="line">     <span class="type">ResolveRelations</span> ::</span><br><span class="line">     <span class="type">ResolveTables</span> ::</span><br><span class="line">     <span class="type">ResolveReferences</span> ::</span><br><span class="line">     <span class="type">ResolveCreateNamedStruct</span> ::</span><br><span class="line">     <span class="type">ResolveDeserializer</span> ::</span><br><span class="line">     <span class="type">ResolveNewInstance</span> ::</span><br><span class="line">     <span class="type">ResolveUpCast</span> ::</span><br><span class="line">     <span class="type">ResolveGroupingAnalytics</span> ::</span><br><span class="line">     <span class="type">ResolvePivot</span> ::</span><br><span class="line">     <span class="type">ResolveOrdinalInOrderByAndGroupBy</span> ::</span><br><span class="line">     <span class="type">ResolveAggAliasInGroupBy</span> ::</span><br><span class="line">     <span class="type">ResolveMissingReferences</span> ::</span><br><span class="line">     <span class="type">ExtractGenerator</span> ::</span><br><span class="line">     <span class="type">ResolveGenerate</span> ::</span><br><span class="line">     <span class="type">ResolveFunctions</span> ::</span><br><span class="line">     <span class="type">ResolveAliases</span> ::</span><br><span class="line">     <span class="type">ResolveSubquery</span> ::</span><br><span class="line">     <span class="type">ResolveSubqueryColumnAliases</span> ::</span><br><span class="line">     <span class="type">ResolveWindowOrder</span> ::</span><br><span class="line">     <span class="type">ResolveWindowFrame</span> ::</span><br><span class="line">     <span class="type">ResolveNaturalAndUsingJoin</span> ::</span><br><span class="line">     <span class="type">ResolveOutputRelation</span> ::</span><br><span class="line">     <span class="type">ExtractWindowExpressions</span> ::</span><br><span class="line">     <span class="type">GlobalAggregates</span> ::</span><br><span class="line">     <span class="type">ResolveAggregateFunctions</span> ::</span><br><span class="line">     <span class="type">TimeWindowing</span> ::</span><br><span class="line">     <span class="type">ResolveInlineTables</span>(conf) ::</span><br><span class="line">     <span class="type">ResolveHigherOrderFunctions</span>(v1SessionCatalog) ::</span><br><span class="line">     <span class="type">ResolveLambdaVariables</span>(conf) ::</span><br><span class="line">     <span class="type">ResolveTimeZone</span>(conf) ::</span><br><span class="line">     <span class="type">ResolveRandomSeed</span> ::</span><br><span class="line">     <span class="type">ResolveBinaryArithmetic</span>(conf) ::</span><br><span class="line">     <span class="type">TypeCoercion</span>.typeCoercionRules(conf) ++</span><br><span class="line">     extendedResolutionRules : _*),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;Post-Hoc Resolution&quot;</span>, <span class="type">Once</span>, postHocResolutionRules: _*),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;Normalize Alter Table&quot;</span>, <span class="type">Once</span>, <span class="type">ResolveAlterTableChanges</span>),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;Remove Unresolved Hints&quot;</span>, <span class="type">Once</span>,</span><br><span class="line">     <span class="keyword">new</span> <span class="type">ResolveHints</span>.<span class="type">RemoveAllHints</span>(conf)),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;Nondeterministic&quot;</span>, <span class="type">Once</span>,</span><br><span class="line">     <span class="type">PullOutNondeterministic</span>),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;UDF&quot;</span>, <span class="type">Once</span>,</span><br><span class="line">     <span class="type">HandleNullInputsForUDF</span>),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;UpdateNullability&quot;</span>, <span class="type">Once</span>,</span><br><span class="line">     <span class="type">UpdateAttributeNullability</span>),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;Subquery&quot;</span>, <span class="type">Once</span>,</span><br><span class="line">     <span class="type">UpdateOuterReferences</span>),</span><br><span class="line">   <span class="type">Batch</span>(<span class="string">&quot;Cleanup&quot;</span>, fixedPoint,</span><br><span class="line">     <span class="type">CleanupAliases</span>)</span><br><span class="line"> )</span><br></pre></td></tr></table></figure>
+
+<h2 id="Logical-Plan-Optimizations"><a href="#Logical-Plan-Optimizations" class="headerlink" title="Logical Plan Optimizations"></a>Logical Plan Optimizations</h2><p>目前，Spark的优化器Optimizer主要是基于规则的优化（Rule-Based Optimizer，RBO），绝大部分的规则都是启发式或者基于直观经验得出的。Optimizer的定义如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Optimizer</span>(<span class="params">catalogManager: <span class="type">CatalogManager</span></span>)</span></span><br><span class="line">  <span class="keyword">extends</span> <span class="type">RuleExecutor</span>[<span class="type">LogicalPlan</span>]</span><br></pre></td></tr></table></figure>
+
+<p>也是继承了RuleExecutor，定义用于优化的Rule Batches。默认提供的defaultBatches主要包括：</p>
+<ul>
+<li>Operator Push Down<ul>
+<li>PushProjectionThroughUnion</li>
+<li>ReorderJoin</li>
+<li><strong>PushDownPredicates</strong></li>
+<li>LimitPushDown</li>
+<li><strong>ColumnPruning</strong></li>
+<li>….</li>
+</ul>
+</li>
+<li>Operator Combine<ul>
+<li>CollapseProject, CollapseWindow, CollapseRepartition</li>
+<li>CombineFilters, CombineLimits, CombineUnions</li>
+</ul>
+</li>
+<li>Constant folding and strength reduction</li>
+<li>Eliminate Distinct</li>
+<li>Join Reorder: CostBasedJoinReorder</li>
+<li>Rewrite Subquery</li>
+<li>…</li>
+</ul>
+<p>此外，用户可以通过<code>spark.sql.optimizer.excludedRules</code>来disable掉不需要的rules：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*returns (defaultBatches - (excludedRules - nonExcludableRules)), the rule batches that eventually run in the Optimizer. */</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">batches</span></span>: <span class="type">Seq</span>[<span class="type">Batch</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> excludedRulesConf =</span><br><span class="line">  <span class="type">SQLConf</span>.get.optimizerExcludedRules.toSeq.flatMap(<span class="type">Utils</span>.stringToSeq)</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">if</span> (excludedRules.isEmpty) &#123;</span><br><span class="line">    defaultBatches</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    defaultBatches.flatMap &#123; batch =&gt;</span><br><span class="line">      <span class="keyword">val</span> filteredRules = batch.rules.filter &#123; rule =&gt;</span><br><span class="line">        <span class="keyword">val</span> exclude = excludedRules.contains(rule.ruleName)</span><br><span class="line">        <span class="keyword">if</span> (exclude) &#123;</span><br><span class="line">          logInfo(<span class="string">s&quot;Optimization rule &#x27;<span class="subst">$&#123;rule.ruleName&#125;</span>&#x27; is excluded from the optimizer.&quot;</span>)</span><br><span class="line">        &#125;</span><br><span class="line">        !exclude</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (batch.rules == filteredRules) &#123;</span><br><span class="line">        <span class="type">Some</span>(batch)</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (filteredRules.nonEmpty) &#123;</span><br><span class="line">        <span class="type">Some</span>(<span class="type">Batch</span>(batch.name, batch.strategy, filteredRules: _*))</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        logInfo(<span class="string">s&quot;Optimization batch &#x27;<span class="subst">$&#123;batch.name&#125;</span>&#x27; is excluded from the optimizer &quot;</span> +</span><br><span class="line">                <span class="string">s&quot;as all enclosed rules have been excluded.&quot;</span>)</span><br><span class="line">        <span class="type">None</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Physical-planning"><a href="#Physical-planning" class="headerlink" title="Physical planning"></a>Physical planning</h2><p>将Logical plan转换成多个Physical plan，并根据Cost Model选择最近的Physical plan。Spark Planner包括两个阶段：</p>
+<ol>
+<li>将Logical Plan根据Strategies转换为Physical Plan</li>
+<li>利用Rule Executor转换Physical Plan使得其能够执行</li>
+</ol>
+<p>SparkPlanner的定义如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SparkPlanner</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    val session: <span class="type">SparkSession</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val conf: <span class="type">SQLConf</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val experimentalMethods: <span class="type">ExperimentalMethods</span></span>) <span class="comment">// For user-defined methods</span></span></span><br><span class="line">  <span class="keyword">extends</span> <span class="type">SparkStrategies</span></span><br></pre></td></tr></table></figure>
+
+<p>SparkStrategies是QueryPlanner的子类，QueryPlanner是将Logical Plan转换为多个Physical Plan的抽象类，子类只需要提供具体的GenericStrategy组成的strategies列表。如果一个给定的Strategy不能将Logical Plan中的所有Operator都转换成Physical Plan，那么可以通过GenericStrategy.planLater()方法返回一个Placeholder，从而使得其他Strategy可以进行转换：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">GenericStrategy</span>[<span class="type">PhysicalPlan</span> &lt;: <span class="type">TreeNode</span>[<span class="type">PhysicalPlan</span>]] <span class="keyword">extends</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line">  <span class="comment">/* Returns a placeholder for a physical plan that executes `plan`. This placeholder will be filled in automatically by the QueryPlanner using the other execution strategies that are available. */</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">planLater</span></span>(plan: <span class="type">LogicalPlan</span>): <span class="type">PhysicalPlan</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(plan: <span class="type">LogicalPlan</span>): <span class="type">Seq</span>[<span class="type">PhysicalPlan</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">QueryPlanner</span>[<span class="type">PhysicalPlan</span> &lt;: <span class="type">TreeNode</span>[<span class="type">PhysicalPlan</span>]] </span>&#123;</span><br><span class="line">  <span class="comment">/** A list of execution strategies that can be used by the planner */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">strategies</span></span>: <span class="type">Seq</span>[<span class="type">GenericStrategy</span>[<span class="type">PhysicalPlan</span>]]</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">plan</span></span>(plan: <span class="type">LogicalPlan</span>): <span class="type">Iterator</span>[<span class="type">PhysicalPlan</span>] = &#123;</span><br><span class="line">    <span class="comment">// Collect physical plan candidates.</span></span><br><span class="line">    <span class="keyword">val</span> candidates = strategies.iterator.flatMap(_(plan))</span><br><span class="line"></span><br><span class="line">    <span class="comment">// The candidates may contain placeholders marked as [[planLater]],</span></span><br><span class="line">    <span class="comment">// so try to replace them by their child plans.</span></span><br><span class="line">    <span class="keyword">val</span> plans = candidates.flatMap &#123; candidate =&gt;</span><br><span class="line">      <span class="keyword">val</span> placeholders = collectPlaceholders(candidate)</span><br><span class="line">      <span class="keyword">if</span> (placeholders.isEmpty) &#123;</span><br><span class="line">        <span class="type">Iterator</span>(candidate)</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// Plan the logical plan marked as [[planLater]] and replace the placeholders.</span></span><br><span class="line">        placeholders.iterator.foldLeft(<span class="type">Iterator</span>(candidate)) &#123;</span><br><span class="line">          <span class="keyword">case</span> (candidatesWithPlaceholders, (placeholder, logicalPlan)) =&gt;</span><br><span class="line">            <span class="comment">// Plan the logical plan for the placeholder.</span></span><br><span class="line">            <span class="keyword">val</span> childPlans = <span class="keyword">this</span>.plan(logicalPlan)</span><br><span class="line">            candidatesWithPlaceholders.flatMap &#123; candidateWithPlaceholders =&gt;</span><br><span class="line">              childPlans.map &#123; childPlan =&gt;</span><br><span class="line">                <span class="comment">// Replace the placeholder by the child plan</span></span><br><span class="line">                candidateWithPlaceholders.transformUp &#123;</span><br><span class="line">                  <span class="keyword">case</span> p <span class="keyword">if</span> p.eq(placeholder) =&gt; childPlan</span><br><span class="line">                &#125;</span><br><span class="line">              &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">val</span> pruned = prunePlans(plans)</span><br><span class="line">    assert(pruned.hasNext, <span class="string">s&quot;No plan for <span class="subst">$plan</span>&quot;</span>)</span><br><span class="line">    pruned</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Collects placeholders marked using [[GenericStrategy#planLater planLater]]</span></span><br><span class="line"><span class="comment">   * by [[strategies]].</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">collectPlaceholders</span></span>(plan: <span class="type">PhysicalPlan</span>): <span class="type">Seq</span>[(<span class="type">PhysicalPlan</span>, <span class="type">LogicalPlan</span>)]</span><br><span class="line">  <span class="comment">/** Prunes bad plans to prevent combinatorial explosion. */</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">prunePlans</span></span>(plans: <span class="type">Iterator</span>[<span class="type">PhysicalPlan</span>]): <span class="type">Iterator</span>[<span class="type">PhysicalPlan</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>SparkPlanner定义的Strategies包括：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">strategies</span></span>: <span class="type">Seq</span>[<span class="type">Strategy</span>] =</span><br><span class="line">experimentalMethods.extraStrategies ++</span><br><span class="line">extraPlanningStrategies ++ (</span><br><span class="line">  <span class="type">LogicalQueryStageStrategy</span> ::</span><br><span class="line">  <span class="type">PythonEvals</span> ::</span><br><span class="line">  <span class="keyword">new</span> <span class="type">DataSourceV2Strategy</span>(session) ::</span><br><span class="line">  <span class="type">FileSourceStrategy</span> ::</span><br><span class="line">  <span class="type">DataSourceStrategy</span>(conf) ::</span><br><span class="line">  <span class="type">SpecialLimits</span> ::</span><br><span class="line">  <span class="type">Aggregation</span> ::</span><br><span class="line">  <span class="type">Window</span> ::</span><br><span class="line">  <span class="type">JoinSelection</span> ::</span><br><span class="line">  <span class="type">InMemoryScans</span> ::</span><br><span class="line">  <span class="type">BasicOperators</span> :: <span class="type">Nil</span>)</span><br></pre></td></tr></table></figure>
+
+<p>Cost Model 对应的就是基于代价的优化，目前只是选择第一个Physical Plan作为选择的Spark Plan。</p>
+<p>而 <a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/SPARK-16026">SPARK-16026</a> 引入的 CBO 优化主要是在前面介绍的<strong>优化逻辑计划阶段 - Optimizer</strong> 阶段进行的，对应的 Rule 为 <code>CostBasedJoinReorder</code>，并且默认是关闭的，需要通过 <code>spark.sql.cbo.enabled</code> 或 <code>spark.sql.cbo.joinReorder.enabled</code> 参数开启。</p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" title= "Spark TaskScheduler and Backend">
+                    <div class="nextTitle">Spark TaskScheduler and Backend</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/04/15/Spark-Spark-RDD/" title= "Spark RDD">
+                    <div class="prevTitle">Spark RDD</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2020/05/10/Spark-SparkQueryExecution/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Spark Query Execution"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Spark-Query-Execution"><span class="toc-number">1.</span> <span class="toc-text">Spark Query Execution</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Parse"><span class="toc-number">1.1.</span> <span class="toc-text">Parse</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Analysis"><span class="toc-number">1.2.</span> <span class="toc-text">Analysis</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RuleExecutor"><span class="toc-number">1.2.1.</span> <span class="toc-text">RuleExecutor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Analysis-Rules"><span class="toc-number">1.2.2.</span> <span class="toc-text">Analysis Rules</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Logical-Plan-Optimizations"><span class="toc-number">1.3.</span> <span class="toc-text">Logical Plan Optimizations</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Physical-planning"><span class="toc-number">1.4.</span> <span class="toc-text">Physical planning</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

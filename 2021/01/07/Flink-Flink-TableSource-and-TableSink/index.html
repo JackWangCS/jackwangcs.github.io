@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink TableSource and TableSink · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink TableSource and TableSink</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink TableSource and TableSink
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Connector">Connector</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Table">Table</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">2k</span>Reading time: <span class="post-count reading-time">12 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/01/07</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>How to implement a connector for Flink:<br><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=LCMfbGv38u8&amp;list=PLDX4T_cnKjD0J2LFr7yBk2aSS_o2l-7ue">https://www.youtube.com/watch?v=LCMfbGv38u8&amp;list=PLDX4T_cnKjD0J2LFr7yBk2aSS_o2l-7ue</a></p>
+<h1 id="New-Source-Interface"><a href="#New-Source-Interface" class="headerlink" title="New Source Interface"></a>New Source Interface</h1><p><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-27%3A+Refactor+Source+Interface">FLIP-27</a> proposes to refactor the source API. Here is a brief note of the FLIP 27.</p>
+<p>Motivations: unify the source interface between the batch and streaming APIs and solve several problems and shortcomings:</p>
+<ol>
+<li>“work discovery”(splits, partitions, etc) and actually “reading” the data is intermingled which leads to complex implementations</li>
+<li>Partitions&#x2F;shards&#x2F;splits are not explicit in the interface. This makes it hard to implement certain functionalities in a source-independent way, for example event-time alignment, per-partition watermarks, dynamic split assignment, work stealing.</li>
+<li>There are no common building blocks, meaning every source implements a complex threading model by itself.</li>
+<li>The checkpoint lock is “owned” by the source function. The implementation has to ensure to make element emission and state update under the lock.</li>
+</ol>
+<h2 id="Overall-Design"><a href="#Overall-Design" class="headerlink" title="Overall Design"></a>Overall Design</h2><h3 id="Separating-Work-Discovery-from-Reading"><a href="#Separating-Work-Discovery-from-Reading" class="headerlink" title="Separating Work Discovery from Reading"></a>Separating Work Discovery from Reading</h3><p>The sources have two main components:</p>
+<ol>
+<li><code>SplitEnumerator</code>: Discovers and assign splits</li>
+<li><code>SourceReader</code>: Reads the actual data from the splits</li>
+</ol>
+<p>This separation between enumerator and reader allows <strong>mixing and matching different enumeration strategies</strong> with split readers.</p>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.12/fig/source_components.svg"></p>
+<h3 id="Batch-and-Streaming-Unification"><a href="#Batch-and-Streaming-Unification" class="headerlink" title="Batch and Streaming Unification"></a>Batch and Streaming Unification</h3><p>Each source should be able to work as a bounded and as an unbounded source. The <code>Boundedness</code> is an intrinsic property to the source instance itself. In most cases, only the <code>SplitEnumerators</code> should know the Boundedness, while the <code>SourceReaders</code> are agnostic.</p>
+<h3 id="Generic-enumerator-reader-communication-mechanism"><a href="#Generic-enumerator-reader-communication-mechanism" class="headerlink" title="Generic enumerator-reader communication mechanism"></a>Generic enumerator-reader communication mechanism</h3><p>This mechanism require an additional RPC method pair in the <code>JobMasterGateway</code> and <code>TaskExecutorGateway</code>. The message passing stack:</p>
+<p><img src="https://cwiki.apache.org/confluence/download/attachments/95653746/Picture1.png?version=1&modificationDate=1575376557000&api=v2"></p>
+<h3 id="Reader-Interface-implementation-and-Threading-model"><a href="#Reader-Interface-implementation-and-Threading-model" class="headerlink" title="Reader Interface, implementation and Threading model"></a>Reader Interface, implementation and Threading model</h3><p><a target="_blank" rel="noopener" href="https://github.com/apache/flink/blob/master/flink-core/src/main/java/org/apache/flink/api/connector/source/SourceReader.java">SourceReader</a> interface will run as a <code>PushingAsyncDataInput</code> which works with the new mailbox threading model in the tasks.</p>
+<p>Most readers fall into one of the following categories:</p>
+<ol>
+<li><p>One reader single splits</p>
+</li>
+<li><p>One reader multiple splts</p>
+<ol>
+<li><p>Sequential Single Split (File, database query, most bounded splits)<br><img src="https://cwiki.apache.org/confluence/download/attachments/95653746/single_split.png?version=1&modificationDate=1551462582000&api=v2"></p>
+</li>
+<li><p>Multi-split multiplexed(Kafka, Pulsa, Pravega…)<br><img src="https://cwiki.apache.org/confluence/download/attachments/95653746/multi_split_multiplexed.png?version=1&modificationDate=1551462590000&api=v2"></p>
+</li>
+<li><p>Multi-split multi-threaded (Kinesis..)</p>
+<p><img src="https://cwiki.apache.org/confluence/download/attachments/95653746/multi_split_multi_threaded.png?version=1&modificationDate=1551462594000&api=v2"></p>
+</li>
+</ol>
+</li>
+</ol>
+<h4 id="SourceReaderBase"><a href="#SourceReaderBase" class="headerlink" title="SourceReaderBase"></a>SourceReaderBase</h4><p>The base implementation of SourceReader: SourceReaderBase:</p>
+<p><img src="https://cwiki.apache.org/confluence/download/attachments/95653746/BaseSourceImpl.png?version=1&modificationDate=1580899998000&api=v2"></p>
+<ul>
+<li><p>SplitReader: An interface used to read from splits, it could either read from a single split or from multiple splits:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SplitReader</span>&lt;E, SplitT <span class="keyword">extends</span> <span class="title class_">SourceSplit</span>&gt; &#123;</span><br><span class="line">    RecordsWithSplitIds&lt;E&gt; <span class="title function_">fetch</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">handleSplitsChanges</span><span class="params">(Queue&lt;SplitsChange&lt;SplitT&gt;&gt; splitsChanges)</span>;</span><br><span class="line"> <span class="comment">// Only wakeup() will be called on other thread, all other methods will be called only on one thread to obviate the need for any concurrency handling in the connector</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">wakeUp</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>RecordsWithSplitIds will be passed to an RecordEmitter one by one. The RecordEmitter is responsible for:</p>
+<ul>
+<li>Convert the raw record type &lt;E&gt; into the eventual record type &lt;T&gt;</li>
+<li>Provide an event time timestamp for the record that it processes.</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">RecordEmitter</span>&lt;E, T, SplitStateT&gt; &#123;</span><br><span class="line"> <span class="keyword">void</span> <span class="title function_">emitRecord</span><span class="params">(E element, SourceOutput&lt;T&gt; output, SplitStateT splitState)</span> <span class="keyword">throws</span> Exception;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SplitFetcherManager helps create and maintain a pool of SplitFetchers each fetching with a SplitReader. It also determines how to assign splits to each split fetcher.<br><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.12/fig/source_reader.svg"></p>
+</li>
+</ul>
+<p>When users write their own sources, they can just focus on:</p>
+<ol>
+<li>Fetch records from external system</li>
+<li>Perform record parsing and conversion</li>
+<li>Extract timestamps and optionally deal with watermarks.</li>
+</ol>
+<h3 id="Failover"><a href="#Failover" class="headerlink" title="Failover"></a>Failover</h3><p>State of SplitEnumerator:</p>
+<ol>
+<li>Unassigned splits</li>
+<li>Splits are assigned but not successfully checkpointed yet.</li>
+</ol>
+<p>State of SourceReader:</p>
+<ol>
+<li>Assigned splits</li>
+<li>The state of splits</li>
+</ol>
+<p>When the SplitEnumerator fails, a full failover will be performed. Whan a ResourceReader fails, the failed ResourceReader will be restore to its last successful checkpoint.</p>
+<h3 id="Where-to-run-the-SplitEnumerator"><a href="#Where-to-run-the-SplitEnumerator" class="headerlink" title="Where to run the SplitEnumerator"></a>Where to run the SplitEnumerator</h3><p>Introduce an independent component called <code>SourceCoordinator</code> which could run on <code>JobMaster</code> or run as an independent process. <code>SplitEnumerator</code> runs on <code>SourceCoordinator</code>, split assignment through RPC supports pull-based. <code>SourceReader</code> needs to register to <code>SourceCoordinator</code> and then sends splits requests with payload information.</p>
+<p>Each job has at most one <code>SourceCoordinator</code> which is started by <code>JobMaster</code>. Split assignment need to satisfy the checkpointing mode semantics. <code>Enumerator</code> has its own states (split assignment), they are a part of global checkpoint. When a new checkpoint is triggered, <code>CheckpointCoordinator</code> sends barriers to <code>SourceCoordinator</code> first. <code>SourceCoordinator</code> snapshots states of all <code>Enumerators</code>. Then <code>SourceCoordinator</code> sends barriers to <code>SourceReader</code> through RPC. The split and barrier through RPC is FIFO, so Flink could align the split assignment with checkpoint naturally.</p>
+<h2 id="Interface"><a href="#Interface" class="headerlink" title="Interface"></a>Interface</h2><p>There are parts of interface introduced:</p>
+<ol>
+<li>Top level public interfaces</li>
+<li>Base implementation interfaces</li>
+<li>RPC gateway interfaces</li>
+</ol>
+<h3 id="Top-level-public-interfaces"><a href="#Top-level-public-interfaces" class="headerlink" title="Top level public interfaces"></a>Top level public interfaces</h3><ul>
+<li><p><strong>Source</strong> - A factory style class that helps create <em>SplitEnumerator</em> and <em>SourceReader</em> at runtime.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Source</span>&lt;T, SplitT <span class="keyword">extends</span> <span class="title class_">SourceSplit</span>, EnumChkT&gt; <span class="keyword">extends</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    Boundedness <span class="title function_">getBoundedness</span><span class="params">()</span>;</span><br><span class="line">    SourceReader&lt;T, SplitT&gt; <span class="title function_">createReader</span><span class="params">(SourceReaderContext readerContext)</span> <span class="keyword">throws</span> Exception;</span><br><span class="line">    SplitEnumerator&lt;SplitT, EnumChkT&gt; <span class="title function_">createEnumerator</span><span class="params">(SplitEnumeratorContext&lt;SplitT&gt; enumContext)</span></span><br><span class="line">            <span class="keyword">throws</span> Exception;</span><br><span class="line">    SplitEnumerator&lt;SplitT, EnumChkT&gt; <span class="title function_">restoreEnumerator</span><span class="params">(</span></span><br><span class="line"><span class="params">            SplitEnumeratorContext&lt;SplitT&gt; enumContext, EnumChkT checkpoint)</span> <span class="keyword">throws</span> Exception;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>SourceSplit</strong> - An interface for all the split types.</p>
+</li>
+<li><p><strong>SplitEnumerator</strong> - Discover the splits and assign them to the <em>SourceReaders</em></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SplitEnumerator</span>&lt;SplitT <span class="keyword">extends</span> <span class="title class_">SourceSplit</span>, CheckpointT&gt;</span><br><span class="line">        <span class="keyword">extends</span> <span class="title class_">AutoCloseable</span>, CheckpointListener &#123;</span><br><span class="line">    <span class="comment">// SplitEnumerator serves the splits to SourceReader</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">start</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">handleSplitRequest</span><span class="params">(<span class="type">int</span> subtaskId, <span class="meta">@Nullable</span> String requesterHostname)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">addSplitsBack</span><span class="params">(List&lt;SplitT&gt; splits, <span class="type">int</span> subtaskId)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">addReader</span><span class="params">(<span class="type">int</span> subtaskId)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException;</span><br><span class="line">    <span class="comment">// checkpoint </span></span><br><span class="line">    CheckpointT <span class="title function_">snapshotState</span><span class="params">(<span class="type">long</span> checkpointId)</span> <span class="keyword">throws</span> Exception;</span><br><span class="line">    <span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">notifyCheckpointComplete</span><span class="params">(<span class="type">long</span> checkpointId)</span> <span class="keyword">throws</span> Exception &#123;&#125;</span><br><span class="line">    <span class="comment">// handle source event</span></span><br><span class="line">    <span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">handleSourceEvent</span><span class="params">(<span class="type">int</span> subtaskId, SourceEvent sourceEvent)</span> &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>SplitEnumeratorContext</strong> - Provide necessary information to the <em>SplitEnumerator</em> to assign splits and send custom events to the the <em>SourceReaders</em>.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SplitEnumeratorContext</span>&lt;SplitT <span class="keyword">extends</span> <span class="title class_">SourceSplit</span>&gt; &#123;</span><br><span class="line">    SplitEnumeratorMetricGroup <span class="title function_">metricGroup</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">sendEventToSourceReader</span><span class="params">(<span class="type">int</span> subtaskId, SourceEvent event)</span>;</span><br><span class="line">    <span class="type">int</span> <span class="title function_">currentParallelism</span><span class="params">()</span>;</span><br><span class="line">    Map&lt;Integer, ReaderInfo&gt; <span class="title function_">registeredReaders</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">assignSplits</span><span class="params">(SplitsAssignment&lt;SplitT&gt; newSplitAssignments)</span>;</span><br><span class="line">    <span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">assignSplit</span><span class="params">(SplitT split, <span class="type">int</span> subtask)</span> &#123;</span><br><span class="line">        assignSplits(<span class="keyword">new</span> <span class="title class_">SplitsAssignment</span>&lt;&gt;(split, subtask));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">signalNoMoreSplits</span><span class="params">(<span class="type">int</span> subtask)</span>;</span><br><span class="line">  </span><br><span class="line">    &lt;T&gt; <span class="keyword">void</span> <span class="title function_">callAsync</span><span class="params">(Callable&lt;T&gt; callable, BiConsumer&lt;T, Throwable&gt; handler)</span>;</span><br><span class="line">    &lt;T&gt; <span class="keyword">void</span> <span class="title function_">callAsync</span><span class="params">(</span></span><br><span class="line"><span class="params">            Callable&lt;T&gt; callable,</span></span><br><span class="line"><span class="params">            BiConsumer&lt;T, Throwable&gt; handler,</span></span><br><span class="line"><span class="params">            <span class="type">long</span> initialDelayMillis,</span></span><br><span class="line"><span class="params">            <span class="type">long</span> periodMillis)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">runInCoordinatorThread</span><span class="params">(Runnable runnable)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>SplitAssignment</strong> - A container class holding the source split assignment for each subtask.</p>
+</li>
+<li><p><strong>SourceReader</strong> - Read the records from the splits assigned by the <em>SplitEnumerator</em>.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SourceReader</span>&lt;T, SplitT <span class="keyword">extends</span> <span class="title class_">SourceSplit</span>&gt;</span><br><span class="line">        <span class="keyword">extends</span> <span class="title class_">AutoCloseable</span>, CheckpointListener &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">start</span><span class="params">()</span>;</span><br><span class="line">    InputStatus <span class="title function_">pollNext</span><span class="params">(ReaderOutput&lt;T&gt; output)</span> <span class="keyword">throws</span> Exception;</span><br><span class="line">    CompletableFuture&lt;Void&gt; <span class="title function_">isAvailable</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">addSplits</span><span class="params">(List&lt;SplitT&gt; splits)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">notifyNoMoreSplits</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">handleSourceEvents</span><span class="params">(SourceEvent sourceEvent)</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">notifyCheckpointComplete</span><span class="params">(<span class="type">long</span> checkpointId)</span> <span class="keyword">throws</span> Exception &#123;&#125;</span><br><span class="line">    List&lt;SplitT&gt; <span class="title function_">snapshotState</span><span class="params">(<span class="type">long</span> checkpointId)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>SourceReaderContext</strong> - Provide necessary function to the <em>SourceReader</em> to communicate with <em>SplitEnumerator</em>.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SourceReaderContext</span> &#123;</span><br><span class="line">    SourceReaderMetricGroup <span class="title function_">metricGroup</span><span class="params">()</span>;</span><br><span class="line">    Configuration <span class="title function_">getConfiguration</span><span class="params">()</span>;</span><br><span class="line">    String <span class="title function_">getLocalHostName</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** <span class="doctag">@return</span> The index of this subtask. */</span></span><br><span class="line">    <span class="type">int</span> <span class="title function_">getIndexOfSubtask</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">sendSplitRequest</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">sendSourceEventToCoordinator</span><span class="params">(SourceEvent sourceEvent)</span>;</span><br><span class="line"></span><br><span class="line">    UserCodeClassLoader <span class="title function_">getUserCodeClassLoader</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>SourceOutput</strong> - A collector style interface to take the records and timestamps emit by the <em>SourceReader.</em></p>
+</li>
+<li><p><strong>WatermarkOutput</strong> <em>-</em> An interface for emitting watermark and indicate idleness of the source.</p>
+</li>
+<li><p><strong>Watermark</strong> - A new Watermark class will be created in the package <em>org.apache.flink.api.common.eventtime.</em> This class will eventually replace the existing Watermark in <em>org.apache.flink.streaming.api.watermark.</em></p>
+</li>
+</ul>
+<h3 id="Base-implementation-interfaces"><a href="#Base-implementation-interfaces" class="headerlink" title="Base implementation interfaces"></a>Base implementation interfaces</h3><ul>
+<li><strong>SourceReaderBase</strong> - The base implementation for <em>SourceReader</em>. It uses the following interfaces.</li>
+<li><strong>SplitReader</strong> - The stateless and thread-less high level reader which is only responsible for reading raw records of type <strong><E></strong> from the assigned splits.</li>
+<li><strong>SplitChange</strong> - The split change to the split reader. Right now there is only one subclass which is <em>SplitAddition</em>.</li>
+<li><strong>RecordsWithSplitIds</strong> - A container class holding the raw records of type <strong><E></strong> read by <em>SplitReader</em>. It allows the <em>SplitReader</em> to fetch and pass the records in batch.</li>
+<li><strong>RecordEmitter</strong> - A class that takes the raw records of type <strong><E></strong> returned by the <em>SplitReader</em>, convert them into the final record type <strong><T></strong> and emit them into the <em>SourceOutput.</em></li>
+</ul>
+<h3 id="RPC-gateway-interfaces"><a href="#RPC-gateway-interfaces" class="headerlink" title="RPC gateway interfaces"></a>RPC gateway interfaces</h3><p>TaskExecutorGateway:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CompletableFuture&lt;Acknowledge&gt; <span class="title function_">sendOperatorEvent</span><span class="params">(</span></span><br><span class="line"><span class="params">  ExecutionAttemptID task,</span></span><br><span class="line"><span class="params">  OperatorID operator,</span></span><br><span class="line"><span class="params">  SerializedValue&lt;OperatorEvent&gt; evt)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>JobMasterGateway:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CompletableFuture&lt;Acknowledge&gt; <span class="title function_">sendOperatorEventToCoordinator</span><span class="params">(</span></span><br><span class="line"><span class="params">  ExecutionAttemptID task,</span></span><br><span class="line"><span class="params">  OperatorID operatorID,</span></span><br><span class="line"><span class="params">  SerializedValue&lt;OperatorEvent&gt; event)</span>;</span><br></pre></td></tr></table></figure>
+
+<h1 id="TableSource-and-TableSink"><a href="#TableSource-and-TableSink" class="headerlink" title="TableSource and TableSink"></a>TableSource and TableSink</h1><p>Docs: <a target="_blank" rel="noopener" href="https://nightlies.apache.org/flink/flink-docs-master/docs/dev/table/sourcessinks/">https://nightlies.apache.org/flink/flink-docs-master/docs/dev/table/sourcessinks/</a></p>
+<p><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-95%3A+New+TableSource+and+TableSink+interfaces">FLIP-95</a> propose the new TableSource and TableSink Interfaces.</p>
+<p>Motivations:</p>
+<ul>
+<li>The table sources and sink interfaces have grown over time from pure batch to streaming interfaces. More and more abilities were added which makes the current class structure already quite complex</li>
+<li>Proper support for handling changelogs</li>
+<li>More efficient processing of data through the new Blink planner</li>
+<li>Unified interfaces that are DataStream API <strong>agnostic</strong></li>
+</ul>
+<p>Goals:</p>
+<ul>
+<li>Simplify the current interface architecture</li>
+<li>Allow sources to produce a changelog</li>
+<li>Don’t rely on DataStream API for source and sinks</li>
+<li>Implement efficient sources and sinks without planner dependencies</li>
+</ul>
+<h2 id="Public-Interface"><a href="#Public-Interface" class="headerlink" title="Public Interface"></a>Public Interface</h2><p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.12/fig/table_connectors.svg"></p>
+<h3 id="Main-interfaces"><a href="#Main-interfaces" class="headerlink" title="Main interfaces"></a>Main interfaces</h3><p>Dynamic tables are the core concept of Flink’s Table &amp; SQL API for processing both bounded and unbounded data. By definition, <strong>a dynamic table can change over time</strong>.</p>
+<h4 id="DynamicTableSource"><a href="#DynamicTableSource" class="headerlink" title="DynamicTableSource"></a>DynamicTableSource</h4><p>When reading a dynamic table, the content can either be considered as：</p>
+<ul>
+<li><strong>ScanTableSource</strong>: A changelog for which all changes are consumed continuously until the changelog is exhausted</li>
+<li><strong>LookupTableSource</strong>: A continuously changing or very large external table whose content is usually never read entirely but queried for individual values when necessary</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20201227192614.png"></p>
+<p>Both interfaces can be implemented at the same time, the planner decides about their usage depending on the specified query.</p>
+<h4 id="DynamicTableSink"><a href="#DynamicTableSink" class="headerlink" title="DynamicTableSink"></a>DynamicTableSink</h4><p>When writing a dynamic table, the content can always be considered as a changelog(finite or infinite) for which all changes are written continuously until the changelog is exhausted. The ChangeLogMode indicates the set of changes that the sink accepts during runtime. Each change type is represented by a RowKind.</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20201227193514.png"></p>
+<p>There are four kinds of Row Kind:</p>
+<ul>
+<li>INSERT: Insertion operation</li>
+<li>UPDATE_BEFORE: Update operation with the previous content of the updated row. UPDATE_BEFORE <strong>SHOULD</strong> occur together with UDPATE_AFTER for modelling an update that needs to retract the previous row first. It is useful in cases of a <strong>non-idempotent update</strong>, i.e., an update of a row that is not uniquely identifiable by a key.</li>
+<li>UDPATE_AFTER: Update operation with new content of the updated row.  This kind <strong>CAN</strong> occur together with UPDATE_BEFORE for modelling an update that needs to retract the previous row first. OR it describes an <strong>idempotent</strong> update, i.e., an update of a row that is uniquely identifiable by a key.</li>
+<li>DELETE: Deletion operation</li>
+</ul>
+<h3 id="Factory-Interfaces"><a href="#Factory-Interfaces" class="headerlink" title="Factory Interfaces"></a>Factory Interfaces</h3><p>Factory is the base interface for all kind of factories that create object instances from a list of key-value pairs in Flink’s Table &amp; SQL API. The list of available factories is discovered using Java’s <strong>Service Provider Interfaces (SPI)</strong>. Classes that implement this interface can be added to <code>META_INF/services/org.apache.flink.table.factories.Factory</code> in JAR files. A factory is uniquely identified by its Class and <code>Factory.factoryIdentifier()</code>.</p>
+<p>Every Factory declares a set of required and optional options.</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20201227194717.png"></p>
+<p>Except the DynamicTableFactory, there are many FormatFactory which are used to create factories for different format supports.</p>
+<h3 id="Abilities-Interfaces"><a href="#Abilities-Interfaces" class="headerlink" title="Abilities Interfaces"></a>Abilities Interfaces</h3><p>Abilities Interfaces are used to describe the additional abilities of Source and Sink interfaces.<br>DynamiceTableSource can implement the following abilities:</p>
+<ul>
+<li>SupportsFilterPushDown</li>
+<li>SupportsLimitPushDown</li>
+<li>SupportsPartitionPushDown</li>
+<li>SupportsProjectionPushDown</li>
+<li>SupportsReadingMetadata</li>
+<li>SupportsWatermarkPushDown</li>
+</ul>
+<p>DynamicTableSink can implement the following abilities:</p>
+<ul>
+<li>SupportsPartitioning</li>
+<li>SupportsOverwrite</li>
+<li>SupportsWritingMetadata</li>
+</ul>
+<h3 id="Data-Structure-Interfaces-and-Classes"><a href="#Data-Structure-Interfaces-and-Classes" class="headerlink" title="Data Structure Interfaces and Classes"></a>Data Structure Interfaces and Classes</h3><p>RowData is the base interface for an internal data structure representing data of RowType and other (possibly nested) structured types such as StructuredType in the table ecosystem. RowData has a RowKind to describe the kind of change of this RowData.</p>
+<p>RowData has different implementations which are designed for different scenarios, mainly:</p>
+<ul>
+<li>BinaryRowData: binary-oriented implementation, backed by references to MemorySegment to reduce the serialization&#x2F;deserialization overhead</li>
+<li>GenericRowData: object-oriented implementation, backed by an array of Java Object which is easy to construct and efficient to update</li>
+<li>Special purposes: ColumnarRowData, UpdatableRowData, JoinedRowData and NestedRowData</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20201227223617.png"></p>
+<p>There are other abstractions for basic data types:</p>
+<ul>
+<li>ArrayData</li>
+<li>MapData</li>
+<li>StringData</li>
+<li>DecimalData</li>
+<li>TimestampData</li>
+<li>RawValueData</li>
+<li>GenericRowData implements RowData</li>
+<li>GenericArrayData implements ArrayData</li>
+<li>GenericMapData implements MapData</li>
+</ul>
+<h1 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-stable/dev/stream/sources.html">https://ci.apache.org/projects/flink/flink-docs-stable/dev/stream/sources.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/dev/table/sourceSinks.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/dev/table/sourceSinks.html</a></li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/02/03/Flink-Flink-SQL/" title= "Flink SQL">
+                    <div class="nextTitle">Flink SQL</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/11/10/Spark-spark-sql/" title= "Spark SQL Basics">
+                    <div class="prevTitle">Spark SQL Basics</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2021/01/07/Flink-Flink-TableSource-and-TableSink/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink TableSource and TableSink"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#New-Source-Interface"><span class="toc-number">1.</span> <span class="toc-text">New Source Interface</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Overall-Design"><span class="toc-number">1.1.</span> <span class="toc-text">Overall Design</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Separating-Work-Discovery-from-Reading"><span class="toc-number">1.1.1.</span> <span class="toc-text">Separating Work Discovery from Reading</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Batch-and-Streaming-Unification"><span class="toc-number">1.1.2.</span> <span class="toc-text">Batch and Streaming Unification</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Generic-enumerator-reader-communication-mechanism"><span class="toc-number">1.1.3.</span> <span class="toc-text">Generic enumerator-reader communication mechanism</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Reader-Interface-implementation-and-Threading-model"><span class="toc-number">1.1.4.</span> <span class="toc-text">Reader Interface, implementation and Threading model</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#SourceReaderBase"><span class="toc-number">1.1.4.1.</span> <span class="toc-text">SourceReaderBase</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Failover"><span class="toc-number">1.1.5.</span> <span class="toc-text">Failover</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Where-to-run-the-SplitEnumerator"><span class="toc-number">1.1.6.</span> <span class="toc-text">Where to run the SplitEnumerator</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Interface"><span class="toc-number">1.2.</span> <span class="toc-text">Interface</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Top-level-public-interfaces"><span class="toc-number">1.2.1.</span> <span class="toc-text">Top level public interfaces</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Base-implementation-interfaces"><span class="toc-number">1.2.2.</span> <span class="toc-text">Base implementation interfaces</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RPC-gateway-interfaces"><span class="toc-number">1.2.3.</span> <span class="toc-text">RPC gateway interfaces</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#TableSource-and-TableSink"><span class="toc-number">2.</span> <span class="toc-text">TableSource and TableSink</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Public-Interface"><span class="toc-number">2.1.</span> <span class="toc-text">Public Interface</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Main-interfaces"><span class="toc-number">2.1.1.</span> <span class="toc-text">Main interfaces</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#DynamicTableSource"><span class="toc-number">2.1.1.1.</span> <span class="toc-text">DynamicTableSource</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DynamicTableSink"><span class="toc-number">2.1.1.2.</span> <span class="toc-text">DynamicTableSink</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Factory-Interfaces"><span class="toc-number">2.1.2.</span> <span class="toc-text">Factory Interfaces</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Abilities-Interfaces"><span class="toc-number">2.1.3.</span> <span class="toc-text">Abilities Interfaces</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Data-Structure-Interfaces-and-Classes"><span class="toc-number">2.1.4.</span> <span class="toc-text">Data Structure Interfaces and Classes</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Ref"><span class="toc-number">3.</span> <span class="toc-text">Ref</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Linux常用命令总结 · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Linux常用命令总结</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Linux常用命令总结
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Linux">Linux</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Commands">Commands</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">3.4k</span>Reading time: <span class="post-count reading-time">17 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/07/13</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="软件-x2F-包管理"><a href="#软件-x2F-包管理" class="headerlink" title="软件&#x2F;包管理"></a>软件&#x2F;包管理</h1><h2 id="压缩包管理"><a href="#压缩包管理" class="headerlink" title="压缩包管理"></a>压缩包管理</h2><h3 id="tar"><a href="#tar" class="headerlink" title="tar"></a>tar</h3><p><code>tar</code> 命令用于<strong>归档（打包，archive）文件</strong>，其目的是将多个文件或目录打包成一个tar文件。由于很多压缩算法只能针对单个文件进行压缩，因此打包成tar包以后，会方便进一步的压缩。例如，可以先将目录打包成tar包，然后再通过gzip&#x2F;bzip进行压缩。</p>
+<p>用法：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Create</span></span><br><span class="line">tar &#123;-c&#125; [options] [files | directories]</span><br><span class="line"><span class="comment"># Add/Replace, Update</span></span><br><span class="line">tar &#123;-r | -u&#125; -f archive-file [options] [files | directories]</span><br><span class="line"><span class="comment"># List, Extract</span></span><br><span class="line">tar &#123;-t | -x&#125; [options] [patterns]</span><br><span class="line">Common Options:</span><br><span class="line">  -b <span class="comment">#  Use # 512-byte records per I/O block</span></span><br><span class="line">  -f &lt;filename&gt;  Location of archive // Most used options!</span><br><span class="line">  -v    Verbose</span><br><span class="line">  -w    Interactive</span><br><span class="line">Create: tar -c [options] [&lt;file&gt; | &lt;<span class="built_in">dir</span>&gt; | @&lt;archive&gt; | -C &lt;<span class="built_in">dir</span>&gt; ]</span><br><span class="line">  &lt;file&gt;, &lt;<span class="built_in">dir</span>&gt;  add these items to archive</span><br><span class="line">  -z, -j, -J, --lzma  Compress archive with gzip/bzip2/xz/lzma</span><br><span class="line">  --format &#123;ustar|pax|cpio|shar&#125;  Select archive format</span><br><span class="line">  --exclude &lt;pattern&gt;  Skip files that match pattern</span><br><span class="line">  -C &lt;<span class="built_in">dir</span>&gt;  Change to &lt;<span class="built_in">dir</span>&gt; before processing remaining files</span><br><span class="line">  @&lt;archive&gt;  Add entries from &lt;archive&gt; to output</span><br><span class="line">List: tar -t [options] [&lt;patterns&gt;]</span><br><span class="line">  &lt;patterns&gt;  If specified, list only entries that match</span><br><span class="line">Extract: tar -x [options] [&lt;patterns&gt;]</span><br><span class="line">  &lt;patterns&gt;  If specified, extract only entries that match</span><br><span class="line">  -k    Keep (don<span class="string">&#x27;t overwrite) existing files</span></span><br><span class="line"><span class="string">  -m    Don&#x27;</span>t restore modification <span class="built_in">times</span></span><br><span class="line">  -O    Write entries to stdout, don<span class="string">&#x27;t restore to disk</span></span><br><span class="line"><span class="string">  -p    Restore permissions (including ACLs, owner, file flags)</span></span><br></pre></td></tr></table></figure>
+
+<p>使用tar命令时，最常用的Option是<code>-f archiveName</code>选项，用于制定用于操作的文件名。在创建tar包时，可以利用<code>-z, -j, -J, —lzma</code>等参数指定压缩的方法，从而在打包以后进行压缩。如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 创建一个以gzip方法进行压缩的tar包，在创建时会打印详细的信息</span><br><span class="line">tar -zcvf FileName.tar.gz DirName</span><br><span class="line"># 解压一个以gzip方法进行压缩的tar包</span><br><span class="line">tar -zxvf FileName.tar.gz</span><br></pre></td></tr></table></figure>
+
+<p>如果只是查看tar包中的内容可以使用：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -tf tarName.tar</span><br></pre></td></tr></table></figure>
+
+<h3 id="zip-x2F-unzip"><a href="#zip-x2F-unzip" class="headerlink" title="zip&#x2F;unzip"></a>zip&#x2F;unzip</h3><p><code>zip</code>命令用于文件的压缩和归档，特别是用于发布一系列的文件，暂时压缩不常用的文件节约磁盘空间等。<code>unzip</code>则是与<code>zip</code>相对应，用于解压文件。用法如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zip options archive inpath inpath ...</span><br><span class="line">unzip options archive outputPath</span><br></pre></td></tr></table></figure>
+
+<p>对于.gz文件，需要使用<code>gzip/gunzip</code>进行压缩和解压。</p>
+<h2 id="软件安装和管理"><a href="#软件安装和管理" class="headerlink" title="软件安装和管理"></a>软件安装和管理</h2><p>不同的系统具有不同的软件管理工具，对于Ubuntu(Debian)，则通常使用<code>apt/apt-get</code>工具；对于MacOS，则使用<code>brew</code>。此外，还有一部分软件通过源码方式进行发布，因此需要手动的进行构建。</p>
+<p>对于Debian系统，使用了.deb文件对应用程序进行打包，从而方便应用的分发。.deb文件包含了应用程序运行所需要的各种文件以及应用的元数据，如应用的依赖等。而<code>dpkg</code>则是用于安装应用程序的工具，但是<code>dpkg</code>只能安装应用，对.deb文件的元数据内容进行查看等，不能自动的安装应用的依赖，因为<code>dpkg</code>并没有访问repositories的功能。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Check the content of the deb package</span></span><br><span class="line">dpkg -c packageName.deb</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">See the meta-data information</span></span><br><span class="line">dpkg -I packageName.deb</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">See the dependencies</span></span><br><span class="line">dpkg -I packageName.deb | grep Depends</span><br></pre></td></tr></table></figure>
+
+<h3 id="apt-x2F-apt-get"><a href="#apt-x2F-apt-get" class="headerlink" title="apt&#x2F;apt-get"></a>apt&#x2F;apt-get</h3><p><code>apt</code>(Advanced Packaging Tool)是<code>apt-get</code>的封装版本，具有更友好的用户接口，<a target="_blank" rel="noopener" href="https://itsfoss.com/apt-vs-apt-get-difference/">差别</a>。apt在安装应用时，会自动解析应用的依赖，然后根据目前已经安装的应用确定即将要安装的依赖应用。用法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Usage: apt [options] command</span><br><span class="line">Basic commands:</span><br><span class="line"> list - list packages based on package names</span><br><span class="line"> search - search in package descriptions</span><br><span class="line"> show - show package details</span><br><span class="line"> update - update list of available packages</span><br><span class="line"> install - install packages</span><br><span class="line"> remove  - remove packages</span><br><span class="line"> upgrade - upgrade the system by installing/upgrading packages</span><br><span class="line"> full-upgrade - upgrade the system by removing/installing/upgrading packages</span><br><span class="line"> edit-sources - edit the source information file</span><br></pre></td></tr></table></figure>
+
+<p>此外，<code>aptitude</code>则是对<code>apt-get</code>的封装，提供了UI界面。</p>
+<h3 id="从源码编译安装"><a href="#从源码编译安装" class="headerlink" title="从源码编译安装"></a>从源码编译安装</h3><p>不同的源码采用了不同的构建工具，这里主要介绍Python库、CMake等。</p>
+<h4 id="Python库"><a href="#Python库" class="headerlink" title="Python库"></a>Python库</h4><p>源码中通常需要包含<code>setup.py</code>文件，用于构建python应用。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Build the package</span></span><br><span class="line">python setup.py build</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Install the python package</span></span><br><span class="line">python setup.py install</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Check the usage of setup.py</span></span><br><span class="line">python setup.py --help-commands</span><br></pre></td></tr></table></figure>
+
+<h4 id="CMake-x2F-Make"><a href="#CMake-x2F-Make" class="headerlink" title="CMake&#x2F;Make"></a>CMake&#x2F;Make</h4><p>通常的步骤：</p>
+<ol>
+<li>解压：<code>tar -xzvf archive-name.tar.gz</code>，然后cd到解压的目录</li>
+<li>配置：<code>./configure</code></li>
+<li>构建：<code>make</code></li>
+<li>安装：<code>sudo make install</code></li>
+</ol>
+<h1 id="文本"><a href="#文本" class="headerlink" title="文本"></a>文本</h1><h1 id="文件系统"><a href="#文件系统" class="headerlink" title="文件系统"></a>文件系统</h1><h2 id="文件和目录的管理"><a href="#文件和目录的管理" class="headerlink" title="文件和目录的管理"></a>文件和目录的管理</h2><ol>
+<li><p><code>pwd</code>，显示当前目录</p>
+</li>
+<li><p><code>touch</code>，创建空文件</p>
+</li>
+<li><p><code>cp</code>，复制文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">Usage: cp [OPTION]... [-T] SOURCE DEST</span><br><span class="line">  or:  cp [OPTION]... SOURCE... DIRECTORY</span><br><span class="line">  or:  cp [OPTION]... -t DIRECTORY SOURCE...</span><br><span class="line">Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.</span><br><span class="line"></span><br><span class="line">Mandatory arguments to long options are mandatory for short options too.</span><br><span class="line">  -a, --archive                same as -dR --preserve=all</span><br><span class="line">      --attributes-only        don&#x27;t copy the file data, just the attributes</span><br><span class="line">      --backup[=CONTROL]       make a backup of each existing destination file</span><br><span class="line">  -b                           like --backup but does not accept an argument</span><br><span class="line">      --copy-contents          copy contents of special files when recursive</span><br><span class="line">  -d                           same as --no-dereference --preserve=links</span><br><span class="line">  -f, --force                  if an existing destination file cannot be</span><br><span class="line">                                 opened, remove it and try again (this option</span><br><span class="line">                                 is ignored when the -n option is also used)</span><br><span class="line">  -i, --interactive            prompt before overwrite (overrides a previous -n</span><br><span class="line">                                  option)</span><br><span class="line">  -H                           follow command-line symbolic links in SOURCE</span><br><span class="line">  -l, --link                   hard link files instead of copying</span><br><span class="line">  -L, --dereference            always follow symbolic links in SOURCE</span><br><span class="line">  -n, --no-clobber             do not overwrite an existing file (overrides</span><br><span class="line">                                 a previous -i option)</span><br><span class="line">  -P, --no-dereference         never follow symbolic links in SOURCE</span><br><span class="line">  -p                           same as --preserve=mode,ownership,timestamps</span><br><span class="line">      --preserve[=ATTR_LIST]   preserve the specified attributes (default:</span><br><span class="line">                                 mode,ownership,timestamps), if possible</span><br><span class="line">                                 additional attributes: context, links, xattr,</span><br><span class="line">                                 all</span><br><span class="line">  -R, -r, --recursive          copy directories recursively</span><br><span class="line">  -s, --symbolic-link          make symbolic links instead of copying</span><br><span class="line">  -S, --suffix=SUFFIX          override the usual backup suffix</span><br><span class="line">  -t, --target-directory=DIRECTORY  copy all SOURCE arguments into DIRECTORY</span><br><span class="line">  -T, --no-target-directory    treat DEST as a normal file</span><br><span class="line">  -u, --update                 copy only when the SOURCE file is newer</span><br><span class="line">                                 than the destination file or when the</span><br><span class="line">                                 destination file is missing</span><br><span class="line">  -v, --verbose                explain what is being done</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>rm</code>，删除文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Usage: rm [OPTION]... [FILE]...</span><br><span class="line">Remove (unlink) the FILE(s).</span><br><span class="line">  -f, --force           ignore nonexistent files and arguments, never prompt</span><br><span class="line">  -i                    prompt before every removal</span><br><span class="line">  -I                    prompt once before removing more than three files, or</span><br><span class="line">                        when removing recursively; less intrusive than -i,</span><br><span class="line">                        while still giving protection against most mistakes</span><br><span class="line">  -r, -R, --recursive   remove directories and their contents recursively</span><br><span class="line">  -d, --dir             remove empty directories</span><br><span class="line">  -v, --verbose         explain what is being done</span><br><span class="line">      --help     display this help and exit</span><br><span class="line">      --version  output version information and exit</span><br><span class="line">By default, rm does not remove directories.  Use the --recursive (-r or -R)</span><br><span class="line">option to remove each listed directory, too, along with all of its contents.</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>rmdir</code>，删除空目录</p>
+</li>
+<li><p><code>chmod</code>，修改文件权限</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Usage: chmod [OPTION]... MODE[,MODE]... FILE...</span><br><span class="line">  or:  chmod [OPTION]... OCTAL-MODE FILE...</span><br><span class="line">  or:  chmod [OPTION]... --reference=RFILE FILE...</span><br><span class="line">Change the mode of each FILE to MODE.</span><br><span class="line">With --reference, change the mode of each FILE to that of RFILE.</span><br><span class="line">  -c, --changes          like verbose but report only when a change is made</span><br><span class="line">  -f, --silent, --quiet  suppress most error messages</span><br><span class="line">  -v, --verbose          output a diagnostic for every file processed</span><br><span class="line">      --no-preserve-root  do not treat &#x27;/&#x27; specially (the default)</span><br><span class="line">      --preserve-root    fail to operate recursively on &#x27;/&#x27;</span><br><span class="line">      --reference=RFILE  use RFILE&#x27;s mode instead of MODE values</span><br><span class="line">  -R, --recursive        change files and directories recursively</span><br><span class="line">      --help     display this help and exit</span><br><span class="line">      --version  output version information and exit</span><br><span class="line"></span><br><span class="line">Each MODE is of the form &#x27;[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=][0-7]+&#x27;.</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>chown</code>，修改文件的拥有者</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Usage: chown [OPTION]... [OWNER][:[GROUP]] FILE...</span><br><span class="line">  or:  chown [OPTION]... --reference=RFILE FILE...</span><br><span class="line">Change the owner and/or group of each FILE to OWNER and/or GROUP.</span><br><span class="line">With --reference, change the owner and group of each FILE to those of RFILE.</span><br><span class="line"></span><br><span class="line">  -c, --changes          like verbose but report only when a change is made</span><br><span class="line">  -f, --silent, --quiet  suppress most error messages</span><br><span class="line">  -v, --verbose          output a diagnostic for every file processed</span><br><span class="line">      --dereference      affect the referent of each symbolic link (this is</span><br><span class="line">                         the default), rather than the symbolic link itself</span><br><span class="line">  -h, --no-dereference   affect symbolic links instead of any referenced file</span><br><span class="line">                         (useful only on systems that can change the</span><br><span class="line">                         ownership of a symlink)</span><br><span class="line">      --from=CURRENT_OWNER:CURRENT_GROUP</span><br><span class="line">                         change the owner and/or group of each file only if</span><br><span class="line">                         its current owner and/or group match those specified</span><br><span class="line">                         here.  Either may be omitted, in which case a match</span><br><span class="line">                         is not required for the omitted attribute</span><br><span class="line">      --no-preserve-root  do not treat &#x27;/&#x27; specially (the default)</span><br><span class="line">      --preserve-root    fail to operate recursively on &#x27;/&#x27;</span><br><span class="line">      --reference=RFILE  use RFILE&#x27;s owner and group rather than</span><br><span class="line">                         specifying OWNER:GROUP values</span><br><span class="line">  -R, --recursive        operate on files and directories recursively</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>ln</code>，创建链接</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)</span><br><span class="line">  or:  ln [OPTION]... TARGET                  (2nd form)</span><br><span class="line">  or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)</span><br><span class="line">  or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)</span><br><span class="line">In the 1st form, create a link to TARGET with the name LINK_NAME.</span><br><span class="line">In the 2nd form, create a link to TARGET in the current directory.</span><br><span class="line">In the 3rd and 4th forms, create links to each TARGET in DIRECTORY.</span><br><span class="line">Create hard links by default, symbolic links with --symbolic.</span><br><span class="line">By default, each destination (name of new link) should not already exist.</span><br><span class="line">When creating hard links, each TARGET must exist.  Symbolic links</span><br><span class="line">can hold arbitrary text; if later resolved, a relative link is</span><br><span class="line">interpreted in relation to its parent directory.</span><br><span class="line"></span><br><span class="line">Mandatory arguments to long options are mandatory for short options too.</span><br><span class="line">      --backup[=CONTROL]      make a backup of each existing destination file</span><br><span class="line">  -b                          like --backup but does not accept an argument</span><br><span class="line">  -d, -F, --directory         allow the superuser to attempt to hard link</span><br><span class="line">                                directories (note: will probably fail due to</span><br><span class="line">                                system restrictions, even for the superuser)</span><br><span class="line">  -f, --force                 remove existing destination files</span><br><span class="line">  -i, --interactive           prompt whether to remove destinations</span><br><span class="line">  -L, --logical               dereference TARGETs that are symbolic links</span><br><span class="line">  -n, --no-dereference        treat LINK_NAME as a normal file if</span><br><span class="line">                                it is a symbolic link to a directory</span><br><span class="line">  -P, --physical              make hard links directly to symbolic links</span><br><span class="line">  -r, --relative              create symbolic links relative to link location</span><br><span class="line">  -s, --symbolic              make symbolic links instead of hard links</span><br><span class="line">  -S, --suffix=SUFFIX         override the usual backup suffix</span><br><span class="line">  -t, --target-directory=DIRECTORY  specify the DIRECTORY in which to create</span><br><span class="line">                                the links</span><br><span class="line">  -T, --no-target-directory   treat LINK_NAME as a normal file always</span><br><span class="line">  -v, --verbose               print name of each linked file</span><br><span class="line">      --help     display this help and exit</span><br><span class="line">      --version  output version information and exit</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>mv</code>，移动或重命名文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Usage: mv [OPTION]... [-T] SOURCE DEST</span><br><span class="line">  or:  mv [OPTION]... SOURCE... DIRECTORY</span><br><span class="line">  or:  mv [OPTION]... -t DIRECTORY SOURCE...</span><br><span class="line">Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.</span><br><span class="line"></span><br><span class="line">Mandatory arguments to long options are mandatory for short options too.</span><br><span class="line">      --backup[=CONTROL]       make a backup of each existing destination file</span><br><span class="line">  -b                           like --backup but does not accept an argument</span><br><span class="line">  -f, --force                  do not prompt before overwriting</span><br><span class="line">  -i, --interactive            prompt before overwrite</span><br><span class="line">  -n, --no-clobber             do not overwrite an existing file</span><br><span class="line">If you specify more than one of -i, -f, -n, only the final one takes effect.</span><br><span class="line">  -S, --suffix=SUFFIX          override the usual backup suffix</span><br><span class="line">  -t, --target-directory=DIRECTORY  move all SOURCE arguments into DIRECTORY</span><br><span class="line">  -T, --no-target-directory    treat DEST as a normal file</span><br><span class="line">  -u, --update                 move only when the SOURCE file is newer</span><br><span class="line">                                 than the destination file or when the</span><br><span class="line">                                 destination file is missing</span><br><span class="line">  -v, --verbose                explain what is being done</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>mkdir</code>，创建目录</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Usage: mkdir [OPTION]... DIRECTORY...</span><br><span class="line">Create the DIRECTORY(ies), if they do not already exist.</span><br><span class="line"></span><br><span class="line">Mandatory arguments to long options are mandatory for short options too.</span><br><span class="line">  -m, --mode=MODE   set file mode (as in chmod), not a=rwx - umask</span><br><span class="line">  -p, --parents     no error if existing, make parent directories as needed</span><br><span class="line">  -v, --verbose     print a message for each created directory</span><br><span class="line">  -Z                   set SELinux security context of each created directory</span><br><span class="line">                         to the default type</span><br><span class="line">      --context[=CTX]  like -Z, or if CTX is specified then set the SELinux</span><br><span class="line">                         or SMACK security context to CTX</span><br><span class="line">      --help     display this help and exit</span><br><span class="line">      --version  output version information and exit</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="文件系统和磁盘"><a href="#文件系统和磁盘" class="headerlink" title="文件系统和磁盘"></a>文件系统和磁盘</h2><h3 id="df"><a href="#df" class="headerlink" title="df"></a>df</h3><p><code>df</code>命令用于查看文件系统的相关信息，具体用法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">Usage: df [OPTION]... [FILE]...</span><br><span class="line">Show information about the file system on which each FILE resides,</span><br><span class="line">or all file systems by default.</span><br><span class="line"></span><br><span class="line">Mandatory arguments to long options are mandatory for short options too.</span><br><span class="line">  -a, --all             include pseudo, duplicate, inaccessible file systems</span><br><span class="line">  -B, --block-size=SIZE  scale sizes by SIZE before printing them; e.g.,</span><br><span class="line">                           &#x27;-BM&#x27; prints sizes in units of 1,048,576 bytes;</span><br><span class="line">                           see SIZE format below</span><br><span class="line">  -h, --human-readable  print sizes in powers of 1024 (e.g., 1023M)</span><br><span class="line">  -H, --si              print sizes in powers of 1000 (e.g., 1.1G)</span><br><span class="line">  -i, --inodes          list inode information instead of block usage</span><br><span class="line">  -k                    like --block-size=1K</span><br><span class="line">  -l, --local           limit listing to local file systems</span><br><span class="line">      --no-sync         do not invoke sync before getting usage info (default)</span><br><span class="line">      --output[=FIELD_LIST]  use the output format defined by FIELD_LIST,</span><br><span class="line">                               or print all fields if FIELD_LIST is omitted.</span><br><span class="line">  -P, --portability     use the POSIX output format</span><br><span class="line">      --sync            invoke sync before getting usage info</span><br><span class="line">      --total           elide all entries insignificant to available space,</span><br><span class="line">                          and produce a grand total</span><br><span class="line">  -t, --type=TYPE       limit listing to file systems of type TYPE</span><br><span class="line">  -T, --print-type      print file system type</span><br><span class="line">  -x, --exclude-type=TYPE   limit listing to file systems not of type TYPE</span><br><span class="line">  -v                    (ignored)</span><br><span class="line">      --help     display this help and exit</span><br><span class="line">      --version  output version information and exit</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">See all filesystems and their types</span></span><br><span class="line">df -aTH</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">See the usage of inodes instead of spaces</span></span><br><span class="line">df -ai</span><br></pre></td></tr></table></figure>
+
+<h3 id="du"><a href="#du" class="headerlink" title="du"></a>du</h3><p><code>du</code></p>
+<h1 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h1><h2 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h2><h3 id="ps"><a href="#ps" class="headerlink" title="ps"></a>ps</h3><p>用于显示的进程信息瞬时信息，包含了很多用于选定进程的选项：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Usage:</span><br><span class="line"> ps [options]</span><br><span class="line">Basic options:</span><br><span class="line"> -A, -e               all processes</span><br><span class="line"> -a                   all with tty, except session leaders</span><br><span class="line">  a                   all with tty, including other users</span><br><span class="line"> -d                   all except session leaders</span><br><span class="line"> -N, --deselect       negate selection</span><br><span class="line">  r                   only running processes</span><br><span class="line">  T                   all processes on this terminal</span><br><span class="line">  x                   display processes without controlling ttys</span><br><span class="line">  u										display user and start time of processes</span><br><span class="line">For more details see ps(1).</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">See every process on the system</span></span><br><span class="line">ps aux</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Print a process tree</span></span><br><span class="line">ps -axjf</span><br></pre></td></tr></table></figure>
+
+<h3 id="htop-x2F-top"><a href="#htop-x2F-top" class="headerlink" title="htop&#x2F;top"></a>htop&#x2F;top</h3><p><code>htop</code>用于可视化的查看和管理系统中的进程，执行以后可以进入一个可交互的命令窗口进行管理。此外，还经常用于查看系统的CPU，MEM等资源的使用情况。</p>
+<h3 id="kill"><a href="#kill" class="headerlink" title="kill"></a>kill</h3><p>用于杀死进程，用法如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Send signal to all pids(default signal TERM)</span></span><br><span class="line">kill [options] &lt;pid&gt; [...]</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Kill the processes.</span></span><br><span class="line">kill -9 pid</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">List the available signal choices <span class="keyword">in</span> a <span class="built_in">nice</span> table.</span></span><br><span class="line">kill -l</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Send the default signal, SIGTERM, to all those processes.</span></span><br><span class="line">kill 123 543 2341 3453</span><br></pre></td></tr></table></figure>
+
+<h2 id="任务执行"><a href="#任务执行" class="headerlink" title="任务执行"></a>任务执行</h2><p>默认情况下，在命令行终端中启动时，就在前台启动该新进程，并且命令行终端 则为新启动的进程的父进程。如果需要在后台执行该任务，可以在该进程后面添加<code>&amp;</code>，表示在后台启动。</p>
+<p>通过下面的命令来对启动的后台任务进行管理：</p>
+<ul>
+<li><code>jobs</code>显示后台任务</li>
+<li><code>fg pid</code>将任务调到前台执行</li>
+<li><code>bg pid</code>让一个任务继续在后台执行</li>
+</ul>
+<p>需要注意的如果命令行终端退出，那么系统会向它的所有子进程都发送TERM信号，使得普通进程都退出。如果需要在命令行终端退出后依然继续执行该任务，可以使用<code>nohup</code>。<code>nohup</code>会对每个一个进程发送一个SIGHUP信号，使得在<code>nohup</code>命令执行的进程忽略终端关闭的TERM信号。例子：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup java -jar my.jar &gt; test.lopg &amp;</span><br></pre></td></tr></table></figure>
+
+<h2 id="服务管理"><a href="#服务管理" class="headerlink" title="服务管理"></a>服务管理</h2><h3 id="crontab"><a href="#crontab" class="headerlink" title="crontab"></a>crontab</h3><p><code>crontab</code>用于提交和管理用户需要周期性执行的任务。系统中有一个<code>crond</code>进程，该进程会定期检查和执行crontab文件中需要定期执行的任务。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">crontab [-u user] file crontab [-u user] [ -e | -l | -r ]</span><br><span class="line">命令参数：</span><br><span class="line">-u: user：用来设定某个用户的crontab服务；</span><br><span class="line">file：file是命令文件的名字,表示将file做为crontab的任务列表文件并载入crontab。如果在命令行中没有指定这个文件，crontab命令将接受标准输入（键盘）上键入的命令，并将它们载入crontab。</span><br><span class="line">-e: 编辑某个用户的crontab文件内容。如果不指定用户，则表示编辑当前用户的crontab文件。</span><br><span class="line">-l: 显示某个用户的crontab文件内容，如果不指定用户，则表示显示当前用户的crontab文件内容。</span><br><span class="line">-r: 从/var/spool/cron目录中删除某个用户的crontab文件，如果不指定用户，则默认删除当前用户的crontab文件。</span><br><span class="line">-i在删除用户的crontab文件时给确认提示。</span><br></pre></td></tr></table></figure>
+
+<p>crontab的文件格式：</p>
+<ul>
+<li>第1列分钟0～59</li>
+<li>第2列小时0～23（0表示子夜）</li>
+<li>第3列日1～31</li>
+<li>第4列月1～12</li>
+<li>第5列星期0～7（0和7表示星期天）</li>
+<li>第6列要运行的命令</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="built_in">echo</span> the <span class="built_in">date</span> to the console every 15minutes between 6pm and 6am</span></span><br><span class="line">0,15,30,45 18-06 * * * /bin/echo &#x27;date&#x27; &gt; /dev/console</span><br></pre></td></tr></table></figure>
+
+<h1 id="磁盘"><a href="#磁盘" class="headerlink" title="磁盘"></a>磁盘</h1><h1 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h1>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" title= "Yarn ResourceScheduler">
+                    <div class="nextTitle">Yarn ResourceScheduler</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" title= "Hadoop安全管理">
+                    <div class="prevTitle">Hadoop安全管理</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Linux常用命令总结"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6-x2F-%E5%8C%85%E7%AE%A1%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">软件&#x2F;包管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%8B%E7%BC%A9%E5%8C%85%E7%AE%A1%E7%90%86"><span class="toc-number">1.1.</span> <span class="toc-text">压缩包管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#tar"><span class="toc-number">1.1.1.</span> <span class="toc-text">tar</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zip-x2F-unzip"><span class="toc-number">1.1.2.</span> <span class="toc-text">zip&#x2F;unzip</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6%E5%AE%89%E8%A3%85%E5%92%8C%E7%AE%A1%E7%90%86"><span class="toc-number">1.2.</span> <span class="toc-text">软件安装和管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#apt-x2F-apt-get"><span class="toc-number">1.2.1.</span> <span class="toc-text">apt&#x2F;apt-get</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85"><span class="toc-number">1.2.2.</span> <span class="toc-text">从源码编译安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Python%E5%BA%93"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">Python库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CMake-x2F-Make"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">CMake&#x2F;Make</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E6%9C%AC"><span class="toc-number">2.</span> <span class="toc-text">文本</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.</span> <span class="toc-text">文件系统</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E7%9A%84%E7%AE%A1%E7%90%86"><span class="toc-number">3.1.</span> <span class="toc-text">文件和目录的管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98"><span class="toc-number">3.2.</span> <span class="toc-text">文件系统和磁盘</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#df"><span class="toc-number">3.2.1.</span> <span class="toc-text">df</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#du"><span class="toc-number">3.2.2.</span> <span class="toc-text">du</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">进程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86"><span class="toc-number">4.1.</span> <span class="toc-text">进程管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ps"><span class="toc-number">4.1.1.</span> <span class="toc-text">ps</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#htop-x2F-top"><span class="toc-number">4.1.2.</span> <span class="toc-text">htop&#x2F;top</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kill"><span class="toc-number">4.1.3.</span> <span class="toc-text">kill</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C"><span class="toc-number">4.2.</span> <span class="toc-text">任务执行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86"><span class="toc-number">4.3.</span> <span class="toc-text">服务管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#crontab"><span class="toc-number">4.3.1.</span> <span class="toc-text">crontab</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A3%81%E7%9B%98"><span class="toc-number">5.</span> <span class="toc-text">磁盘</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C"><span class="toc-number">6.</span> <span class="toc-text">网络</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

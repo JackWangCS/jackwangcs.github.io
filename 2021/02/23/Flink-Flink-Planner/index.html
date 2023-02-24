@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink Planner · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink Planner</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink Planner
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SQL">SQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Planner">Planner</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.9k</span>Reading time: <span class="post-count reading-time">24 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/02/23</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>从<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-32%3A+Restructure+flink-table+for+future+contributions">FLIP-32</a>中，提出了重构Flink Table模块，从而统一Flink的Table API。Blink Planner将会逐步的取代当前的Flink   Planner，本文主要介绍Blink Planner。<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-11439">FLINK-11439</a>用于将Blink Planner引入Flink，并对Flink Table模块进行重构，引入了Planner接口，支持Pluggable的Table Planner实现，同时兼容Blink Planner和Legacy Flink Planner。</p>
+<h2 id="Planner接口"><a href="#Planner接口" class="headerlink" title="Planner接口"></a>Planner接口</h2><p>Flink的Planner接口（<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-12690">FLINK-12690</a>）有两个主要的用途：</p>
+<ol>
+<li>SQL Parser：将一个SQL语句转换成一个Table API中具体的对象（Operation树）</li>
+<li>Relational Planner：用于将ModifyOperation树优化并转化成可运行的Transformation</li>
+</ol>
+<p>Planner接口是执行环境不可知的，因此TableEnvironment必须保证Operation在Runtime时获取的配置是属于同一TableEnvironment。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Planner</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Retrieves a &#123;<span class="doctag">@link</span> Parser&#125; that provides methods for parsing a SQL string.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    Parser <span class="title function_">getParser</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Converts a relational tree of &#123;<span class="doctag">@link</span> ModifyOperation&#125;s into a set of runnable &#123;<span class="doctag">@link</span></span></span><br><span class="line"><span class="comment">     * Transformation&#125;s.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> modifyOperations list of relational operations to plan, optimize and convert in a</span></span><br><span class="line"><span class="comment">     *     single run.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> list of corresponding &#123;<span class="doctag">@link</span> Transformation&#125;s.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    List&lt;Transformation&lt;?&gt;&gt; translate(List&lt;ModifyOperation&gt; modifyOperations);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns the AST of the specified Table API and SQL queries and the execution plan to compute</span></span><br><span class="line"><span class="comment">     * the result of the given collection of &#123;<span class="doctag">@link</span> QueryOperation&#125;s.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    String <span class="title function_">explain</span><span class="params">(List&lt;Operation&gt; operations, ExplainDetail... extraDetails)</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    String[] getCompletionHints(String statement, <span class="type">int</span> position);</span><br><span class="line">    String <span class="title function_">getJsonPlan</span><span class="params">(List&lt;ModifyOperation&gt; modifyOperations)</span>;</span><br><span class="line">    String <span class="title function_">explainJsonPlan</span><span class="params">(String jsonPlan, ExplainDetail... extraDetails)</span>;</span><br><span class="line">    List&lt;Transformation&lt;?&gt;&gt; translateJsonPlan(String jsonPlan);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>整个SQL的转换流程如下：</p>
+<pre class="mermaid">graph TD
+    subgraph parsing [SQL Pasering]
+    statement[SQL statement]-- "CalciteParser.parse()" --> p[SqlNode]
+    p -- "FlinkCalciteSqlValidator.validate(sqlNode)" --> v[Validated SqlNode]
+    v -- "SqlToOperationConverter.convert(sqlNode)" --> op[Operations]
+    end
+    subgraph optimizing [SQL Optimizing]
+    op -- "PlannerBase.translateToRel()" --> r[RelNodes]
+    r -- "Optimizer.optimize()" --> or[Optimized RelNodes]
+    or -- "ExecNodeGraphGenerator.generate()" --> e[ExecNodeGraph]
+    e -- "ExecNode.translateToPlan()" --> transformations[Transformations]
+    end</pre>
+
+<h2 id="Parser"><a href="#Parser" class="headerlink" title="Parser"></a>Parser</h2><p>Parser接口定义从SQL字符串中解析SQL对象的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Parser</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Entry point for parsing SQL queries expressed as a String.</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;The produced Operation trees should already be validated.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    List&lt;Operation&gt; <span class="title function_">parse</span><span class="params">(String statement)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Entry point for parsing SQL identifiers expressed as a String.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    UnresolvedIdentifier <span class="title function_">parseIdentifier</span><span class="params">(String identifier)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Entry point for parsing SQL expressions expressed as a String.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ResolvedExpression <span class="title function_">parseSqlExpression</span><span class="params">(String sqlExpression, TableSchema inputSchema)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Parser的实现ParserImpl有两个，分别为：</p>
+<ul>
+<li>Flink Legacy Planner： org.apache.flink.table.planner.ParserImpl</li>
+<li>Blink Planner：org.apache.flink.table.planner.delegation.ParserImpl</li>
+</ul>
+<p>两者的实现类似，这里主要分析Blink Planner中的ParserImpl。</p>
+<h3 id="ParserImpl"><a href="#ParserImpl" class="headerlink" title="ParserImpl"></a>ParserImpl</h3><p>ParserImpl在PlannerBase抽象类中构造：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> val parser: Parser = <span class="keyword">new</span> <span class="title class_">ParserImpl</span>(</span><br><span class="line">  catalogManager,</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">JSupplier</span>[FlinkPlannerImpl] &#123;</span><br><span class="line">    override def <span class="title function_">get</span><span class="params">()</span>: FlinkPlannerImpl = createFlinkPlanner</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="comment">// we do not cache the parser in order to use the most up to</span></span><br><span class="line">  <span class="comment">// date configuration. Users might change parser configuration in TableConfig in between parsing statements</span></span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">JSupplier</span>[CalciteParser] &#123;</span><br><span class="line">    override def <span class="title function_">get</span><span class="params">()</span>: CalciteParser = plannerContext.createCalciteParser()</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">JFunction</span>[TableSchema, SqlExprToRexConverter] &#123;</span><br><span class="line">    override def <span class="title function_">apply</span><span class="params">(t: TableSchema)</span>: SqlExprToRexConverter = &#123;</span><br><span class="line">      sqlExprToRexConverterFactory.create(plannerContext.getTypeFactory.buildRelNodeRowType(t))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>ParserImpl的parser(String)方法主要委托CalciteParser对输入的SQL语句进行解析并得到SqlNode表示的语法解析树。之后，通过SqlToOperationConverter转换成Operation：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> List&lt;Operation&gt; <span class="title function_">parse</span><span class="params">(String statement)</span> &#123;</span><br><span class="line">  <span class="type">CalciteParser</span> <span class="variable">parser</span> <span class="operator">=</span> calciteParserSupplier.get();</span><br><span class="line">  <span class="type">FlinkPlannerImpl</span> <span class="variable">planner</span> <span class="operator">=</span> validatorSupplier.get();</span><br><span class="line">  <span class="comment">// parse the sql query</span></span><br><span class="line">  <span class="type">SqlNode</span> <span class="variable">parsed</span> <span class="operator">=</span> parser.parse(statement);</span><br><span class="line"></span><br><span class="line">  <span class="type">Operation</span> <span class="variable">operation</span> <span class="operator">=</span></span><br><span class="line">    SqlToOperationConverter.convert(planner, catalogManager, parsed)</span><br><span class="line">    .orElseThrow(() -&gt; <span class="keyword">new</span> <span class="title class_">TableException</span>(<span class="string">&quot;Unsupported query: &quot;</span> + statement));</span><br><span class="line">  <span class="keyword">return</span> Collections.singletonList(operation);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于行表达式的解析如下：</p>
+<ul>
+<li>构造SqlExprToRexConverter，将输入的sqlExpression转换为RexNode</li>
+<li>从FlinkTypeFactory中获取RexNode的LogicalType</li>
+<li>根据RexNode和LogicalType构造RexNodeExpression</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> ResolvedExpression <span class="title function_">parseSqlExpression</span><span class="params">(String sqlExpression, TableSchema inputSchema)</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">SqlExprToRexConverter</span> <span class="variable">sqlExprToRexConverter</span> <span class="operator">=</span></span><br><span class="line">    sqlExprToRexConverterCreator.apply(inputSchema);</span><br><span class="line">  <span class="keyword">final</span> <span class="type">RexNode</span> <span class="variable">rexNode</span> <span class="operator">=</span> sqlExprToRexConverter.convertToRexNode(sqlExpression);</span><br><span class="line">  <span class="keyword">final</span> <span class="type">LogicalType</span> <span class="variable">logicalType</span> <span class="operator">=</span> FlinkTypeFactory.toLogicalType(rexNode.getType());</span><br><span class="line">  <span class="comment">// expand expression for serializable expression strings similar to views</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">String</span> <span class="variable">sqlExpressionExpanded</span> <span class="operator">=</span> sqlExprToRexConverter.expand(sqlExpression);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RexNodeExpression</span>(</span><br><span class="line">    rexNode,</span><br><span class="line">    TypeConversions.fromLogicalToDataType(logicalType),</span><br><span class="line">    sqlExpression,</span><br><span class="line">    sqlExpressionExpanded);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="CalciteParser"><a href="#CalciteParser" class="headerlink" title="CalciteParser"></a>CalciteParser</h3><p>CalciteParser由PlannerContext.createCalciteParser()方法创建：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> CalciteParser <span class="title function_">createCalciteParser</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">CalciteParser</span>(getSqlParserConfig());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CalciteParser相关的配置在PlannerBase中，通过getSqlParserConfig()获得：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> SqlParser.Config <span class="title function_">getSqlParserConfig</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> JavaScalaConversionUtil.&lt;SqlParser.Config&gt;toJava(</span><br><span class="line">    <span class="comment">// Try to get Parser config from table config firstly</span></span><br><span class="line">    getCalciteConfig(tableConfig).getSqlParserConfig())</span><br><span class="line">    .orElseGet(</span><br><span class="line">    () -&gt; &#123;</span><br><span class="line">      <span class="comment">// Fallback to construct the default:</span></span><br><span class="line">      <span class="type">SqlConformance</span> <span class="variable">conformance</span> <span class="operator">=</span> getSqlConformance(); <span class="comment">// Two conformance: HIVE and DEFAULT</span></span><br><span class="line">      <span class="keyword">return</span> SqlParser.config()</span><br><span class="line">        .withParserFactory(FlinkSqlParserFactories.create(conformance))</span><br><span class="line">        .withConformance(conformance)</span><br><span class="line">        .withLex(Lex.JAVA)</span><br><span class="line">        .withIdentifierMaxLength(<span class="number">256</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>目前Flink支持两种SqlConformance（由配置”table.sql-dialect”决定）</p>
+<ul>
+<li>HIVE：FlinkSqlConformance.HIVE，HIVE的语法格式，对应的SqlAbstractParserImpl实现为FlinkSqlParserImpl</li>
+<li>DEFAULT：FlinkSqlConformance.DEFAULT，Flink默认的语法格式，对应的SqlAbstractParserImpl的实现为FlinkHiveSqlParserImpl</li>
+</ul>
+<p>FlinkSqlParserImpl和FlinkHiveSqlParserImpl都由JavaCC生成，具体的定义在各自Package中的Parser.tdd和parserImpls.ftl描述。</p>
+<p>CalciteParser是对Calcite的SqlParser的简单封装，采用委托的方式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CalciteParser</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Parses a SQL statement into a &#123;<span class="doctag">@link</span> SqlNode&#125;. The &#123;<span class="doctag">@link</span> SqlNode&#125; is not yet validated.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> SqlNode <span class="title function_">parse</span><span class="params">(String sql)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">SqlParser</span> <span class="variable">parser</span> <span class="operator">=</span> SqlParser.create(sql, config);</span><br><span class="line">            <span class="keyword">return</span> parser.parseStmt();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (SqlParseException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">SqlParserException</span>(<span class="string">&quot;SQL parse failed. &quot;</span> + e.getMessage(), e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="FlinkCalciteSqlValidator"><a href="#FlinkCalciteSqlValidator" class="headerlink" title="FlinkCalciteSqlValidator"></a>FlinkCalciteSqlValidator</h2><p>FlinkCalciteSqlValidator继承自Calcite的SqlValidatorImpl，只是增加了对DECIMAL Literal的最大精度的检查和对Join的检查。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">validateLiteral</span><span class="params">(SqlLiteral literal)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (literal.getTypeName() == DECIMAL) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">BigDecimal</span> <span class="variable">decimal</span> <span class="operator">=</span> literal.getValueAs(BigDecimal.class);</span><br><span class="line">    <span class="keyword">if</span> (decimal.precision() &gt; DecimalType.MAX_PRECISION) &#123;</span><br><span class="line">      <span class="keyword">throw</span> newValidationError(</span><br><span class="line">        literal, Static.RESOURCE.numberLiteralOutOfRange(decimal.toString()));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">super</span>.validateLiteral(literal);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="SqlToOperationConverter"><a href="#SqlToOperationConverter" class="headerlink" title="SqlToOperationConverter"></a>SqlToOperationConverter</h2><p>SqlToOperationConverter用于将SqlNode转换为Operation。对于每种类型的SqlNode，SqlToOperationConverter都有与之对应的convert(type)方法，type参数可以是该SqlNode的子类。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * This is the main entrance for executing all kinds of DDL/DML &#123;@code SqlNode&#125;s, different</span></span><br><span class="line"><span class="comment">     * SqlNode will have it&#x27;s implementation in the #convert(type) method whose &#x27;type&#x27; argument is</span></span><br><span class="line"><span class="comment">     * subclass of &#123;@code SqlNode&#125;.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * @param flinkPlanner FlinkPlannerImpl to convertCreateTable sql node to rel node</span></span><br><span class="line"><span class="comment">     * @param catalogManager CatalogManager to resolve full path for operations</span></span><br><span class="line"><span class="comment">     * @param sqlNode SqlNode to execute on</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">public static <span class="type">Optional</span>&lt;<span class="type">Operation</span>&gt; convert(</span><br><span class="line">  <span class="type">FlinkPlannerImpl</span> flinkPlanner, <span class="type">CatalogManager</span> catalogManager, <span class="type">SqlNode</span> sqlNode) &#123;</span><br><span class="line">  <span class="comment">// validate the query, call FlinkCalciteSqlValidator actually</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">SqlNode</span> validated = flinkPlanner.validate(sqlNode);</span><br><span class="line">  <span class="comment">// Create converter and convert SqlNode according its type</span></span><br><span class="line">  <span class="type">SqlToOperationConverter</span> converter =</span><br><span class="line">  <span class="keyword">new</span> <span class="type">SqlToOperationConverter</span>(flinkPlanner, catalogManager);</span><br><span class="line">  <span class="keyword">if</span> (validated instanceof <span class="type">SqlCreateCatalog</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Optional</span>.of(converter.convertCreateCatalog((<span class="type">SqlCreateCatalog</span>) validated));</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (validated instanceof <span class="type">SqlDropCatalog</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Optional</span>.of(converter.convertDropCatalog((<span class="type">SqlDropCatalog</span>) validated));</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (...) &#123; <span class="comment">// Other types of SqlNodes</span></span><br><span class="line">    <span class="keyword">return</span> ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Flink针对各种查询操作都定义了相关的SqlCall或者SqlNode子类，在convert(type)过程中，主要是获取SqlNode中的参数，进行简单的封装并创建Operation。</p>
+<h2 id="Operations"><a href="#Operations" class="headerlink" title="Operations"></a>Operations</h2><p>Operation表示对于Table的各种操作，包括查询（DQL）、修改（DML）、定义（DDL）和权限控制（DCL）等。<strong>Operation是Parser解析SQL语句的输出</strong>，Operation只定义了返回SummaryString的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Returns a string that summarizes this operation for printing to a console. An implementation might skip very specific properties.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">String <span class="title function_">asSummaryString</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
+
+<p>Operation的子类繁多，主要有：</p>
+<ul>
+<li>DQL：QueryOperation，ShowOperation，UseOperation，DescribeTableOperation，ExplainOperation</li>
+<li>DML：ModifyOperation，DropOperation，AlterOperation</li>
+<li>DDL：CreateOperation</li>
+<li>DCL：LoadModuleOperation，UnLoadModuleOperation</li>
+</ul>
+<p>其中最常见的是QueryOperation和ModifyOperation。</p>
+<h3 id="QueryOperation"><a href="#QueryOperation" class="headerlink" title="QueryOperation"></a>QueryOperation</h3><p>QueryOperation表示一个关系性查询节点，具有一个用于表示QueryOperation类型的TableSchema：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">QueryOperation</span> <span class="keyword">extends</span> <span class="title class_">Operation</span> &#123;</span><br><span class="line">    <span class="comment">/** Resolved schema of this operation. */</span></span><br><span class="line">    TableSchema <span class="title function_">getTableSchema</span><span class="params">()</span>;</span><br><span class="line">  </span><br><span class="line">    List&lt;QueryOperation&gt; <span class="title function_">getChildren</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">default</span> &lt;T&gt; T <span class="title function_">accept</span><span class="params">(QueryOperationVisitor&lt;T&gt; visitor)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> visitor.visit(<span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意，QueryOperation具有子节点，可以构成一棵Operation树。</p>
+<h3 id="ModifyOperation"><a href="#ModifyOperation" class="headerlink" title="ModifyOperation"></a>ModifyOperation</h3><p>ModifyOperation则描述DML或者对DataStream的转换。ModifyOperation以QueryOperation为作为子节点，表示一个可以执行的查询。利用Planner.translate(List)可以将一组ModifyOperation转换成Transformation构成的DAG图。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ModifyOperation</span> <span class="keyword">extends</span> <span class="title class_">Operation</span> &#123;</span><br><span class="line">    QueryOperation <span class="title function_">getChild</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    &lt;T&gt; T <span class="title function_">accept</span><span class="params">(ModifyOperationVisitor&lt;T&gt; visitor)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210307233417.png"></p>
+<p>子类：</p>
+<ul>
+<li>CatalogSinkModifyOperation，UnregisteredSinkModifyOperation：DML操作，前者是将向一个Catalog注册的Sink中写入，而后者是向一个未注册的Sink写入</li>
+<li>SelectSinkOperation：内部用于将查询结果返回给客户端的特殊Operation</li>
+<li>OutputConversionModifyOperation：内部用于将ModifyOperation包含的QueryOperation根据类型信息（TypeInformation）转换成对应的Transformation<br>OutputConversionModifyOperation中包含了一个UpdateMode，用于描述输出的类型：<ul>
+<li>APPEND</li>
+<li>RETRACT</li>
+<li>UPSERT</li>
+</ul>
+</li>
+</ul>
+<h2 id="PlannerBase"><a href="#PlannerBase" class="headerlink" title="PlannerBase"></a>PlannerBase</h2><p>PlannerBase是Blink针对Planner接口的实现，针对Stream&#x2F;Batch分为两个子类：</p>
+<ul>
+<li>StreamPlaner</li>
+<li>BatchPlanner</li>
+</ul>
+<p>PlannerBase会根据SqlDialect创建Parser，以及PlannerContext：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">PlannerBase</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    executor: <span class="type">Executor</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    config: <span class="type">TableConfig</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val functionCatalog: <span class="type">FunctionCatalog</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    val catalogManager: <span class="type">CatalogManager</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    isStreamingMode: <span class="type">Boolean</span></span>)</span></span><br><span class="line">  <span class="keyword">extends</span> <span class="type">Planner</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> parser: <span class="type">Parser</span> = _</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> currentDialect: <span class="type">SqlDialect</span> = getTableConfig.getSqlDialect</span><br><span class="line"></span><br><span class="line">  <span class="meta">@VisibleForTesting</span></span><br><span class="line">  <span class="keyword">private</span>[flink] <span class="keyword">val</span> plannerContext: <span class="type">PlannerContext</span> =</span><br><span class="line">    <span class="keyword">new</span> <span class="type">PlannerContext</span>(</span><br><span class="line">      config,</span><br><span class="line">      functionCatalog,</span><br><span class="line">      catalogManager,</span><br><span class="line">      asRootSchema(<span class="keyword">new</span> <span class="type">CatalogManagerCalciteSchema</span>(catalogManager, isStreamingMode)),</span><br><span class="line">      getTraitDefs.toList</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将Operations转换为Transformation的translate()方法的步骤：</p>
+<ol>
+<li>验证执行环境配置，并设置默认的并行度</li>
+<li>将Operations转换为RelNodes</li>
+<li>对于RelNodes进行优化</li>
+<li>将优化后的RelNodes转换为ExecNodeGraph</li>
+<li>将ExecNodeGraph转换为底层的Transformation</li>
+</ol>
+<p>对于3-5步，子类可以根据Stream&#x2F;Batch的特点重写对应的方法，进行特殊的处理和优化</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">translate</span></span>(</span><br><span class="line">  modifyOperations: util.<span class="type">List</span>[<span class="type">ModifyOperation</span>]): util.<span class="type">List</span>[<span class="type">Transformation</span>[_]] = &#123;</span><br><span class="line">  validateAndOverrideConfiguration</span><br><span class="line">  <span class="keyword">if</span> (modifyOperations.isEmpty) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">List</span>.empty[<span class="type">Transformation</span>[_]]</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> relNodes = modifyOperations.map(translateToRel)</span><br><span class="line">  <span class="keyword">val</span> optimizedRelNodes = optimize(relNodes)</span><br><span class="line">  <span class="keyword">val</span> execGraph = translateToExecNodeGraph(optimizedRelNodes)</span><br><span class="line">  translateToPlan(execGraph)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="translateToRel"><a href="#translateToRel" class="headerlink" title="translateToRel"></a>translateToRel</h3><p>translateToRel(ModificationOperation)用于将ModificationOperation转换为RelNode表示的DAG。</p>
+<pre class="mermaid">sequenceDiagram
+PlannerBase ->> FlinkRelBuilder:getRelBuilder() 
+PlannerBase ->> FlinkRelBuilder: translateToRel()
+# Note right of FlinkRelBuilder: call build() to build a RelNode
+FlinkRelBuilder ->> QueryOperationConverter: toRelNodeConverter()
+QueryOperationConverter ->> FlinkRelBuilder: RelNode
+FlinkRelBuilder ->> PlannerBase: Sink LogicalRelNode</pre>
+
+<p>QueryOperationConverter用于将Flink中的QueryOption转换为Calcite中的RelNode，是Flink和Calcite中间的桥梁。</p>
+<h3 id="Optimizer-amp-CommonSubGraphBasedOptimizer"><a href="#Optimizer-amp-CommonSubGraphBasedOptimizer" class="headerlink" title="Optimizer &amp; CommonSubGraphBasedOptimizer"></a>Optimizer &amp; CommonSubGraphBasedOptimizer</h3><p>Blink Planner中定义了Optimizer接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">trait Optimizer &#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * Generates the optimized [[RelNode]] DAG from the original relational nodes.</span></span><br><span class="line"><span class="comment">    * &lt;p&gt;NOTES: The reused node in result DAG will be converted to the same RelNode.</span></span><br><span class="line"><span class="comment">    *</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span> roots the original relational nodes.</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> a list of RelNode represents an optimized RelNode DAG.</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">  def <span class="title function_">optimize</span><span class="params">(roots: Seq[RelNode])</span>: Seq[RelNode]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CommonSubGraphBasedOptimizer是Optimizer的抽象类实现，在FLINK-12424引入，用于支持Multiple Sinks的优化。CommonSubGraphBasedOptimizer基于公共子图（Common sub-graph）对RelNode DAG优化为语义等价的RelNode DAG。</p>
+<blockquote>
+<p>Common sub-graph represents the common sub RelNode plan in multiple RelNode trees.</p>
+</blockquote>
+<p>由于Calcite Planner并不支持DAG优化（具有多个根节点），因此CommonSubGraphBasedOptimizer将一个RelNode DAG分解为多个公共子图，每个子图是一棵的树。在这种情况下，每个子图都可以独立地使用Calcite进行优化。</p>
+<p>算法具体步骤：</p>
+<ol>
+<li>将RelNode DAG分解为多个RelNodeBlock表示的公共子图，每个RelNodeBlock都只有一个<strong>Sink输出</strong>。</li>
+<li>优化器对每一个RelNodeBlock递归地<em>从叶子Block到根Sink Block</em>进行优化，并将非根Block的优化结果包装为IntermediateRelTable</li>
+<li>展开RelNode树中的每个RelNodeBlock内的IntermediateRelTable，得到最终的RelNode树</li>
+</ol>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">optimize</span></span>(roots: <span class="type">Seq</span>[<span class="type">RelNode</span>]): <span class="type">Seq</span>[<span class="type">RelNode</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> sinkBlocks = doOptimize(roots) <span class="comment">// Step 1</span></span><br><span class="line">  <span class="keyword">val</span> optimizedPlan = sinkBlocks.map &#123; block =&gt; <span class="comment">// Step 2</span></span><br><span class="line">    <span class="keyword">val</span> plan = block.getOptimizedPlan</span><br><span class="line">    require(plan != <span class="literal">null</span>)</span><br><span class="line">    plan</span><br><span class="line">  &#125;</span><br><span class="line">  expandIntermediateTableScan(optimizedPlan) <span class="comment">// Step 3</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>采用上述的算法的主要原因：</p>
+<ol>
+<li>对于multi-sinks的用户，通常会使用VIEW。而VIEW是一种很自然的公共子图。</li>
+<li>在优化之后，可能在最终的优化结果中，并没有公共子图</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>如何找到对于公共子图有效的break point，有些Physical RelNode由多个Logical RelNodes转换而来，因此break point不应该位于这些Logical RelNodes中</li>
+<li>优化的结果为每个公共子图内的局部最优，并不是全局最优</li>
+</ol>
+<p>在BatchPlanner和StreamPlanner分别实现了：</p>
+<ul>
+<li>BatchCommonSubGraphBasedOptimizer</li>
+<li>StreamCommonSubGraphBasedOptimizer</li>
+</ul>
+<p>子类需要重写doOptimzie()方法，负责分解RelNode DAG为RelNodeBlock，并返回优化后的RelNodeBlock：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Decompose RelNode trees into multiple [[RelNodeBlock]]s, optimize recursively each</span></span><br><span class="line"><span class="comment">  * [[RelNodeBlock]], return optimized [[RelNodeBlock]]s.</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * @return optimized [[RelNodeBlock]]s.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">doOptimize</span></span>(roots: <span class="type">Seq</span>[<span class="type">RelNode</span>]): <span class="type">Seq</span>[<span class="type">RelNodeBlock</span>]</span><br></pre></td></tr></table></figure>
+
+<h3 id="RelNodeBlock"><a href="#RelNodeBlock" class="headerlink" title="RelNodeBlock"></a>RelNodeBlock</h3><p>RelNodeBlock表示一个公共子图，每个block中保证只有一个Sink。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RelNodeBlock</span>(<span class="params">val outputNode: <span class="type">RelNode</span></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// child (or input) blocks</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> childBlocks = mutable.<span class="type">LinkedHashSet</span>[<span class="type">RelNodeBlock</span>]()</span><br><span class="line">  <span class="comment">// After this block has been optimized, the result will be converted to a new TableScan as new output node</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> newOutputNode: <span class="type">Option</span>[<span class="type">RelNode</span>] = <span class="type">None</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> outputTableName: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> optimizedPlan: <span class="type">Option</span>[<span class="type">RelNode</span>] = <span class="type">None</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// whether any parent block requires UPDATE_BEFORE messages</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> updateBeforeRequired: <span class="type">Boolean</span> = <span class="literal">false</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> miniBatchInterval: <span class="type">MiniBatchInterval</span> = <span class="type">MiniBatchInterval</span>.<span class="type">NONE</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将RelNode DAG按照break-point切分为RelNodeBlock的算法为：</p>
+<ol>
+<li>如果RelNode DAG中只有一个棵树，那么整个树为一个RelNodeBlock，否则，进行第二步</li>
+<li>重用在不同RelNode树中的具有相同digest的RelNode，最终生成一个RelNode DAG</li>
+<li>从根（Sink开始）到叶子节点遍历所有的RelNode节点，标记每一个RelNode的Sink</li>
+<li>再次从根到叶子节点遍历，如果一个RelNode具有多个Sink，那么这个RelNode就是一个break-point，此时，会以该节点为边界产生一个新的RelNodeBlock</li>
+</ol>
+<p>在下面的这些特殊情况下，一个RelNode不能成为一个break-point：</p>
+<ul>
+<li>当RelNodeBlockPlanBuilder.TABLE_OPTIMIZER_UNIONALL_AS_BREAKPOINT_ENABLED为false时，UnionAll不能成为一个break-point</li>
+<li>TableFunctionScan，Snapshot和window aggregate不能成为break-point，因为他们的Physical RelNodes是多个RelNode组合而成，并不能其中的RelNode单独进行优化。FlinkLogicalTableFunctionScan 和FlinkLogicalCorrelate可以组合为BatchExecCorrelate或者StreamExecCorrelate，但是不能单独对两者进行优化</li>
+</ul>
+<p>使用isValidBreakPoint()判断RelNode是否是一个合法的break-point：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">isValidBreakPoint</span></span>(node: <span class="type">RelNode</span>): <span class="type">Boolean</span> = node <span class="keyword">match</span> &#123;</span><br><span class="line">  <span class="keyword">case</span> _: <span class="type">TableFunctionScan</span> | _: <span class="type">Snapshot</span> =&gt; <span class="literal">false</span></span><br><span class="line">  <span class="keyword">case</span> union: <span class="type">Union</span> <span class="keyword">if</span> union.all =&gt; isUnionAllAsBreakPointEnabled</span><br><span class="line">  <span class="keyword">case</span> project: <span class="type">Project</span> =&gt; project.getProjects.forall(p =&gt; !hasWindowGroup(p))</span><br><span class="line">  <span class="keyword">case</span> agg: <span class="type">Aggregate</span> =&gt;</span><br><span class="line">  agg.getInput <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> project: <span class="type">Project</span> =&gt;</span><br><span class="line">    agg.getGroupSet.forall &#123; group =&gt;</span><br><span class="line">      <span class="keyword">val</span> p = project.getProjects.get(group)</span><br><span class="line">      !hasWindowGroup(p)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> _ =&gt; <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">case</span> _ =&gt; <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="RelNodeBlockPlanBuilder"><a href="#RelNodeBlockPlanBuilder" class="headerlink" title="RelNodeBlockPlanBuilder"></a>RelNodeBlockPlanBuilder</h3><p>RelNodeBlockPlanBuilder负责从RelNode DAG构造为RelNodeBlock DAG，入口方法为buildRelNodeBlockPlan()：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">buildRelNodeBlockPlan</span></span>(</span><br><span class="line">  sinkNodes: <span class="type">Seq</span>[<span class="type">RelNode</span>],</span><br><span class="line">  config: <span class="type">TableConfig</span>): <span class="type">Seq</span>[<span class="type">RelNodeBlock</span>] = &#123;</span><br><span class="line">  require(sinkNodes.nonEmpty)</span><br><span class="line">  <span class="comment">// expand QueryOperationCatalogViewTable in TableScan</span></span><br><span class="line">  <span class="keyword">val</span> shuttle = <span class="keyword">new</span> <span class="type">ExpandTableScanShuttle</span></span><br><span class="line">  <span class="keyword">val</span> convertedRelNodes = sinkNodes.map(_.accept(shuttle))</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (convertedRelNodes.size == <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="comment">// Step 1. If there is only one RelNode tree, return</span></span><br><span class="line">    <span class="type">Seq</span>(<span class="keyword">new</span> <span class="type">RelNodeBlock</span>(convertedRelNodes.head))</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// merge multiple RelNode trees to RelNode dag</span></span><br><span class="line">    <span class="keyword">val</span> relNodeDag = reuseRelNodes(convertedRelNodes, config)</span><br><span class="line">    <span class="keyword">val</span> builder = <span class="keyword">new</span> <span class="type">RelNodeBlockPlanBuilder</span>(config)</span><br><span class="line">    builder.buildRelNodeBlockPlan(relNodeDag)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="reuseRelNodes"><a href="#reuseRelNodes" class="headerlink" title="reuseRelNodes"></a>reuseRelNodes</h4><p>reuseRelNodes()将会遍历RelNode DAG，如果发现有RelNode子图具有相同的digest并且启用了“table.optimizer.reuse-optimize-block-with-digest-enabled”选项（默认为false），<strong>将会重用公共的RelNode子图</strong>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">reuseRelNodes</span></span>(relNodes: <span class="type">Seq</span>[<span class="type">RelNode</span>], tableConfig: <span class="type">TableConfig</span>): <span class="type">Seq</span>[<span class="type">RelNode</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> findOpBlockWithDigest = tableConfig.getConfiguration.getBoolean(</span><br><span class="line">    <span class="type">RelNodeBlockPlanBuilder</span>.<span class="type">TABLE_OPTIMIZER_REUSE_OPTIMIZE_BLOCK_WITH_DIGEST_ENABLED</span>)</span><br><span class="line">  <span class="keyword">if</span> (!findOpBlockWithDigest) &#123;</span><br><span class="line">    <span class="keyword">return</span> relNodes</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// reuse sub-plan with same digest in input RelNode trees.</span></span><br><span class="line">  <span class="keyword">val</span> context = <span class="keyword">new</span> <span class="type">SubplanReuseContext</span>(<span class="literal">true</span>, relNodes: _*)</span><br><span class="line">  <span class="keyword">val</span> reuseShuttle = <span class="keyword">new</span> <span class="type">SubplanReuseShuttle</span>(context)</span><br><span class="line">  relNodes.map(_.accept(reuseShuttle))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>SubplanReuseContext在构造时会遍历整个RelNode DAG，获得RelNode -&gt; Digest和Digest-&gt;RelNodes的映射关系：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// mapping a relNode to its digest for caching</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> mapRelToDigest = <span class="type">Maps</span>.newIdentityHashMap[<span class="type">RelNode</span>, <span class="type">String</span>]()</span><br><span class="line"><span class="comment">// mapping the digest to RelNodes</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> mapDigestToReusableNodes = <span class="keyword">new</span> util.<span class="type">HashMap</span>[<span class="type">String</span>, util.<span class="type">List</span>[<span class="type">RelNode</span>]]()</span><br></pre></td></tr></table></figure>
+
+<p>如果具有相同digest的RelNode有多个，会在SubplanReuseShuttle中统一替换为mapDigestToReusableNodes[digest]链表中的第一个。</p>
+<h4 id="buildRelNodeBlockPlan"><a href="#buildRelNodeBlockPlan" class="headerlink" title="buildRelNodeBlockPlan"></a>buildRelNodeBlockPlan</h4><p>buildRelNodeBlockPlan()方法实现了之前介绍的将RelNode DAG按照break-point切分为RelNodeBlock的算法：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">buildRelNodeBlockPlan</span></span>(sinks: <span class="type">Seq</span>[<span class="type">RelNode</span>]): <span class="type">Seq</span>[<span class="type">RelNodeBlock</span>] = &#123;</span><br><span class="line">  <span class="comment">// Fill the node2Wrapper, add parentNodes for each node</span></span><br><span class="line">  sinks.foreach(buildRelNodeWrappers(_, <span class="type">None</span>))</span><br><span class="line">  <span class="comment">// Build the BlockOutputNode for each RelNodeWrapper. If a RelNode only has one Sink output, then the BlockOutputNode is the sink, otherwise(This RelNode is a break-point), the BlockOutputNode is itself</span></span><br><span class="line">  buildBlockOutputNodes(sinks)</span><br><span class="line">  <span class="comment">// Construct the RelNodeBlock based on RelNodeWrapper， fill the node2Block</span></span><br><span class="line">  sinks.map(buildBlockPlan)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在此过程中，维护了RelNode-&gt;RelNodeWrapper和RelNode-&gt;RelNodeBlock的映射：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> node2Wrapper = <span class="keyword">new</span> util.<span class="type">IdentityHashMap</span>[<span class="type">RelNode</span>, <span class="type">RelNodeWrapper</span>]()</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> node2Block = <span class="keyword">new</span> util.<span class="type">IdentityHashMap</span>[<span class="type">RelNode</span>, <span class="type">RelNodeBlock</span>]()</span><br></pre></td></tr></table></figure>
+
+<p>RelNodeWrapper中记录了该RelNode的parentNodes，blockOuptutNodes和visitedParentNodes：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RelNodeWrapper</span>(<span class="params">relNode: <span class="type">RelNode</span></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// parent nodes of `relNode`</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> parentNodes = <span class="type">Sets</span>.newIdentityHashSet[<span class="type">RelNode</span>]()</span><br><span class="line">  <span class="comment">// output nodes of some blocks that data of `relNode` outputs to</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> blockOutputNodes = <span class="type">Sets</span>.newIdentityHashSet[<span class="type">RelNode</span>]()</span><br><span class="line">  <span class="comment">// stores visited parent nodes when builds RelNodeBlock</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> visitedParentNodes = <span class="type">Sets</span>.newIdentityHashSet[<span class="type">RelNode</span>]()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>buildBlockOutputNodes()</strong></p>
+<p>对于每一个Sink，buildBlockOutputNodes()会递归调用同名的buildBlockOutputNodes()去构建每个RelNode的输出的BlockOuptutNode。由于一个RelNode可能有多个parentNodes，因此使用visitedParentNodes来记录已经访问的所有parentNodes。只有当RelNode的所有parentNodes都访问过了，才会处理该RelNode的BlockOutputNode：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">buildBlockOutputNodes</span></span>(</span><br><span class="line">  parent: <span class="type">Option</span>[<span class="type">RelNode</span>],</span><br><span class="line">  node: <span class="type">RelNode</span>,</span><br><span class="line">  curBlockOutputNode: <span class="type">RelNode</span>,</span><br><span class="line">  unvisitedNodeQueue: util.<span class="type">Deque</span>[<span class="type">RelNode</span>]): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> wrapper = node2Wrapper.get(node)</span><br><span class="line">  require(wrapper != <span class="literal">null</span>)</span><br><span class="line">  wrapper.addBlockOutputNode(curBlockOutputNode)</span><br><span class="line">  wrapper.addVisitedParentNode(parent)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// the node can be visited only when its all parent nodes have been visited</span></span><br><span class="line">  <span class="keyword">if</span> (wrapper.allParentNodesVisited) &#123;</span><br><span class="line">    <span class="keyword">val</span> newBlockOutputNode = <span class="keyword">if</span> (wrapper.hasMultipleBlockOutputNodes) &#123;</span><br><span class="line">      <span class="comment">// if the node has different output node, the node is the output node of current block.</span></span><br><span class="line">      node</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      curBlockOutputNode</span><br><span class="line">    &#125;</span><br><span class="line">    node.getInputs.foreach &#123; input =&gt;</span><br><span class="line">      buildBlockOutputNodes(<span class="type">Some</span>(node), input, newBlockOutputNode, unvisitedNodeQueue)</span><br><span class="line">    &#125;</span><br><span class="line">    unvisitedNodeQueue.remove(node)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// visit later</span></span><br><span class="line">    unvisitedNodeQueue.addLast(node)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>buildBlockPlan()</strong></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">buildBlock</span></span>(</span><br><span class="line">  node: <span class="type">RelNode</span>,</span><br><span class="line">  currentBlock: <span class="type">RelNodeBlock</span>,</span><br><span class="line">  createNewBlockWhenMeetValidBreakPoint: <span class="type">Boolean</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> hasDiffBlockOutputNodes = node2Wrapper(node).hasMultipleBlockOutputNodes</span><br><span class="line">  <span class="keyword">val</span> validBreakPoint = isValidBreakPoint(node)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (validBreakPoint &amp;&amp; (createNewBlockWhenMeetValidBreakPoint || hasDiffBlockOutputNodes)) &#123;</span><br><span class="line">    <span class="keyword">val</span> childBlock = node2Block.getOrElseUpdate(node, <span class="keyword">new</span> <span class="type">RelNodeBlock</span>(node))</span><br><span class="line">    currentBlock.addChild(childBlock)</span><br><span class="line">    node.getInputs.foreach &#123;</span><br><span class="line">      child =&gt; buildBlock(child, childBlock, createNewBlockWhenMeetValidBreakPoint = <span class="literal">false</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> newCreateNewBlockWhenMeetValidBreakPoint =</span><br><span class="line">    createNewBlockWhenMeetValidBreakPoint || hasDiffBlockOutputNodes &amp;&amp; !validBreakPoint</span><br><span class="line">    node.getInputs.foreach &#123;</span><br><span class="line">      child =&gt; buildBlock(child, currentBlock, newCreateNewBlockWhenMeetValidBreakPoint)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">val sourceTable = tEnv.scan(&quot;test_table&quot;).select(&#x27;a, &#x27;b, &#x27;c)</span><br><span class="line">val leftTable = sourceTable.filter(&#x27;a &gt; 0).select(&#x27;a as &#x27;a1, &#x27;b as &#x27;b1)</span><br><span class="line">val rightTable = sourceTable.filter(&#x27;c.isNotNull).select(&#x27;b as &#x27;b2, &#x27;c as &#x27;c2)</span><br><span class="line">val joinTable = leftTable.join(rightTable, &#x27;a1 === &#x27;b2)</span><br><span class="line">joinTable.where(&#x27;a1 &gt;= 70).select(&#x27;a1, &#x27;b1).writeToSink(sink1)</span><br><span class="line">joinTable.where(&#x27;a1 &lt; 70 ).select(&#x27;a1, &#x27;c2).writeToSink(sink2)</span><br></pre></td></tr></table></figure>
+
+<p>对应的RelNode DAG：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Sink(sink1)     Sink(sink2)</span><br><span class="line">   |               |</span><br><span class="line">Project(a1,b1)  Project(a1,c2)</span><br><span class="line">   |               |</span><br><span class="line">Filter(a1&gt;=70)  Filter(a1&lt;70)</span><br><span class="line">      \          /</span><br><span class="line">       Join(a1=b2)</span><br><span class="line">      /           \</span><br><span class="line">Project(a1,b1)  Project(b2,c2)</span><br><span class="line">     |             |</span><br><span class="line">Filter(a&gt;0)     Filter(c is not null)</span><br><span class="line">     \           /</span><br><span class="line">     Project(a,b,c)</span><br><span class="line">         |</span><br><span class="line">      TableScan</span><br></pre></td></tr></table></figure>
+
+<p>RelNode Join(a1&#x3D;b2)由于拥有两个Sink（sink1和sink2），为一个break-point。那么转换为RelNodeBlock以后：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RelNodeBlock1  RelNodeBlock3</span><br><span class="line">   \            /</span><br><span class="line">   RelNodeBlock2</span><br></pre></td></tr></table></figure>
+
+<p>其中RelNodeBlock1包含Sink(sink1) ，Project(a1,b1)和Filter(a1&gt;&#x3D;70)；RelNodeBlock2包含Sink(sink2)，Project(a1,c2)和Filter(a1&lt;70)；其余RelNode则属于RelNodeBlock3。</p>
+<h3 id="PlannerContext-amp-FlinkPlannerImpl"><a href="#PlannerContext-amp-FlinkPlannerImpl" class="headerlink" title="PlannerContext &amp; FlinkPlannerImpl"></a>PlannerContext &amp; FlinkPlannerImpl</h3><p>PlannerContext在构造时会创建Calcite相关的RelBuilder、FrameworkConfig和RelOptCluster，并最终创建FlinkPlannerImpl。在构造的时候，会创建VolcanoPlanner实例并添加TraitDefs，构造RelOptCluster：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">PlannerContext</span><span class="params">(</span></span><br><span class="line"><span class="params">            TableConfig tableConfig,</span></span><br><span class="line"><span class="params">            FunctionCatalog functionCatalog,</span></span><br><span class="line"><span class="params">            CatalogManager catalogManager,</span></span><br><span class="line"><span class="params">            CalciteSchema rootSchema,</span></span><br><span class="line"><span class="params">            List&lt;RelTraitDef&gt; traitDefs)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.tableConfig = tableConfig;</span><br><span class="line">        <span class="built_in">this</span>.context =</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">FlinkContextImpl</span>(</span><br><span class="line">                        tableConfig,</span><br><span class="line">                        functionCatalog,</span><br><span class="line">                        catalogManager,</span><br><span class="line">                        <span class="built_in">this</span>::createSqlExprToRexConverter);</span><br><span class="line">        <span class="built_in">this</span>.rootSchema = rootSchema;</span><br><span class="line">        <span class="built_in">this</span>.traitDefs = traitDefs;</span><br><span class="line">        <span class="comment">// Make a framework config to initialize the RelOptCluster instance,</span></span><br><span class="line">        <span class="comment">// caution that we can only use the attributes that can not be overwritten/configured by user.</span></span><br><span class="line">        <span class="built_in">this</span>.frameworkConfig = createFrameworkConfig();</span><br><span class="line"></span><br><span class="line">        <span class="type">RelOptPlanner</span> <span class="variable">planner</span> <span class="operator">=</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">VolcanoPlanner</span>(frameworkConfig.getCostFactory(), frameworkConfig.getContext());</span><br><span class="line">        planner.setExecutor(frameworkConfig.getExecutor());</span><br><span class="line">        <span class="keyword">for</span> (RelTraitDef traitDef : frameworkConfig.getTraitDefs()) &#123;</span><br><span class="line">            planner.addRelTraitDef(traitDef);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">this</span>.cluster = FlinkRelOptClusterFactory.create(planner, <span class="keyword">new</span> <span class="title class_">FlinkRexBuilder</span>(typeFactory));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>FlinkPlannerImpl：对应Calcite的PlannerImpl，主要负责使用FlinkCalciteSqlValidator对SqlNode进行验证，并通过SqlToRelConverter将SqlNode转换为RelRoot。</p>
+<p>PlannerContext除此外，还负责创建：</p>
+<ul>
+<li>FlinkContext：用于在Planner会话中保存数据，包括TableConfig，FunctionCatalog，CatalogManager，SqlExprToRexConverterFactory等</li>
+<li>FlinkTypeSystem和FlinkTypeFactory：Flink的类型系统和类型工厂</li>
+<li>FlinkCostFactory：Flink的代价工厂，继承自RelOptCostFactory，用于创建FlinkCost（RelOptCost）的子类</li>
+<li>ExpressionReducer：继承自RexExecutor，使用CodeGenerator执行常量表达式</li>
+<li>SqlOperatorTable：默认是将Calcite的SqlOperatorTablesh和FunctionCatalogOperatorTable、FlinkSqlOperatorTable组合起来构造的SqlOperatorTable</li>
+</ul>
+<h3 id="StreamPlanner"><a href="#StreamPlanner" class="headerlink" title="StreamPlanner"></a>StreamPlanner</h3><p>StreamPlanner是针对Streaming查询的优化器，继承自PlannerBase。StreamPlanner处理的TraitDefs有：</p>
+<ul>
+<li>ConventionTraitDef</li>
+<li>FlinkRelDistributionTraitDef</li>
+<li>MiniBatchIntervalTraitDef</li>
+<li>ModifyKindSetTraitDef</li>
+<li>UpdateKindTraitDef</li>
+</ul>
+<p>后三种TraitDef是StreamPlanner特有的TraitDefs。</p>
+<h4 id="StreamCommonSubGraphBasedOptimizer"><a href="#StreamCommonSubGraphBasedOptimizer" class="headerlink" title="StreamCommonSubGraphBasedOptimizer"></a>StreamCommonSubGraphBasedOptimizer</h4><p>StreamPlanner使用的是StreamCommonSubGraphBasedOptimizer，在doOptimize()方法中，利用RelNodeBlockPlanBuilder构建RelNodeBlocks后，会对RelNodeBlocks设置MiniBatchIntervalTraitDef，ModifyKindSetTraitDef和UpdateKindTraitDef：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">doOptimize</span></span>(roots: <span class="type">Seq</span>[<span class="type">RelNode</span>]): <span class="type">Seq</span>[<span class="type">RelNodeBlock</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> config = planner.getTableConfig</span><br><span class="line">  <span class="comment">// build RelNodeBlock plan</span></span><br><span class="line">  <span class="keyword">val</span> sinkBlocks = <span class="type">RelNodeBlockPlanBuilder</span>.buildRelNodeBlockPlan(roots, config)</span><br><span class="line">  <span class="comment">// infer trait properties for sink block</span></span><br><span class="line">  sinkBlocks.foreach &#123; sinkBlock =&gt;</span><br><span class="line">    <span class="comment">// don&#x27;t require update before by default</span></span><br><span class="line">    sinkBlock.setUpdateBeforeRequired(<span class="literal">false</span>)</span><br><span class="line">    <span class="comment">// Set mini batch interval if configured: &quot;table.exec.mini-batch.enabled&quot; + &quot;table.exec.mini-batch.allow-latency&quot;</span></span><br><span class="line">    <span class="comment">// See FLINK-12665</span></span><br><span class="line">    <span class="keyword">val</span> miniBatchInterval: <span class="type">MiniBatchInterval</span> = ....</span><br><span class="line">    sinkBlock.setMiniBatchInterval(miniBatchInterval)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (sinkBlocks.size == <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="comment">// If there is only one sink block, the given relational expressions are a simple tree</span></span><br><span class="line">    <span class="comment">// (only one root), not a dag. So many operations (e.g. infer and propagate</span></span><br><span class="line">    <span class="comment">// requireUpdateBefore) can be omitted to save optimization time.</span></span><br><span class="line">    <span class="keyword">val</span> block = sinkBlocks.head</span><br><span class="line">    <span class="keyword">val</span> optimizedTree = optimizeTree(</span><br><span class="line">      block.getPlan,</span><br><span class="line">      block.isUpdateBeforeRequired,</span><br><span class="line">      block.getMiniBatchInterval,</span><br><span class="line">      isSinkBlock = <span class="literal">true</span>)</span><br><span class="line">    block.setOptimizedPlan(optimizedTree)</span><br><span class="line">    <span class="keyword">return</span> sinkBlocks</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// infer updateAsRetraction property and miniBatchInterval property for all input blocks</span></span><br><span class="line">  sinkBlocks.foreach &#123; b =&gt;</span><br><span class="line">    inferTraits(b, b.isUpdateBeforeRequired, b.getMiniBatchInterval, isSinkBlock = <span class="literal">true</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// propagate updateAsRetraction property and miniBatchInterval property to all input blocks</span></span><br><span class="line">  sinkBlocks.foreach(propagateTraits(_, isSinkBlock = <span class="literal">true</span>))</span><br><span class="line">  <span class="comment">// clear the intermediate result</span></span><br><span class="line">  sinkBlocks.foreach(resetIntermediateResult)</span><br><span class="line">  <span class="comment">// optimize recursively RelNodeBlock</span></span><br><span class="line">  sinkBlocks.foreach(b =&gt; optimizeBlock(b, isSinkBlock = <span class="literal">true</span>))</span><br><span class="line">  sinkBlocks</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>optimizeBlock</strong></p>
+<p>optimizeBlock()方法用于优化一个RelNodeBlock。针对每个RelNodeBlock，采用后序遍历的方式，首先递归的优化该RelNodeBlock的子Blocks。之后，针对该Block，会调用optimizeTree()方法优化该RelNode，得到最优的执行计划：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">optimizeBlock</span></span>(block: <span class="type">RelNodeBlock</span>, isSinkBlock: <span class="type">Boolean</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  block.children.foreach &#123;</span><br><span class="line">    child =&gt;</span><br><span class="line">    <span class="keyword">if</span> (child.getNewOutputNode.isEmpty) &#123;</span><br><span class="line">      optimizeBlock(child, isSinkBlock = <span class="literal">false</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> blockLogicalPlan = block.getPlan</span><br><span class="line">  blockLogicalPlan <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> _: <span class="type">LegacySink</span> | _: <span class="type">Sink</span> =&gt;</span><br><span class="line">    require(isSinkBlock)</span><br><span class="line">    <span class="keyword">val</span> optimizedTree = optimizeTree(</span><br><span class="line">      blockLogicalPlan,</span><br><span class="line">      updateBeforeRequired = block.isUpdateBeforeRequired,</span><br><span class="line">      miniBatchInterval = block.getMiniBatchInterval,</span><br><span class="line">      isSinkBlock = <span class="literal">true</span>)</span><br><span class="line">    block.setOptimizedPlan(optimizedTree)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> o =&gt;</span><br><span class="line">    <span class="keyword">val</span> optimizedPlan = optimizeTree(</span><br><span class="line">      o,</span><br><span class="line">      updateBeforeRequired = block.isUpdateBeforeRequired,</span><br><span class="line">      miniBatchInterval = block.getMiniBatchInterval,</span><br><span class="line">      isSinkBlock = isSinkBlock)</span><br><span class="line">    <span class="keyword">val</span> modifyKindSetTrait = optimizedPlan.getTraitSet.getTrait(<span class="type">ModifyKindSetTraitDef</span>.<span class="type">INSTANCE</span>)</span><br><span class="line">    <span class="keyword">val</span> name = createUniqueIntermediateRelTableName</span><br><span class="line">    <span class="comment">// Create an intermediateRelTable for non-sink Blocks:</span></span><br><span class="line">    <span class="keyword">val</span> intermediateRelTable = createIntermediateRelTable(</span><br><span class="line">      name,</span><br><span class="line">      optimizedPlan,</span><br><span class="line">      modifyKindSetTrait.modifyKindSet,</span><br><span class="line">      block.isUpdateBeforeRequired)</span><br><span class="line">    <span class="keyword">val</span> newTableScan = wrapIntermediateRelTableToTableScan(intermediateRelTable, name)</span><br><span class="line">    block.setNewOutputNode(newTableScan)</span><br><span class="line">    block.setOutputTableName(name)</span><br><span class="line">    block.setOptimizedPlan(optimizedPlan)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>optimizeTree</strong></p>
+<p>optimizeTree()会根据TableConfig创建Calcite中的Programs，对单个RelNode进行优化：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">optimizeTree</span></span>(</span><br><span class="line">  relNode: <span class="type">RelNode</span>,</span><br><span class="line">  updateBeforeRequired: <span class="type">Boolean</span>,</span><br><span class="line">  miniBatchInterval: <span class="type">MiniBatchInterval</span>,</span><br><span class="line">  isSinkBlock: <span class="type">Boolean</span>): <span class="type">RelNode</span> = &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> config = planner.getTableConfig</span><br><span class="line">  <span class="keyword">val</span> calciteConfig = <span class="type">TableConfigUtils</span>.getCalciteConfig(config)</span><br><span class="line">  <span class="keyword">val</span> programs = calciteConfig.getStreamProgram</span><br><span class="line">  .getOrElse(<span class="type">FlinkStreamProgram</span>.buildProgram(config.getConfiguration))</span><br><span class="line">  <span class="type">Preconditions</span>.checkNotNull(programs)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> context = relNode.getCluster.getPlanner.getContext.unwrap(classOf[<span class="type">FlinkContext</span>])</span><br><span class="line">  programs.optimize(relNode, <span class="keyword">new</span> <span class="type">StreamOptimizeContext</span>() &#123;...&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FlinkStreamProgram.buildProgram()会创建用于Steam查询优化的FlinkChainedProgram。除去用于优化的Programs，FlinkChainedProgram专门处理Flink的Logical Convention和Stream Physical Convention的Programs：</p>
+<ul>
+<li><p>Logical和LogicalRewrite</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// optimize the logical plan</span></span><br><span class="line">chainedProgram.addLast(</span><br><span class="line">  <span class="type">LOGICAL</span>,</span><br><span class="line">  <span class="type">FlinkVolcanoProgramBuilder</span>.newBuilder</span><br><span class="line">  .add(<span class="type">FlinkStreamRuleSets</span>.<span class="type">LOGICAL_OPT_RULES</span>)</span><br><span class="line">  .setRequiredOutputTraits(<span class="type">Array</span>(<span class="type">FlinkConventions</span>.<span class="type">LOGICAL</span>))</span><br><span class="line">  .build())</span><br><span class="line"></span><br><span class="line"><span class="comment">// logical rewrite</span></span><br><span class="line">chainedProgram.addLast(</span><br><span class="line">  <span class="type">LOGICAL_REWRITE</span>,</span><br><span class="line">  <span class="type">FlinkHepRuleSetProgramBuilder</span>.newBuilder</span><br><span class="line">  .setHepRulesExecutionType(<span class="type">HEP_RULES_EXECUTION_TYPE</span>.<span class="type">RULE_SEQUENCE</span>)</span><br><span class="line">  .setHepMatchOrder(<span class="type">HepMatchOrder</span>.<span class="type">BOTTOM_UP</span>)</span><br><span class="line">  .add(<span class="type">FlinkStreamRuleSets</span>.<span class="type">LOGICAL_REWRITE</span>)</span><br><span class="line">  .build())</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Physical和PhysicalRewrite</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// optimize the physical plan</span></span><br><span class="line">chainedProgram.addLast(</span><br><span class="line">  <span class="type">PHYSICAL</span>,</span><br><span class="line">  <span class="type">FlinkVolcanoProgramBuilder</span>.newBuilder</span><br><span class="line">  .add(<span class="type">FlinkStreamRuleSets</span>.<span class="type">PHYSICAL_OPT_RULES</span>)</span><br><span class="line">  .setRequiredOutputTraits(<span class="type">Array</span>(<span class="type">FlinkConventions</span>.<span class="type">STREAM_PHYSICAL</span>))</span><br><span class="line">  .build())</span><br><span class="line"></span><br><span class="line"><span class="comment">// physical rewrite</span></span><br><span class="line">chainedProgram.addLast(</span><br><span class="line">  <span class="type">PHYSICAL_REWRITE</span>,</span><br><span class="line">  <span class="type">FlinkGroupProgramBuilder</span>.newBuilder[<span class="type">StreamOptimizeContext</span>]</span><br><span class="line">  <span class="comment">// add a HEP program for watermark transpose rules to make this optimization deterministic</span></span><br><span class="line">  .addProgram(</span><br><span class="line">    <span class="type">FlinkHepRuleSetProgramBuilder</span>.newBuilder</span><br><span class="line">    .setHepRulesExecutionType(<span class="type">HEP_RULES_EXECUTION_TYPE</span>.<span class="type">RULE_COLLECTION</span>)</span><br><span class="line">    .setHepMatchOrder(<span class="type">HepMatchOrder</span>.<span class="type">BOTTOM_UP</span>)</span><br><span class="line">    .add(<span class="type">FlinkStreamRuleSets</span>.<span class="type">WATERMARK_TRANSPOSE_RULES</span>)</span><br><span class="line">    .build(), <span class="string">&quot;watermark transpose&quot;</span>)</span><br><span class="line">  .addProgram(<span class="keyword">new</span> <span class="type">FlinkChangelogModeInferenceProgram</span>,</span><br><span class="line">              <span class="string">&quot;Changelog mode inference&quot;</span>)</span><br><span class="line">  .addProgram(<span class="keyword">new</span> <span class="type">FlinkMiniBatchIntervalTraitInitProgram</span>,</span><br><span class="line">              <span class="string">&quot;Initialization for mini-batch interval inference&quot;</span>)</span><br><span class="line">  .addProgram(</span><br><span class="line">    <span class="type">FlinkHepRuleSetProgramBuilder</span>.newBuilder</span><br><span class="line">    .setHepRulesExecutionType(<span class="type">HEP_RULES_EXECUTION_TYPE</span>.<span class="type">RULE_SEQUENCE</span>)</span><br><span class="line">    .setHepMatchOrder(<span class="type">HepMatchOrder</span>.<span class="type">TOP_DOWN</span>)</span><br><span class="line">    .add(<span class="type">FlinkStreamRuleSets</span>.<span class="type">MINI_BATCH_RULES</span>)</span><br><span class="line">    .build(), <span class="string">&quot;mini-batch interval rules&quot;</span>)</span><br><span class="line">  .addProgram(</span><br><span class="line">    <span class="type">FlinkHepRuleSetProgramBuilder</span>.newBuilder</span><br><span class="line">    .setHepRulesExecutionType(<span class="type">HEP_RULES_EXECUTION_TYPE</span>.<span class="type">RULE_COLLECTION</span>)</span><br><span class="line">    .setHepMatchOrder(<span class="type">HepMatchOrder</span>.<span class="type">BOTTOM_UP</span>)</span><br><span class="line">    .add(<span class="type">FlinkStreamRuleSets</span>.<span class="type">PHYSICAL_REWRITE</span>)</span><br><span class="line">    .build(), <span class="string">&quot;physical rewrite&quot;</span>)</span><br><span class="line">  .build())</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>详细的Program和对应的OptRules可以查看FlinkStreamProgram。</p>
+<h3 id="BatchPlanner"><a href="#BatchPlanner" class="headerlink" title="BatchPlanner"></a>BatchPlanner</h3><p>BatchPlanner是针对Batch查询的优化器，继承自PlannerBase。BatchPlanner处理的TraitDefs有：</p>
+<ul>
+<li>ConventionTraitDef</li>
+<li>FlinkRelDistributionTraitDef</li>
+<li>RelCollationTraitDef</li>
+</ul>
+<p>其中RelCollationTraitDef是BatchPlanner独有的TraitDef。由于Batch的数据是Bounded（有限的），所以在优化的时候，可以考虑数据是否是有序的（Collcation）。</p>
+<h4 id="BatchCommonSubGraphBasedOptimizer"><a href="#BatchCommonSubGraphBasedOptimizer" class="headerlink" title="BatchCommonSubGraphBasedOptimizer"></a>BatchCommonSubGraphBasedOptimizer</h4><p>BatchCommonSubGraphBasedOptimizer与StreamCommonSubGraphBasedOptimizer实现类似，但是不用处理Stream额外的TraitDefs，所以也更加简单。</p>
+<p><strong>optimizeBlock</strong></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">optimizeBlock</span></span>(block: <span class="type">RelNodeBlock</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  block.children.foreach &#123; child =&gt;</span><br><span class="line">    <span class="keyword">if</span> (child.getNewOutputNode.isEmpty) &#123;</span><br><span class="line">      optimizeBlock(child)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> originTree = block.getPlan</span><br><span class="line">  <span class="keyword">val</span> optimizedTree = optimizeTree(originTree)</span><br><span class="line"></span><br><span class="line">  optimizedTree <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> _: <span class="type">LegacySink</span> | _: <span class="type">Sink</span> =&gt; <span class="comment">// ignore</span></span><br><span class="line">    <span class="keyword">case</span> _ =&gt;</span><br><span class="line">    <span class="keyword">val</span> name = createUniqueIntermediateRelTableName</span><br><span class="line">    <span class="keyword">val</span> intermediateRelTable =  <span class="keyword">new</span> <span class="type">IntermediateRelTable</span>(<span class="type">Collections</span>.singletonList(name),</span><br><span class="line">                                                         optimizedTree)</span><br><span class="line">    <span class="keyword">val</span> newTableScan = wrapIntermediateRelTableToTableScan(intermediateRelTable, name)</span><br><span class="line">    block.setNewOutputNode(newTableScan)</span><br><span class="line">    block.setOutputTableName(name)</span><br><span class="line">  &#125;</span><br><span class="line">  block.setOptimizedPlan(optimizedTree)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>optimizeTree</strong></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">optimizeTree</span></span>(relNode: <span class="type">RelNode</span>): <span class="type">RelNode</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> config = planner.getTableConfig</span><br><span class="line">  <span class="keyword">val</span> programs = <span class="type">TableConfigUtils</span>.getCalciteConfig(config).getBatchProgram</span><br><span class="line">  .getOrElse(<span class="type">FlinkBatchProgram</span>.buildProgram(config.getConfiguration))</span><br><span class="line">  <span class="type">Preconditions</span>.checkNotNull(programs)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> context = relNode.getCluster.getPlanner.getContext.unwrap(classOf[<span class="type">FlinkContext</span>])</span><br><span class="line">  programs.optimize(relNode, <span class="keyword">new</span> <span class="type">BatchOptimizeContext</span> &#123;....&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FlinkBatchProgram.buildProgram()会创建用于Batch查询优化的FlinkChainedProgram。对应的Flink Physical Convention为FlinkConventions.BATCH_PHYSICAL。</p>
+<h2 id="Ref-and-Ticket"><a href="#Ref-and-Ticket" class="headerlink" title="Ref and Ticket"></a>Ref and Ticket</h2><ul>
+<li>FLINK-12742: Add insert into partition grammar as hive dialect</li>
+<li>FLINK-17210:  Implement database DDLs for Hive dialect</li>
+<li>FLINK-17449: Implement ADD&#x2F;DROP partitions</li>
+<li>FLINK-14687: Add database related ddl support to SQL Parser</li>
+<li>FLINK-17106: Support create and drop view in both planners</li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/623266b941de">FlinkSQL语法扩展</a></li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/05/03/Flink-Flink-ClassLoader/" title= "Flink ClassLoader">
+                    <div class="nextTitle">Flink ClassLoader</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/02/03/Flink-Flink-SQL/" title= "Flink SQL">
+                    <div class="prevTitle">Flink SQL</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2021/02/23/Flink-Flink-Planner/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink Planner"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Planner%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.</span> <span class="toc-text">Planner接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Parser"><span class="toc-number">2.</span> <span class="toc-text">Parser</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ParserImpl"><span class="toc-number">2.1.</span> <span class="toc-text">ParserImpl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CalciteParser"><span class="toc-number">2.2.</span> <span class="toc-text">CalciteParser</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FlinkCalciteSqlValidator"><span class="toc-number">3.</span> <span class="toc-text">FlinkCalciteSqlValidator</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SqlToOperationConverter"><span class="toc-number">4.</span> <span class="toc-text">SqlToOperationConverter</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Operations"><span class="toc-number">5.</span> <span class="toc-text">Operations</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#QueryOperation"><span class="toc-number">5.1.</span> <span class="toc-text">QueryOperation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ModifyOperation"><span class="toc-number">5.2.</span> <span class="toc-text">ModifyOperation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PlannerBase"><span class="toc-number">6.</span> <span class="toc-text">PlannerBase</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#translateToRel"><span class="toc-number">6.1.</span> <span class="toc-text">translateToRel</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Optimizer-amp-CommonSubGraphBasedOptimizer"><span class="toc-number">6.2.</span> <span class="toc-text">Optimizer &amp; CommonSubGraphBasedOptimizer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RelNodeBlock"><span class="toc-number">6.3.</span> <span class="toc-text">RelNodeBlock</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RelNodeBlockPlanBuilder"><span class="toc-number">6.4.</span> <span class="toc-text">RelNodeBlockPlanBuilder</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reuseRelNodes"><span class="toc-number">6.4.1.</span> <span class="toc-text">reuseRelNodes</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#buildRelNodeBlockPlan"><span class="toc-number">6.4.2.</span> <span class="toc-text">buildRelNodeBlockPlan</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Example"><span class="toc-number">6.4.3.</span> <span class="toc-text">Example</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PlannerContext-amp-FlinkPlannerImpl"><span class="toc-number">6.5.</span> <span class="toc-text">PlannerContext &amp; FlinkPlannerImpl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#StreamPlanner"><span class="toc-number">6.6.</span> <span class="toc-text">StreamPlanner</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#StreamCommonSubGraphBasedOptimizer"><span class="toc-number">6.6.1.</span> <span class="toc-text">StreamCommonSubGraphBasedOptimizer</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BatchPlanner"><span class="toc-number">6.7.</span> <span class="toc-text">BatchPlanner</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#BatchCommonSubGraphBasedOptimizer"><span class="toc-number">6.7.1.</span> <span class="toc-text">BatchCommonSubGraphBasedOptimizer</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref-and-Ticket"><span class="toc-number">7.</span> <span class="toc-text">Ref and Ticket</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

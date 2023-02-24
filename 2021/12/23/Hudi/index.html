@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Hudi Overview · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Hudi Overview</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Hudi Overview
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Hudi">Hudi</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "DataLake">DataLake</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.5k</span>Reading time: <span class="post-count reading-time">19 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/12/23</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="What-Hudi"><a href="#What-Hudi" class="headerlink" title="What Hudi"></a>What Hudi</h2><p>Hudi的核心卖点</p>
+<ul>
+<li>Transactions支持</li>
+<li>支持Record-level的更新和删除</li>
+<li>CDC Streaming支持</li>
+</ul>
+<p>Hudi是一个平台，着重强调Streaming和增量处理</p>
+<blockquote>
+<p>Hudi is a rich <strong>platform</strong> to build <strong>streaming data lakes with incremental data pipelines</strong><br>on a self-managing database layer, while being optimized for lake engines and regular batch processing.</p>
+</blockquote>
+<blockquote>
+<p>Apache Hudi (pronounced “hoodie”) provides streaming primitives over hadoop compatible storages</p>
+<ul>
+<li>Update&#x2F;Delete Records (how do I change records in a table?)</li>
+<li>Change Streams (how do I fetch records that changed?)</li>
+</ul>
+</blockquote>
+<p><img src="https://cwiki.apache.org/confluence/download/attachments/103093742/Screen%20Shot%202020-01-04%20at%2011.37.59%20PM.png?version=1&modificationDate=1578209921000&api=v2" alt="img"></p>
+<p>架构上的优势：</p>
+<ul>
+<li>Increased Efficiency：为了处理数据删除和更新（data-privacy，unique-key constraints），Hudi支持record level updates，从而每次只需要重新处理改变的records并重写部分表数据，避免了重写整个partition或者表的数据</li>
+<li>Faster ETL&#x2F;Derived Pipelines：Data pipelines可以通过incremental query来替代snapshot query进行显著的加速，只需要处理来自上游表的incremental changes，然后对输出表进行upsert，而不是重写整个表</li>
+<li>Access of fresh data：incremental batch processing可以使得pipeline消耗更少的资源，并且反过来跑的更快，因此能够得到最新的数据</li>
+<li>Unified Storage：Data Lake for all(warehousing, machine learning and so on)</li>
+</ul>
+<p>设计原则</p>
+<ul>
+<li><strong>Streaming Read&#x2F;Write</strong>：Hudi is designed, from ground-up, for streaming records in and out of large datasets, borrowing principles from database design.  Hudi adds and tracks record level metadata via <a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/HUDI/Design+And+Architecture">def~hoodie-special-columns</a>, that enables providing a precise incremental stream of all changes that happened. </li>
+<li><strong>Self-Managing</strong>：At each step, Hudi strives to be self-managing (e.g: autotunes the writer parallelism, maintains file sizes) and self-healing (e.g: auto rollbacks failed commits), even if it comes at cost of slightly additional runtime cost (e.g: caching input data in memory to profile the workload). </li>
+<li><strong>Everything is a log :</strong> Hudi also has an append-only, cloud data storage friendly design, that lets Hudi manage data on across all the major cloud providers seamlessly, implementing principles from <strong>log-structured-storage</strong> systems. </li>
+<li><strong>key-value data model :</strong> On the writer side, Hudi table is modeled as a key-value dataset, where each record has a unique record-key. Additionally, a record key may also include the partitionpath under which the record is partitioned and stored. This often helps in cutting down the search space during index lookups.</li>
+</ul>
+<p>问题：</p>
+<ul>
+<li>每个record都有对应的record key，怎么映射的，如何保证一致性？是否会增加额外的存储空间</li>
+<li>Avro是可以追加的吧？怎么考虑schema evolution？</li>
+<li>Compactor的调度，如何平衡？</li>
+</ul>
+<h3 id="Timeline"><a href="#Timeline" class="headerlink" title="Timeline"></a>Timeline</h3><p>Timeline: All actions performed on the table at different <code>instants</code> of time that helps provide instantaneous views of the table, while also efficiently supporting retrieval of data in the order of arrival. </p>
+<p>Instant</p>
+<ul>
+<li>Instant action: COMMITS, CLEANS, DELTA_COMMIT, COMPACTION, ROLLBACK, SAVEPOINT</li>
+<li>Instant time</li>
+<li>State: REQUESTED, INFLIGHT, COMPLETED</li>
+</ul>
+<p><img src="https://hudi.apache.org/assets/images/hudi_timeline.png" alt="hudi_timeline.png"></p>
+<ul>
+<li>记录的 <code>arrival time</code> 可以和 <code>event time</code>不同，可以利用这两种时间对latency和completeness进行tradeoffs</li>
+<li>在Timeline的帮助下，即使新到的数据对历史的bucket&#x2F;文件夹中的数据进行upsert，在查询时，并不需要去扫描所有的历史数据。</li>
+</ul>
+<h3 id="File-Layout"><a href="#File-Layout" class="headerlink" title="File Layout"></a>File Layout</h3><p>Hudi表数据在一个<code>basepath</code>下面，表可以进行分区，每个分区是一个子目录。在每个分区内部，文件按照FileGroup组织，每个文件都有一个唯一的id。每个FileGroup中包含多个<code>file slices</code>，每个slice中包含一个由提交或创建产生的base文件，以及一组包含了对于base文件inserts&#x2F;updates的log文件。Hudi采用了MVVC，因此在进行压缩时，每次都会产生新的slice，当旧的slice不在使用时，会被自动清除。</p>
+<h3 id="Index"><a href="#Index" class="headerlink" title="Index"></a>Index</h3><p>Hudi能够高效地进行upserts操作，每个hoodie key（record key + partition path）会通过索引机制<strong>一致地</strong>映射到一个文件id。映射关系在第一条记录写入文件就确定了，之后不会再改变。这意味，一个FileGroup中将会包含所有版本的记录。</p>
+<h2 id="Table-Types-amp-Queris"><a href="#Table-Types-amp-Queris" class="headerlink" title="Table Types &amp; Queris"></a>Table Types &amp; Queris</h2><p>Hudi的<code>table types</code>决定了数据如何索引，在DFS上的数据布局结构，以及各种primitives和timeline的实现。而<code>query types</code>则定义底层数据如何暴露给查询。</p>
+<table>
+<thead>
+<tr>
+<th>Table Type</th>
+<th>Supported Query types</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Copy On Write</td>
+<td>Snapshot Queries + Incremental Queries</td>
+</tr>
+<tr>
+<td>Merge On Read</td>
+<td>Snapshot Queries + Incremental Queries + Read Optimized Queries</td>
+</tr>
+</tbody></table>
+<h3 id="Table-Types"><a href="#Table-Types" class="headerlink" title="Table Types"></a>Table Types</h3><ul>
+<li><p><a target="_blank" rel="noopener" href="https://hudi.apache.org/docs/overview#copy-on-write-table">Copy On Write</a> : Stores data using exclusively columnar file formats (e.g parquet). Updates simply version &amp; rewrite the files by performing a <strong>synchronous</strong> merge during write.<br><img src="https://hudi.apache.org/assets/images/hudi_cow.png" alt="hudi_cow.png"></p>
+<p>File slice只包含base&#x2F;columar文件，每次commit都会产生一个新版本的base files。换句话说，在每次commit时，都会进行压缩，从而使得只有columnar数据存在（不会记录在avro row日志中）。Write amplification higher, read amplification &#x3D; 0</p>
+<p>优点：</p>
+<ul>
+<li>提供文件级别的数据原子更新，需要重写整个表或者partition</li>
+<li>能够增量化的消费改变</li>
+<li>对于文件大小的控制从而保证查询性能</li>
+</ul>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://hudi.apache.org/docs/overview#merge-on-read-table">Merge On Read</a> : Stores data using a combination of columnar (e.g parquet) + row based (e.g avro) file formats. <strong>Updates are logged to delta files &amp; later compacted to produce new versions of columnar files synchronously or asynchronously</strong>.<br>MergeOnRead是CopyOnWrite的超集，在Read Optimized查询时，可以只暴露base&#x2F;columnar文件。此外，还支持将每个File Group的新upserts存储到row based的delta log中，在查询时可以实时的应用delta log，从而得到一个最新的版本。</p>
+<p>Compactor需要周期性选择delta log文件压缩为columnar base文件，从而保持查询性能。</p>
+<p><img src="https://hudi.apache.org/assets/images/hudi_mor.png" alt="hudi_mor.png"></p>
+<p>MergeOnRead的目的在DFS能够实现近实时的数据处理。</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Trade-off</th>
+<th>CopyOnWrite</th>
+<th>MergeOnRead</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Data Latency</td>
+<td>Higher</td>
+<td>Lower</td>
+</tr>
+<tr>
+<td>Query Latency</td>
+<td>Lower</td>
+<td>Higher</td>
+</tr>
+<tr>
+<td>Update cost (I&#x2F;O)</td>
+<td>Higher (rewrite entire parquet)</td>
+<td>Lower (append to delta log)</td>
+</tr>
+<tr>
+<td>Parquet File Size</td>
+<td>Smaller (high update(I&#x2F;0) cost)</td>
+<td>Larger (low update cost)</td>
+</tr>
+<tr>
+<td>Write Amplification</td>
+<td>Higher</td>
+<td>Lower (depending on compaction strategy)</td>
+</tr>
+</tbody></table>
+<h3 id="Query-Types"><a href="#Query-Types" class="headerlink" title="Query Types"></a>Query Types</h3><ul>
+<li>Snapshot Queries：查询一个指定的commit或compaction的一个最新快照。对于MergeOnRead，Hudi会在查询时合并base和delta文件，从而提供near-real的结果；而对于CopyOnWrite，则相当于查询一个静态的表</li>
+<li>Incremental Queries：查询只能看到从某个指定的commit或compaction开始的新数据。相当于为incremental data pipelines提供一个change streams</li>
+<li>Read Optimized Queries：只暴露在最新file slice中的base&#x2F;columar文件，从而保证与non-hudi相似的查询性能</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Trade-off</th>
+<th>Snapshot</th>
+<th>Read Optimized</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Data Latency</td>
+<td>Lower</td>
+<td>Higher</td>
+</tr>
+<tr>
+<td>Query Latency</td>
+<td>Higher (merge base &#x2F; columnar file + row based delta &#x2F; log files)</td>
+<td>Lower (raw base &#x2F; columnar file performance)</td>
+</tr>
+</tbody></table>
+<h3 id="Write-Data"><a href="#Write-Data" class="headerlink" title="Write Data"></a>Write Data</h3><p>三种Write Options：</p>
+<ul>
+<li><p>UPSERT：默认的方式，输入的记录通过查询索引，被标记为inserts或者updates。</p>
+<blockquote>
+<p>The records are ultimately written after heuristics are run to determine how best to pack them on storage to optimize for things like file sizing. </p>
+</blockquote>
+<p>目标表不会出现重复，适合包含更新的输入数据流</p>
+</li>
+<li><p>INSERT：跳过索引查询步骤，但是也会优化写入的存储。比UPSERT方式更快，适合那些能够忍受重复记录的场景。</p>
+</li>
+<li><p>BULK_INSERT：UPSERT和INSERT两种方式都是将记录保存在内存中，从而加速存储启发式的计算。但是对于初始化加载，启动一个Hudi表，这种并不适用。BULK_INSERT提供了和INSERT方式相同的语义，但是基于Sort-Based的数据写入算法，可以是用于几百TB的大数据量。</p>
+</li>
+<li><ul>
+<li></li>
+</ul>
+</li>
+</ul>
+<h4 id="DeltaStreamer"><a href="#DeltaStreamer" class="headerlink" title="DeltaStreamer"></a>DeltaStreamer</h4><p>HoodieDeltaStreamer 工具用于从各种数据源，比如DFS，Kafka向Hudi中ingest数据。支持：</p>
+<ul>
+<li>Exactly once ingestion of new events from Kafka, incremental imports from Sqoop or output of HiveIncrementalPuller or files under a DFS folder</li>
+<li>Support json, avro or a custom record types for the incoming data</li>
+<li>Manage checkpoints, rollback &amp; recovery</li>
+<li>Leverage Avro schemas from DFS or Confluent <a target="_blank" rel="noopener" href="https://github.com/confluentinc/schema-registry">schema registry</a>.</li>
+<li>Support for plugging in transformations</li>
+</ul>
+<p>MultiTableDeltaStreamer是对HoodieDeltaStreamer的一个包装，能够在一次运行时，ingest多个表到Hudi数据库。目前只支持顺序地处理需要被ingest的表，并且表的类型必须是COPY_ON_WRITE存储类型。</p>
+<h4 id="DataSource-Writer"><a href="#DataSource-Writer" class="headerlink" title="DataSource Writer"></a>DataSource Writer</h4><p>Hudi-Spark提供了的DataSource API用于将Spark DataFrame写入到Hudi表中。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">inputDF.write()</span><br><span class="line">.format(<span class="string">&quot;org.apache.hudi&quot;</span>)</span><br><span class="line">.options(clientOpts) <span class="comment">//Where clientOpts is of type Map[String, String]. clientOpts can include any other options necessary.</span></span><br><span class="line">.option(<span class="type">DataSourceWriteOptions</span>.<span class="type">RECORDKEY_FIELD_OPT_KEY</span>(), <span class="string">&quot;_row_key&quot;</span>)</span><br><span class="line">.option(<span class="type">DataSourceWriteOptions</span>.<span class="type">PARTITIONPATH_FIELD_OPT_KEY</span>(), <span class="string">&quot;partition&quot;</span>)</span><br><span class="line">.option(<span class="type">DataSourceWriteOptions</span>.<span class="type">PRECOMBINE_FIELD_OPT_KEY</span>(), <span class="string">&quot;timestamp&quot;</span>)</span><br><span class="line">.option(<span class="type">HoodieWriteConfig</span>.<span class="type">TABLE_NAME</span>, tableName)</span><br><span class="line">.mode(<span class="type">SaveMode</span>.<span class="type">Append</span>)</span><br><span class="line">.save(basePath);</span><br></pre></td></tr></table></figure>
+
+<h4 id="Flink-SQL-Writer"><a href="#Flink-SQL-Writer" class="headerlink" title="Flink SQL Writer"></a>Flink SQL Writer</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> hudi_table <span class="keyword">select</span> ... <span class="keyword">from</span> ...; </span><br></pre></td></tr></table></figure>
+
+<h4 id="Delete"><a href="#Delete" class="headerlink" title="Delete"></a>Delete</h4><p>Hudi同时也支持两种delets：</p>
+<ul>
+<li>Soft Delete：保留record key，将其他列都置为null。</li>
+<li>Hared Delete：从Hudi表进行物理移除，有三种实现方式：<ul>
+<li>使用DataSource：设置&#96;&#96;OPERATION_OPT_KEY<code>为</code>DELETE_OPERATION_OPT_VAL&#96;</li>
+<li>使用DataSource：设置 <code>PAYLOAD_CLASS_OPT_KEY</code> t为<code>&quot;org.apache.hudi.EmptyHoodieRecordPayload&quot;</code> </li>
+<li>使用DataSource或者DeltaStreamer，添加一个名为<code>_hoodie_is_deleted</code>列到DataSet中，这一列的值必须设置为true。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">deleteDF <span class="comment">// dataframe containing just records to be deleted</span></span><br><span class="line">  .write().format(<span class="string">&quot;org.apache.hudi&quot;</span>)</span><br><span class="line">  .option(...) <span class="comment">// Add HUDI options like record-key, partition-path and others as needed for your setup</span></span><br><span class="line">  <span class="comment">// specify record_key, partition_key, precombine_fieldkey &amp; usual params</span></span><br><span class="line">  .option(<span class="type">DataSourceWriteOptions</span>.<span class="type">PAYLOAD_CLASS_OPT_KEY</span>, <span class="string">&quot;org.apache.hudi.EmptyHoodieRecordPayload&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="Optimized-DFS-Access"><a href="#Optimized-DFS-Access" class="headerlink" title="Optimized DFS Access"></a>Optimized DFS Access</h4><p>Hudi支持多种核心的存储管理功能。一个在DFS上存储的关键方面就是管理文件的大小和数据量，并且回收存储空间。下面是高效地管理Hudi表存储的几种方式：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://hudi.apache.org/docs/configurations#compactionSmallFileSize">small file handling feature</a></li>
+<li>Cleaner can be <a target="_blank" rel="noopener" href="https://hudi.apache.org/docs/configurations#retainCommits">configured</a> to clean up older file slices, more or less aggressively depending on maximum time for queries to run &amp; lookback needed for incremental pull</li>
+<li>User can also tune the size of the <a target="_blank" rel="noopener" href="https://hudi.apache.org/docs/configurations#limitFileSize">base&#x2F;parquet file</a>, <a target="_blank" rel="noopener" href="https://hudi.apache.org/docs/configurations#logFileMaxSize">log files</a> &amp; expected <a target="_blank" rel="noopener" href="https://hudi.apache.org/docs/configurations#parquetCompressionRatio">compression ratio</a>, such that sufficient number of inserts are grouped into the same file group, resulting in well sized base files ultimately.</li>
+<li>Intelligently tuning the <a target="_blank" rel="noopener" href="https://hudi.apache.org/docs/configurations#withBulkInsertParallelism">bulk insert parallelism</a>, can again in nicely sized initial file groups.</li>
+<li>For workloads with heavy updates, the <a target="_blank" rel="noopener" href="https://hudi.apache.org/docs/concepts#merge-on-read-table">merge-on-read table</a> provides a nice mechanism for ingesting quickly into smaller files and then later merging them into larger base files via compaction.</li>
+</ul>
+<h2 id="Data-Lake-Platform"><a href="#Data-Lake-Platform" class="headerlink" title="Data Lake Platform"></a>Data Lake Platform</h2><h3 id="Incremental-Processing"><a href="#Incremental-Processing" class="headerlink" title="Incremental Processing"></a>Incremental Processing</h3><p>Stream processing的成熟，使得Data Lake以Stream processing处理作为核心，实现一个增量处理的技术栈：</p>
+<p><img src="https://hudi.apache.org/assets/images/hudi-data-lake-platform_-_Page_2_4-a088663c0cb4f7e97b5b74da634975ef.png" alt="the different components that make up the stream and batch processing stack today, showing how an incremental stack blends the best of both the worlds."></p>
+<h3 id="Data-Lake-Platform-1"><a href="#Data-Lake-Platform-1" class="headerlink" title="Data Lake Platform"></a>Data Lake Platform</h3><p>Hudi并不是设计为一种通用的Table format，Table format只是Hudi技术栈中的一层。Hudi提供了实现删除和更新操作的事务支持，并且事务层围绕event log进行设计，和整个表和数据服务有非常好的集成。</p>
+<blockquote>
+<p>We have always been thinking of Hudi as solving a database problem around stream processing - areas that are actually <a target="_blank" rel="noopener" href="https://www.infoq.com/presentations/streaming-databases/">very related to each other</a>. In fact, Stream processing is enabled by logs (capture&#x2F;emit event streams, rewind&#x2F;reprocess) and databases (state stores, updatable sinks)</p>
+<p>With Hudi, the idea was that if we build a database <strong>supporting efficient updates and extracting data streams while remaining optimized for large batch queries, incremental pipelines can be built</strong> using Hudi tables as state store &amp; update-able sinks.</p>
+</blockquote>
+<p>对于Hudi最好的描述是：</p>
+<blockquote>
+<p>Streaming Data Lake Platform built around a database kernel</p>
+</blockquote>
+<ul>
+<li>Streaming：通过优化快速的upserts &amp; change流，Hudi提供了增量式地产生和消费事件，以及用于交互式查询的状态存储。</li>
+<li>Data Lake：Hudi提供了一个优化的，自管理的数据平台。可以用于大规模的数据处理，包括adhoc查询，ML pipelines和Batch pipelines。</li>
+<li>Platform：Hudi’s data and table services, tightly integrated with the Hudi “kernel”, gives us the ability to deliver cross layer optimizations with reliability and ease of use. Hudi提供了一个平台，而不是只是平台的一部分</li>
+</ul>
+<h3 id="Hudi-Stack"><a href="#Hudi-Stack" class="headerlink" title="Hudi Stack"></a>Hudi Stack</h3><p><img src="https://hudi.apache.org/assets/images/hudi-data-lake-platform_-_Copy_of_Page_1_3-2d54eeaee61f34b3146391bec58c11e5.png" alt="Figure showing the Hudi stack"></p>
+<h4 id="Lake-Storage"><a href="#Lake-Storage" class="headerlink" title="Lake Storage"></a>Lake Storage</h4><p>Hudi通过Hadoop FileSystem API与Lake Storage进行交互，因为Hadoop FileSystem即支持HDFS，云存储和内存存储（Alluxio&#x2F;Ignite）等。<br>Hudi内部实现了一个wrapper FileSystem用于在Hadoop FileSystem提供额外的存储优化：文件大小管理，Buffering，metrics等。<br>此外，Hudi充分利用HDFS的追加支持，从而帮助Hudi在Streaming写入时，不会产生大量的小文件和表元数据。但是，绝大部分的云存储都不支持追加，因此Hudi在未来计划利用云存储提供的底层API来对文件大小和数量进行相似的控制。</p>
+<h4 id="File-Format"><a href="#File-Format" class="headerlink" title="File Format"></a>File Format</h4><p>Hudi的数据存储包含基本数据文件和delta日志文件。数据文件的格式是可插拔的，支持Parquet，HFile等。Delta日志文件则用Avro存储。<strong>计划在将来支持ORC数据文件</strong>。</p>
+<p>Hudi的存储布局如下：</p>
+<p><img src="https://hudi.apache.org/assets/images/hudi-design-diagrams_-_Page_2_1-d998a263b380ed3357fcb2006ffb5bfe.png" alt="Hudi base and delta logs"></p>
+<h4 id="Table-Format"><a href="#Table-Format" class="headerlink" title="Table Format"></a>Table Format</h4><p>Table Format包含：Table的文件布局，Table的Schema和跟踪Table改变的元数据。Hudi使用Avro来存储，管理和演化表的Schema。当前，Hudi是执行schema-on-write的schema检查（没有使用schema-on-read的方式，通常数据湖都是要求schema-on-write），为了避免流式处理的pipeline的向后兼容性。</p>
+<p>在Hudi中，一个Table或Partition有多个File Groups，并且Hudi维护了新记录的key到已存在的File Group的映射信息。因此，所有的更新都可以根据特定的File Group记录delta日志，这样的设计可以保证在合并时实现很低的overhead（相比于Hive ACID，需要和并所有满足查询的数据文件）。并且，这种设计可以期待很快的基于key的upserts或deletes，因为只需要合并在每个File Group中的delta日志文件：</p>
+<p><img src="https://hudi.apache.org/assets/images/hudi-design-diagrams-table-format-3ba591d07f846d8a739366efdf6071ce.png" alt="Shows the Hudi table format components"></p>
+<p>Timeline是所有Hudi表元数据的source-of-truth，位于<code>/basepath/.hoodie</code>目录下，保存了event log。Timeline保存event log的时间取决于配置的时间和行为。</p>
+<p>此外，每个File Group管理自己的self-contained的event log，这意味着，即使影响该File Group的动作被Timeline归档了，也可以通过重放在File Group中的本地event log，重建File Group的数据状态。这样的设计可以使得在频繁写入和提交的情况下，元数据的大小独立于整个表的大小（每个File Group自己存储本地的event log，因此是一种水平扩容的方式）。</p>
+<p>最后，Timeline中的新事件会被内部的一个Metadata Table消费，这个表是一个merge-on-read的表，可以减少日志的写放大（log write amplification）。Hudi能够快速地吸收和处理表的元数据改变。Metadata Table使用HFile作为存储格式，提供了基于索引的快速key查找，避免了读取整个表数据。并且Metadata Table记录了表中所有文件路径，可以有效减少在云上的File listings操作。</p>
+<p>在将来，Hudi构建Indexed Timeline，可以提供更好的Time travel支持。</p>
+<h4 id="Indexes"><a href="#Indexes" class="headerlink" title="Indexes"></a>Indexes</h4><p>Hudi支持可插拔的indexing layer，内建的indexing支持使用interval trees的范围剪枝（当keys是有序的，并且绝不大部分是有序到达的）和Bloom filter。并且，Hudi支持以HBase作为后端的高性能外部索引（external index）。</p>
+<p>Hudi充分利用表的分区去实现全局的和非全局的索引方案（indexing schemes），例如用户可以在某个partition内部实现key constraints约束。</p>
+<p>特别的，Hudi的写入路径保证了索引总是与Timeline和底层数据保持一致，但是这在实现Table Format时非常麻烦和易于出错。</p>
+<p><img src="https://hudi.apache.org/assets/images/hudi-design-diagrams_-_Page_5-5ca4af1d2d91e19dc4e9e9e5138bb2b7.png" alt="/assets/images/blog/datalake-platform/hudi-design-diagrams_-_Page_5.png"></p>
+<h2 id="Concurrency-Control"><a href="#Concurrency-Control" class="headerlink" title="Concurrency Control"></a>Concurrency Control</h2><p>Hudi通过将提交以原子地方式发布给Timeline的方式，提供了原子写入保证。Hudi对于writers，table services和readers严格区分，具有不同的并发控制方式。对于writers之间，采用了乐观并发控制（Optimistic Concurrency Control），对于writers和table services之间以及不同的table services之间，则采用了无锁的，非阻塞的基于MVCC的并发控制。</p>
+<p>很多的项目基于锁或者底层的原子重命名操作来实现OCC，但是Hudi采用了一种不同的方式。Hudi实现了一种文件级别的，基于日志的并发控制协议。这个协议将会基于操作在Timeline中的开始时间对操作进行排序。</p>
+<p>Hudi在将来会实现一种完全基于日志的，对于写入非阻塞的并发控制。writer可以继续写入数据，冲突会在之后的Timeline顺序中被解决。</p>
+<h2 id="Writers-amp-Readers"><a href="#Writers-amp-Readers" class="headerlink" title="Writers &amp; Readers"></a>Writers &amp; Readers</h2><h3 id="Writers"><a href="#Writers" class="headerlink" title="Writers"></a>Writers</h3><p>Hudi可以作为Spark&#x2F;Flink的pipelines的Sinks。Hudi对于写入操作进行了特别的分类：incremental（<code>insert</code>，<code>upsert</code>，<code>delete</code>）和batch&#x2F;bulk（<code>insert_overwrite</code>, <code>insert_overwrite_table</code>, <code>delete_partition</code>, <code>bulk_insert</code>），对于每种方式提供了相关的功能和性能优化。</p>
+<p>Keys在Hudi中是一等公民，在upsert&#x2F;delete操作之前会完成pre-combining和indexing查找，从而保证每个key在partition之间和每个partition中是唯一的。Hudi还提供了几种内置的Key-generator，可以解析常见的date&#x2F;timestamp，并处理malformed的数据。</p>
+<p>Keys会使用<code>_hoodie_record_key_</code>字段和记录一起持久化，从而使得修改Key和对旧数据中不正确的Key进行修复从而可能。并且，Hudi提供了<code>HoodieRecordPayload</code>接口，用于表达任何的用于合并base和delta log records的条件（merge condition）。</p>
+<p>Hudi writers会给每个记录添加元数据，包括提交时间，以及该记录在提交中的序号，使得记录级别的Change streams称为可能。Hudi也允许用户去指定输入数据中的event time字段，为stream processing提供良好的支持。</p>
+<h3 id="Readers"><a href="#Readers" class="headerlink" title="Readers"></a>Readers</h3><p>Hudi提供了在writers和readers之间提供了Snapshot isolation，允许表的任意snapshot可以被各种引擎查询。Hudi关于性能的设计哲学是尽可能使得Hudi轻量化，在读取列存文件时，会充分利用引擎的（Spark，Presto）向量化readers。</p>
+<p>每当Hudi需要为一个查询合并base和log文件时，Hudi会接管控制，通过spillable maps，lazy reading等机制去提高合并的性能，同时也提供一个数据freshness和查询性能平衡的优化查询。</p>
+<p><img src="https://hudi.apache.org/assets/images/hudi-design-diagram_-incr-read-1c9bc7f09b69e8d9f1b2d439e3232a01.png" alt="Log merging done for incremental queries"></p>
+<h2 id="Table-Services"><a href="#Table-Services" class="headerlink" title="Table Services"></a>Table Services</h2><p>Hudi提供了内置的Table services和self-managing的运行时，可以编排和触发这些服务对Hudi内部进行优化。<br><img src="https://hudi.apache.org/assets/images/hudi-design-diagrams_-_Page_4-163995bcecff993234f40d17228ecd6b.png" alt="/assets/images/blog/datalake-platform/hudi-design-diagrams_-_Page_4.png"></p>
+<p>所有的Table services都是以保证的高性能的表存储布局（storage layout）和metadata management为目标，会在每次写入操作同步调用， 或者以一个分开的任务异步执行。并且，Spark&#x2F;Flink的Streaming writers能够以continuous的模式运行，与writers智能共享executor的方式异步调用table services。</p>
+<p>Archival service保证了Timeline能够为服务之间的协作保留足够多的历史记录和实现增量查询。一旦events过期，archival service会负责进行清理。</p>
+<p>Hudi的transaction management实现允许这些服务是幂等和弹性的，在发生错误时，仅仅通过重试即可。</p>
+<p><a target="_blank" rel="noopener" href="http://hudi.apache.org/blog/2021/06/10/employing-right-configurations-for-hudi-cleaner">Cleaner</a> service works off the timeline incrementally (eating our own incremental design dog food), removing file slices that are past the configured retention period for incremental queries, while also allowing sufficient time for long running batch jobs (e.g Hive ETLs) to finish running.</p>
+<p>Compaction service comes with built-in strategies (date partitioning based, I&#x2F;O bounded), that merges a base file with a set of delta log files to produce new base file, all while allowing writes to happen concurrently to the file group.</p>
+<p><a target="_blank" rel="noopener" href="http://hudi.apache.org/blog/2021/01/27/hudi-clustering-intro/">Clustering</a> service functions similar to what users find in BigQuery or Snowflake, where users can group records that are often queried together by sort keys or control file sizes by coalescing smaller base files into larger ones.</p>
+<p>Bootstrap service performs one time zero copy migration of plain parquet tables to Hudi, while allowing both pipelines to operate in parallel, for data validation purposes.</p>
+<h2 id="Data-Services"><a href="#Data-Services" class="headerlink" title="Data Services"></a>Data Services</h2><p>DeltaStreamer：</p>
+<p><img src="https://hudi.apache.org/assets/images/hudi-design-diagrams_-_Page_8-5f886f1e198375aa996a989c03a707e9.png" alt="/assets/images/blog/datalake-platform/hudi-design-diagrams_-_Page_8.png"></p>
+<h2 id="Timeline-Metaserver"><a href="#Timeline-Metaserver" class="headerlink" title="Timeline Metaserver"></a>Timeline Metaserver</h2><p>Hudi提供了一个名为Timeline的metadata服务器，当前，Timeline以嵌入式地方式运行在在Hudi的writer process中，基于本地rocksDB作为后端，对外提供了用于listing files的Java REST API。</p>
+<p><img src="https://hudi.apache.org/assets/images/hudi-design-diagrams_-_Page_6-3b292156302554ff2ad53e6f2847f56c.png" alt="/assets/images/blog/datalake-platform/hudi-design-diagrams_-_Page_6.png"></p>
+<p>Hudi计划在未来发布一个standalone的Timeline server，并且支持水平扩展，数据库&#x2F;表映射和安全等必要的features。</p>
+<h2 id="Lake-Cache"><a href="#Lake-Cache" class="headerlink" title="Lake Cache"></a>Lake Cache</h2><p>在数据湖中，需要权衡fast writing和query performance。Fast writing通常会产生大量的小文件（之后会进行clustering）或者记录deltas（在读取时合并）。为了提供更好的性能，Hudi还包含了一个caching tier（write through or even just populated by an incremental query）。</p>
+<p><img src="https://hudi.apache.org/assets/images/hudi-design-diagrams_-_Page_7-03e378cf49a27e58e544a3eca59905f0.png" alt="/assets/images/blog/datalake-platform/hudi-design-diagrams_-_Page_7.png"></p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://hudi.apache.org/">https://hudi.apache.org/</a></li>
+<li><a target="_blank" rel="noopener" href="https://hudi.apache.org/blog/2021/07/21/streaming-data-lake-platform">https://hudi.apache.org/blog/2021/07/21/streaming-data-lake-platform</a></li>
+<li><a target="_blank" rel="noopener" href="https://eng.uber.com/hoodie/">https://eng.uber.com/hoodie/</a></li>
+<li><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/HUDI/Design+And+Architecture">https://cwiki.apache.org/confluence/display/HUDI/Design+And+Architecture</a></li>
+<li><a target="_blank" rel="noopener" href="https://hudi.apache.org/blog/2021/07/21/streaming-data-lake-platform">https://hudi.apache.org/blog/2021/07/21/streaming-data-lake-platform</a></li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2022/01/15/Hudi-Flink-Write/" title= "Flink Integration with Hudi">
+                    <div class="nextTitle">Flink Integration with Hudi</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" title= "Calcite Volcano Planner">
+                    <div class="prevTitle">Calcite Volcano Planner</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2021/12/23/Hudi/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Hudi Overview"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#What-Hudi"><span class="toc-number">1.</span> <span class="toc-text">What Hudi</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Timeline"><span class="toc-number">1.1.</span> <span class="toc-text">Timeline</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File-Layout"><span class="toc-number">1.2.</span> <span class="toc-text">File Layout</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Index"><span class="toc-number">1.3.</span> <span class="toc-text">Index</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Table-Types-amp-Queris"><span class="toc-number">2.</span> <span class="toc-text">Table Types &amp; Queris</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Table-Types"><span class="toc-number">2.1.</span> <span class="toc-text">Table Types</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Query-Types"><span class="toc-number">2.2.</span> <span class="toc-text">Query Types</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Write-Data"><span class="toc-number">2.3.</span> <span class="toc-text">Write Data</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#DeltaStreamer"><span class="toc-number">2.3.1.</span> <span class="toc-text">DeltaStreamer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DataSource-Writer"><span class="toc-number">2.3.2.</span> <span class="toc-text">DataSource Writer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Flink-SQL-Writer"><span class="toc-number">2.3.3.</span> <span class="toc-text">Flink SQL Writer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Delete"><span class="toc-number">2.3.4.</span> <span class="toc-text">Delete</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Optimized-DFS-Access"><span class="toc-number">2.3.5.</span> <span class="toc-text">Optimized DFS Access</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Data-Lake-Platform"><span class="toc-number">3.</span> <span class="toc-text">Data Lake Platform</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Incremental-Processing"><span class="toc-number">3.1.</span> <span class="toc-text">Incremental Processing</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Data-Lake-Platform-1"><span class="toc-number">3.2.</span> <span class="toc-text">Data Lake Platform</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hudi-Stack"><span class="toc-number">3.3.</span> <span class="toc-text">Hudi Stack</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lake-Storage"><span class="toc-number">3.3.1.</span> <span class="toc-text">Lake Storage</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#File-Format"><span class="toc-number">3.3.2.</span> <span class="toc-text">File Format</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Table-Format"><span class="toc-number">3.3.3.</span> <span class="toc-text">Table Format</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Indexes"><span class="toc-number">3.3.4.</span> <span class="toc-text">Indexes</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Concurrency-Control"><span class="toc-number">4.</span> <span class="toc-text">Concurrency Control</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Writers-amp-Readers"><span class="toc-number">5.</span> <span class="toc-text">Writers &amp; Readers</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Writers"><span class="toc-number">5.1.</span> <span class="toc-text">Writers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Readers"><span class="toc-number">5.2.</span> <span class="toc-text">Readers</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Table-Services"><span class="toc-number">6.</span> <span class="toc-text">Table Services</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Data-Services"><span class="toc-number">7.</span> <span class="toc-text">Data Services</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Timeline-Metaserver"><span class="toc-number">8.</span> <span class="toc-text">Timeline Metaserver</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lake-Cache"><span class="toc-number">9.</span> <span class="toc-text">Lake Cache</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#References"><span class="toc-number">10.</span> <span class="toc-text">References</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

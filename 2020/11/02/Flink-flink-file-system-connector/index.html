@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink FileSystem Connector · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink FileSystem Connector</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink FileSystem Connector
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Connector">Connector</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">5.8k</span>Reading time: <span class="post-count reading-time">33 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/11/02</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="FileSystem-SQL-Connector"><a href="#FileSystem-SQL-Connector" class="headerlink" title="FileSystem SQL Connector"></a>FileSystem SQL Connector</h1><p>FileSystem SQL Connector provides access to <strong>partitioned files</strong> in filesystems. </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> MyUserTable (</span><br><span class="line">  column_name1 <span class="type">INT</span>,</span><br><span class="line">  column_name2 STRING,</span><br><span class="line">  ...</span><br><span class="line">  part_name1 <span class="type">INT</span>,</span><br><span class="line">  part_name2 STRING</span><br><span class="line">) PARTITIONED <span class="keyword">BY</span> (part_name1, part_name2) <span class="keyword">WITH</span> (</span><br><span class="line">  <span class="string">&#x27;connector&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;filesystem&#x27;</span>,           <span class="comment">-- required: specify the connector</span></span><br><span class="line">  <span class="string">&#x27;path&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;file:///path/to/whatever&#x27;</span>,  <span class="comment">-- required: path to a directory</span></span><br><span class="line">  <span class="string">&#x27;format&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;...&#x27;</span>,                     <span class="comment">-- required: file system connector requires to specify a format,</span></span><br><span class="line">                                        <span class="comment">-- Please refer to Table Formats</span></span><br><span class="line">                                        <span class="comment">-- section for more details</span></span><br><span class="line">  <span class="string">&#x27;partition.default-name&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;...&#x27;</span>,     <span class="comment">-- optional: default partition name in case the dynamic partition</span></span><br><span class="line">                                        <span class="comment">-- column value is null/empty string</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">-- optional: the option to enable shuffle data by dynamic partition fields in sink phase, this can greatly</span></span><br><span class="line">  <span class="comment">-- reduce the number of file for filesystem sink but may lead data skew, the default value is false.</span></span><br><span class="line">  <span class="string">&#x27;sink.shuffle-by-partition.enable&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;...&#x27;</span>,</span><br><span class="line">  ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Partition-Files"><a href="#Partition-Files" class="headerlink" title="Partition Files"></a>Partition Files</h2><p>Flink’s file system partition support uses the standard hive format. But:</p>
+<ul>
+<li>it does not <strong>require partitions to be pre-registered</strong> with a table catalog. </li>
+<li>partitions are <strong>discovered and <em>inferred</em> based on directory structure</strong>.</li>
+</ul>
+<p>Flink supports CSV, JSON, Avro, Parquet and Orc formats. These formats are classified into two categories:</p>
+<ul>
+<li>Row-encoded formats: CSV, JSON</li>
+<li>Bulk-encoded formats: Avro, Parquet and Orc</li>
+</ul>
+<h2 id="Streaming-Sinks"><a href="#Streaming-Sinks" class="headerlink" title="Streaming Sinks"></a>Streaming Sinks</h2><p>The file system connector supports streaming writes based on Streaming File Sink to write records to file.</p>
+<h3 id="Rolling-Policy"><a href="#Rolling-Policy" class="headerlink" title="Rolling Policy"></a>Rolling Policy</h3><p>Data within the partition directories are split into part files. <strong>Each partition will contain at least one part file for each subtask of the sink that has received data for that partition</strong>. </p>
+<p>Rolling policy controls <strong>how and when to close in-progress part files and create an additional part files</strong>. Basically, there are two types:</p>
+<ul>
+<li>Size based</li>
+<li>Timeout based</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">sink.rolling-policy.file-size</td>
+<td align="left">128MB</td>
+<td align="left">MemorySize</td>
+<td align="left">The maximum part file size before rolling.</td>
+</tr>
+<tr>
+<td align="left">sink.rolling-policy.rollover-interval</td>
+<td align="left">30 min</td>
+<td align="left">Duration</td>
+<td align="left">The maximum time duration a part file can stay open before rolling (by default 30 min to avoid to many small files). The frequency at which this is checked is controlled by the ‘sink.rolling-policy.check-interval’ option.</td>
+</tr>
+<tr>
+<td align="left">sink.rolling-policy.check-interval</td>
+<td align="left">1 min</td>
+<td align="left">Duration</td>
+<td align="left">The interval for checking time based rolling policies. This controls the frequency to check whether a part file should rollover based on ‘sink.rolling-policy.rollover-interval’.</td>
+</tr>
+</tbody></table>
+<p>For bulk formats, the rolling policy <strong>in combination with the checkpoint interval</strong>(pending files become finished on the next checkpoint) to control the size and number of these parts.</p>
+<h2 id="Partition-Commit"><a href="#Partition-Commit" class="headerlink" title="Partition Commit"></a>Partition Commit</h2><p>The file system connector contains a partition commit feature to allow configuring the custom commit policies. Commit actions are based on a combination of <strong>triggers</strong> and <strong>policies</strong>:</p>
+<ul>
+<li>Trigger: When to commit, the timing can be determined by the watermark with time extracted from the partition, or by processing time</li>
+<li>Policy: How to commit, built-in policies support for the commit of <strong>success files and metastore</strong>, you can also implement your own policies</li>
+</ul>
+<p>The partition commit only works in <strong>dynamic partition inserting</strong>.</p>
+<h3 id="Commit-Trigger"><a href="#Commit-Trigger" class="headerlink" title="Commit Trigger"></a>Commit Trigger</h3><p>Two types of trigger:</p>
+<ul>
+<li>partition processing time, universal but not so precise. Data delay or failover will lead to premature partition commit.</li>
+<li>the time that extracted from partition values and watermark</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">sink.partition-commit.trigger</td>
+<td align="left">process-time</td>
+<td align="left">String</td>
+<td align="left">Trigger type for partition commit: ‘process-time’: based on the time of the machine, it neither requires partition time extraction nor watermark generation. Commit partition once the ‘current system time’ passes ‘partition creation system time’ plus ‘delay’. ‘partition-time’: based on the time that extracted from partition values, it requires watermark generation. Commit partition once the ‘watermark’ passes ‘time extracted from partition values’ plus ‘delay’.</td>
+</tr>
+<tr>
+<td align="left">sink.partition-commit.delay</td>
+<td align="left">0 s</td>
+<td align="left">Duration</td>
+<td align="left">The partition will not commit until the delay time. If it is a daily partition, should be ‘1 d’, if it is a hourly partition, should be ‘1 h’.</td>
+</tr>
+</tbody></table>
+<p><strong>Late data processing</strong>: The record will be written into its partition when a record is supposed to be written into a partition that has already been committed, and then the committing of this partition will be triggered <strong>again</strong>.</p>
+<p>For example:</p>
+<ol>
+<li>‘sink.partition-commit.trigger’&#x3D;’process-time’  +  ‘sink.partition-commit.delay’&#x3D;’0s’  &#x3D;&gt; downstreams will see data as soon as possible no matter whether the data is complete or not</li>
+<li>‘sink.partition-commit.trigger’&#x3D;’process-time’  +  ‘sink.partition-commit.delay’&#x3D;’1h’ &#x3D;&gt;  downstreams will see data complete</li>
+<li>‘sink.partition-commit.trigger’&#x3D;’partition-time’ + ‘sink.partition-commit.delay’&#x3D;’1h’ &#x3D;&gt;  downstreams will see the partition only when its data is complete, and your job has watermark generation, and you can extract the time from partition values.</li>
+</ol>
+<h4 id="Partition-Time-Extractor"><a href="#Partition-Time-Extractor" class="headerlink" title="Partition Time Extractor"></a>Partition Time Extractor</h4><table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">partition.time-extractor.kind</td>
+<td align="left">default</td>
+<td align="left">String</td>
+</tr>
+<tr>
+<td align="left">partition.time-extractor.class</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+</tr>
+<tr>
+<td align="left">partition.time-extractor.timestamp-pattern</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+</tr>
+</tbody></table>
+<h3 id="Commit-Policy"><a href="#Commit-Policy" class="headerlink" title="Commit Policy"></a>Commit Policy</h3><p>The partition commit policy defines what action is taken when partitions are committed.</p>
+<ul>
+<li>Metastore</li>
+<li>Success File(an empty _SUCCESS file)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">sink.partition-commit.policy.kind</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+<td align="left">Policy to commit a partition is to notify the downstream application that the partition has finished writing, the partition is ready to be read. metastore: add partition to metastore. Only hive table supports metastore policy, file system manages partitions through directory structure. success-file: add ‘_success’ file to directory. Both can be configured at the same time: ‘metastore,success-file’. custom: use policy class to create a commit policy. Support to configure multiple policies: ‘metastore,success-file’.</td>
+</tr>
+<tr>
+<td align="left">sink.partition-commit.policy.class</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+<td align="left">The partition commit policy class for implement PartitionCommitPolicy interface. Only work in custom commit policy.</td>
+</tr>
+<tr>
+<td align="left">sink.partition-commit.success-file.name</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+<td align="left">The file name for success-file partition commit policy, default is ‘_SUCCESS’.</td>
+</tr>
+</tbody></table>
+<h1 id="Streaming-File-Sink"><a href="#Streaming-File-Sink" class="headerlink" title="Streaming File Sink"></a>Streaming File Sink</h1><p> Streaming File Sink is an implementation of FileSystem SQL Connector. The Streaming File Sink writes incoming data into buckets. Given that the incoming streams can be unbounded, data in each bucket are organized into part files of finite size.</p>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.11/fig/streamfilesink_bucketing.png" alt="img"></p>
+<h2 id="File-Formats"><a href="#File-Formats" class="headerlink" title="File Formats"></a>File Formats</h2><p>Static methods for different file format types:</p>
+<ul>
+<li>Row-encoded sink: <code>StreamingFileSink.forRowFormat(basePath, rowEncoder)</code></li>
+<li>Bulk-encoded sink: <code>StreamingFileSink.forBulkFormat(basePath, bulkWriterFactory)</code></li>
+</ul>
+<p>Doc: <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/StreamingFileSink.html">Streaming File Sink</a></p>
+<h3 id="Row-encoded-Formats"><a href="#Row-encoded-Formats" class="headerlink" title="Row-encoded Formats"></a>Row-encoded Formats</h3><p>Row-encoded formats need to specify an Encoder that is used for serializing individual rows to the <code>OutputStream</code> of the in-progress part files.</p>
+<p><code>RowFormatBuilder</code> also allows users to specify custom RollingPolicy and bucketCheckInterval.</p>
+<h3 id="Bulk-encoded-Formats"><a href="#Bulk-encoded-Formats" class="headerlink" title="Bulk-encoded Formats"></a>Bulk-encoded Formats</h3><p>Bulk-encoded formats need to specify a <code>BulkWriter.Factory</code> instead of an Encoder.  The <code>BulkWriter</code> logic defines <strong>how new elements added, flushed and how the bulk of records are finalized for further encoding purposes</strong>.</p>
+<p>Built-in BulkWriter factories:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/formats/parquet/ParquetWriterFactory.html">ParquetWriterFactory</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/formats/avro/AvroWriterFactory.html">AvroWriterFactory</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/formats/sequencefile/SequenceFileWriterFactory.html">SequenceFileWriterFactory</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/formats/compress/CompressWriterFactory.html">CompressWriterFactory</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/orc/writer/OrcBulkWriterFactory.html">OrcBulkWriterFactory</a></li>
+</ul>
+<p>For Bulk-encoded formats, they <strong>only</strong> have <code>OnCheckpointRollingPolicy</code>, which rolls (ONLY) on every checkpoint.</p>
+<h2 id="Bucket-Assignment"><a href="#Bucket-Assignment" class="headerlink" title="Bucket Assignment"></a>Bucket Assignment</h2><p>The bucketing logic defines how the data will be structured into subdirectories inside the base output directory. (like partitioning in Hive)</p>
+<p>Both row and bulk formats use the <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/bucketassigners/DateTimeBucketAssigner.html">DateTimeBucketAssigner</a> as the default assigner.</p>
+<p>By default the <code>DateTimeBucketAssigner</code> creates <strong>hourly buckets based on the system default timezone</strong> with the following format: <code>yyyy-MM-dd--HH</code></p>
+<p>Flink can specify a custom <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/BucketAssigner.html">BucketAssigner</a> by calling <code>.withBucketAssigner(assigner)</code> on the format builders. And Flink provides two built-in BulkAssigners:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/bucketassigners/DateTimeBucketAssigner.html">DateTimeBucketAssigner</a> : Default time based assigner</li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/bucketassigners/BasePathBucketAssigner.html">BasePathBucketAssigner</a> : Assigner that stores all part files in the base path (single global bucket)</li>
+</ul>
+<h2 id="Rolling-Policy-1"><a href="#Rolling-Policy-1" class="headerlink" title="Rolling Policy"></a>Rolling Policy</h2><p>The <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/RollingPolicy.html">RollingPolicy</a> defines when a given <strong>in-progress part file will be closed and moved to the pending and later to finished state</strong>. <em>Part files in the “finished” state are the ones that are ready for viewing and are guaranteed to contain valid data that will not be reverted in case of failure</em>. The Rolling Policy in combination with the checkpointing interval (pending files become finished on the next checkpoint) control how quickly part files become available for downstream readers and also the size and number of these parts.</p>
+<p>Two built-in RollingPolicies:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/rollingpolicies/DefaultRollingPolicy.html">DefaultRollingPolicy</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/rollingpolicies/OnCheckpointRollingPolicy.html">OnCheckpointRollingPolicy</a></li>
+</ul>
+<h2 id="Part-file-lifecycle"><a href="#Part-file-lifecycle" class="headerlink" title="Part file lifecycle"></a>Part file lifecycle</h2><p>Part files states:</p>
+<ol>
+<li><strong>In-progress</strong> : The part file that is currently being written to is in-progress</li>
+<li><strong>Pending</strong> : Closed (due to the specified rolling policy) in-progress files that are waiting to be committed</li>
+<li><strong>Finished</strong> : On successful checkpoints pending files transition to “Finished”</li>
+</ol>
+<p>Part files indexes are <strong>strictly increasing</strong> for any given subtask but <em>not</em> always sequential.</p>
+<p>Each writer subtask will <strong>have a single in-progress part file at any given time for every active bucket</strong>, but there can be several pending and finished files.</p>
+<p>Default naming strategy:</p>
+<ul>
+<li><strong>In-progress &#x2F; Pending</strong>: <code>part-&lt;subtaskIndex&gt;-&lt;partFileIndex&gt;.inprogress.uid</code></li>
+<li><strong>Finished:</strong> <code>part-&lt;subtaskIndex&gt;-&lt;partFileIndex&gt;</code></li>
+</ul>
+<p>Use <code>OutputFileConfig</code> to customize a prefix and&#x2F;or  a suffix for part files.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">OutputFileConfig</span> <span class="variable">config</span> <span class="operator">=</span> OutputFileConfig</span><br><span class="line"> .builder()</span><br><span class="line"> .withPartPrefix(<span class="string">&quot;prefix&quot;</span>)</span><br><span class="line"> .withPartSuffix(<span class="string">&quot;.ext&quot;</span>)</span><br><span class="line"> .build();</span><br><span class="line">            </span><br><span class="line">StreamingFileSink&lt;Tuple2&lt;Integer, Integer&gt;&gt; sink = StreamingFileSink</span><br><span class="line"> .forRowFormat((<span class="keyword">new</span> <span class="title class_">Path</span>(outputPath), <span class="keyword">new</span> <span class="title class_">SimpleStringEncoder</span>&lt;&gt;(<span class="string">&quot;UTF-8&quot;</span>))</span><br><span class="line"> .withBucketAssigner(<span class="keyword">new</span> <span class="title class_">KeyBucketAssigner</span>())</span><br><span class="line"> .withRollingPolicy(OnCheckpointRollingPolicy.build())</span><br><span class="line"> .withOutputFileConfig(config)</span><br><span class="line"> .build();</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="StreamingFileSink-Implementation"><a href="#StreamingFileSink-Implementation" class="headerlink" title="StreamingFileSink Implementation"></a>StreamingFileSink Implementation</h1><p>StreamingFileSink的定义如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public class StreamingFileSink&lt;IN&gt;</span><br><span class="line">		extends RichSinkFunction&lt;IN&gt;</span><br><span class="line">		implements CheckpointedFunction, CheckpointListener, ProcessingTimeCallback</span><br></pre></td></tr></table></figure>
+
+<p>用于存储状态的描述符，主要有两种状态：</p>
+<ul>
+<li>每个Bucket的状态</li>
+<li>每个subtask的Part File的状态</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ListStateDescriptor&lt;<span class="type">byte</span>[]&gt; BUCKET_STATE_DESC =</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">ListStateDescriptor</span>&lt;&gt;(<span class="string">&quot;bucket-states&quot;</span>, BytePrimitiveArraySerializer.INSTANCE);</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> ListState&lt;<span class="type">byte</span>[]&gt; bucketStates;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ListStateDescriptor&lt;Long&gt; MAX_PART_COUNTER_STATE_DESC =</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">ListStateDescriptor</span>&lt;&gt;(<span class="string">&quot;max-part-counter&quot;</span>, LongSerializer.INSTANCE);</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> ListState&lt;Long&gt; maxPartCountersState;</span><br></pre></td></tr></table></figure>
+
+<p>配置和运行时：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The sink will check periodically and roll the part file if the specified rolling policy says so</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">long</span> bucketCheckInterval;</span><br><span class="line"><span class="comment">// BulckBuilder used to create new Buckets</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> StreamingFileSink.BucketsBuilder&lt;IN, ?, ? <span class="keyword">extends</span> <span class="title class_">BucketsBuilder</span>&lt;IN, ?, ?&gt;&gt; bucketsBuilder;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> Buckets&lt;IN, ?&gt; buckets;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> ProcessingTimeService processingTimeService;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Buckets"><a href="#Buckets" class="headerlink" title="Buckets"></a>Buckets</h2><p>Buckets用于管理处于StreamingFileSink中处于活跃状态的Bucket，封装了所有Bucket相关的操作，是StreamingFileSink的核心。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Buckets</span>&lt;IN, BucketID&gt; &#123;</span><br><span class="line">  <span class="comment">// Base path of these buckets</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Path basePath;</span><br><span class="line">  <span class="comment">// Used to create a new bucket</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> BucketFactory&lt;IN, BucketID&gt; bucketFactory;</span><br><span class="line">  <span class="comment">// Assign records to a bucket</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> BucketAssigner&lt;IN, BucketID&gt; bucketAssigner;</span><br><span class="line">  <span class="comment">// PartialFileWriterFactory for creating in-progress write files</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> PartFileWriter.PartFileFactory&lt;IN, BucketID&gt; partFileWriterFactory;</span><br><span class="line">  <span class="comment">// Rolling policy</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RollingPolicy&lt;IN, BucketID&gt; rollingPolicy;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> subtaskIndex;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Buckets.BucketerContext bucketerContext;</span><br><span class="line">  <span class="comment">// Active Buckets</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;BucketID, Bucket&lt;IN, BucketID&gt;&gt; activeBuckets;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">long</span> maxPartCounter;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RecoverableWriter fsWriter;</span><br><span class="line">  <span class="comment">// OutputFileConfig for customizing prefix and suffix</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> OutputFileConfig outputFileConfig;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Sink-State"><a href="#Sink-State" class="headerlink" title="Sink State"></a>Sink State</h2><p>StreamingFileSink实现了CheckpointedFunction和CheckpointListener两个接口，前者用于存储和恢复buckets和part files的状态，后者用于在完成Checkpoint时提交处于Pending状态的part files。</p>
+<h1 id="在snapshotState-中，将"><a href="#在snapshotState-中，将" class="headerlink" title="在snapshotState()中，将"></a>在<code>snapshotState()</code>中，将</h1><h1 id="FileSystem-SQL-Connector-1"><a href="#FileSystem-SQL-Connector-1" class="headerlink" title="FileSystem SQL Connector"></a>FileSystem SQL Connector</h1><p>FileSystem SQL Connector provides access to <strong>partitioned files</strong> in filesystems. </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> MyUserTable (</span><br><span class="line">  column_name1 <span class="type">INT</span>,</span><br><span class="line">  column_name2 STRING,</span><br><span class="line">  ...</span><br><span class="line">  part_name1 <span class="type">INT</span>,</span><br><span class="line">  part_name2 STRING</span><br><span class="line">) PARTITIONED <span class="keyword">BY</span> (part_name1, part_name2) <span class="keyword">WITH</span> (</span><br><span class="line">  <span class="string">&#x27;connector&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;filesystem&#x27;</span>,           <span class="comment">-- required: specify the connector</span></span><br><span class="line">  <span class="string">&#x27;path&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;file:///path/to/whatever&#x27;</span>,  <span class="comment">-- required: path to a directory</span></span><br><span class="line">  <span class="string">&#x27;format&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;...&#x27;</span>,                     <span class="comment">-- required: file system connector requires to specify a format,</span></span><br><span class="line">                                        <span class="comment">-- Please refer to Table Formats</span></span><br><span class="line">                                        <span class="comment">-- section for more details</span></span><br><span class="line">  <span class="string">&#x27;partition.default-name&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;...&#x27;</span>,     <span class="comment">-- optional: default partition name in case the dynamic partition</span></span><br><span class="line">                                        <span class="comment">-- column value is null/empty string</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">-- optional: the option to enable shuffle data by dynamic partition fields in sink phase, this can greatly</span></span><br><span class="line">  <span class="comment">-- reduce the number of file for filesystem sink but may lead data skew, the default value is false.</span></span><br><span class="line">  <span class="string">&#x27;sink.shuffle-by-partition.enable&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;...&#x27;</span>,</span><br><span class="line">  ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Partition-Files-1"><a href="#Partition-Files-1" class="headerlink" title="Partition Files"></a>Partition Files</h2><p>Flink’s file system partition support uses the standard hive format. But:</p>
+<ul>
+<li>it does not <strong>require partitions to be pre-registered</strong> with a table catalog. </li>
+<li>partitions are <strong>discovered and <em>inferred</em> based on directory structure</strong>.</li>
+</ul>
+<p>Flink supports CSV, JSON, Avro, Parquet and Orc formats. These formats are classified into two categories:</p>
+<ul>
+<li>Row-encoded formats: CSV, JSON</li>
+<li>Bulk-encoded formats: Avro, Parquet and Orc</li>
+</ul>
+<h2 id="Streaming-Sinks-1"><a href="#Streaming-Sinks-1" class="headerlink" title="Streaming Sinks"></a>Streaming Sinks</h2><p>The file system connector supports streaming writes based on Streaming File Sink to write records to file.</p>
+<h3 id="Rolling-Policy-2"><a href="#Rolling-Policy-2" class="headerlink" title="Rolling Policy"></a>Rolling Policy</h3><p>Data within the partition directories are split into part files. <strong>Each partition will contain at least one part file for each subtask of the sink that has received data for that partition</strong>. </p>
+<p>Rolling policy controls how and when to close in-progress part files and create an additional part files. Basically, there are two types:</p>
+<ul>
+<li>Size based</li>
+<li>Timeout based</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">sink.rolling-policy.file-size</td>
+<td align="left">128MB</td>
+<td align="left">MemorySize</td>
+<td align="left">The maximum part file size before rolling.</td>
+</tr>
+<tr>
+<td align="left">sink.rolling-policy.rollover-interval</td>
+<td align="left">30 min</td>
+<td align="left">Duration</td>
+<td align="left">The maximum time duration a part file can stay open before rolling (by default 30 min to avoid to many small files). The frequency at which this is checked is controlled by the ‘sink.rolling-policy.check-interval’ option.</td>
+</tr>
+<tr>
+<td align="left">sink.rolling-policy.check-interval</td>
+<td align="left">1 min</td>
+<td align="left">Duration</td>
+<td align="left">The interval for checking time based rolling policies. This controls the frequency to check whether a part file should rollover based on ‘sink.rolling-policy.rollover-interval’.</td>
+</tr>
+</tbody></table>
+<p>For bulk formats, the rolling policy <strong>in combination with the checkpoint interval</strong>(pending files become finished on the next checkpoint) to control the size and number of these parts.</p>
+<h2 id="Partition-Commit-1"><a href="#Partition-Commit-1" class="headerlink" title="Partition Commit"></a>Partition Commit</h2><p>The file system connector contains a partition commit feature to allow configuring the custom commit policies. Commit actions are based on a combination of <strong>triggers</strong> and <strong>policies</strong>:</p>
+<ul>
+<li>Trigger: When to commit, the timing can be determined by the watermark with time extracted from the partition, or by processing time</li>
+<li>Policy: How to commit, built-in policies support for the commit of <strong>success files and metastore</strong>, you can also implement your own policies</li>
+</ul>
+<p>The partition commit only works in <strong>dynamic partition inserting</strong>.</p>
+<h3 id="Commit-Trigger-1"><a href="#Commit-Trigger-1" class="headerlink" title="Commit Trigger"></a>Commit Trigger</h3><p>Two types of trigger:</p>
+<ul>
+<li>partition processing time, universal but not so precise. Data delay or failover will lead to premature partition commit.</li>
+<li>the time that extracted from partition values and watermark</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">sink.partition-commit.trigger</td>
+<td align="left">process-time</td>
+<td align="left">String</td>
+<td align="left">Trigger type for partition commit: ‘process-time’: based on the time of the machine, it neither requires partition time extraction nor watermark generation. Commit partition once the ‘current system time’ passes ‘partition creation system time’ plus ‘delay’. ‘partition-time’: based on the time that extracted from partition values, it requires watermark generation. Commit partition once the ‘watermark’ passes ‘time extracted from partition values’ plus ‘delay’.</td>
+</tr>
+<tr>
+<td align="left">sink.partition-commit.delay</td>
+<td align="left">0 s</td>
+<td align="left">Duration</td>
+<td align="left">The partition will not commit until the delay time. If it is a daily partition, should be ‘1 d’, if it is a hourly partition, should be ‘1 h’.</td>
+</tr>
+</tbody></table>
+<p><strong>Late data processing</strong>: The record will be written into its partition when a record is supposed to be written into a partition that has already been committed, and then the committing of this partition will be triggered <strong>again</strong>.</p>
+<p>For example:</p>
+<ol>
+<li>‘sink.partition-commit.trigger’&#x3D;’process-time’  +  ‘sink.partition-commit.delay’&#x3D;’0s’  &#x3D;&gt; downstreams will see data as soon as possible no matter whether the data is complete or not</li>
+<li>‘sink.partition-commit.trigger’&#x3D;’process-time’  +  ‘sink.partition-commit.delay’&#x3D;’1h’ &#x3D;&gt;  downstreams will see data complete</li>
+<li>‘sink.partition-commit.trigger’&#x3D;’partition-time’ + ‘sink.partition-commit.delay’&#x3D;’1h’ &#x3D;&gt;  downstreams will see the partition only when its data is complete, and your job has watermark generation, and you can extract the time from partition values.</li>
+</ol>
+<h4 id="Partition-Time-Extractor-1"><a href="#Partition-Time-Extractor-1" class="headerlink" title="Partition Time Extractor"></a>Partition Time Extractor</h4><table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">partition.time-extractor.kind</td>
+<td align="left">default</td>
+<td align="left">String</td>
+</tr>
+<tr>
+<td align="left">partition.time-extractor.class</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+</tr>
+<tr>
+<td align="left">partition.time-extractor.timestamp-pattern</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+</tr>
+</tbody></table>
+<h3 id="Commit-Policy-1"><a href="#Commit-Policy-1" class="headerlink" title="Commit Policy"></a>Commit Policy</h3><p>The partition commit policy defines what action is taken when partitions are committed.</p>
+<ul>
+<li>Metastore</li>
+<li>Success File(an empty _SUCCESS file)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Default</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">sink.partition-commit.policy.kind</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+<td align="left">Policy to commit a partition is to notify the downstream application that the partition has finished writing, the partition is ready to be read. metastore: add partition to metastore. Only hive table supports metastore policy, file system manages partitions through directory structure. success-file: add ‘_success’ file to directory. Both can be configured at the same time: ‘metastore,success-file’. custom: use policy class to create a commit policy. Support to configure multiple policies: ‘metastore,success-file’.</td>
+</tr>
+<tr>
+<td align="left">sink.partition-commit.policy.class</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+<td align="left">The partition commit policy class for implement PartitionCommitPolicy interface. Only work in custom commit policy.</td>
+</tr>
+<tr>
+<td align="left">sink.partition-commit.success-file.name</td>
+<td align="left">(none)</td>
+<td align="left">String</td>
+<td align="left">The file name for success-file partition commit policy, default is ‘_SUCCESS’.</td>
+</tr>
+</tbody></table>
+<h1 id="Streaming-File-Sink-1"><a href="#Streaming-File-Sink-1" class="headerlink" title="Streaming File Sink"></a>Streaming File Sink</h1><p> Streaming File Sink is an implementation of FileSystem SQL Connector. The Streaming File Sink writes incoming data into buckets. Given that the incoming streams can be unbounded, data in each bucket are organized into part files of finite size.</p>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.11/fig/streamfilesink_bucketing.png" alt="img"></p>
+<h2 id="File-Formats-1"><a href="#File-Formats-1" class="headerlink" title="File Formats"></a>File Formats</h2><p>Static methods for different file format types:</p>
+<ul>
+<li>Row-encoded sink: <code>StreamingFileSink.forRowFormat(basePath, rowEncoder)</code></li>
+<li>Bulk-encoded sink: <code>StreamingFileSink.forBulkFormat(basePath, bulkWriterFactory)</code></li>
+</ul>
+<p>Doc: <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/StreamingFileSink.html">Streaming File Sink</a></p>
+<h3 id="Row-encoded-Formats-1"><a href="#Row-encoded-Formats-1" class="headerlink" title="Row-encoded Formats"></a>Row-encoded Formats</h3><p>Row-encoded formats need to specify an Encoder that is used for serializing individual rows to the <code>OutputStream</code> of the in-progress part files.</p>
+<p><code>RowFormatBuilder</code> also allows users to specify custom RollingPolicy and bucketCheckInterval.</p>
+<h3 id="Bulk-encoded-Formats-1"><a href="#Bulk-encoded-Formats-1" class="headerlink" title="Bulk-encoded Formats"></a>Bulk-encoded Formats</h3><p>Bulk-encoded formats need to specify a <code>BulkWriter.Factory</code> instead of an Encoder.  The <code>BulkWriter</code> logic defines <strong>how new elements added, flushed and how the bulk of records are finalized for further encoding purposes</strong>.</p>
+<p>Built-in BulkWriter factories:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/formats/parquet/ParquetWriterFactory.html">ParquetWriterFactory</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/formats/avro/AvroWriterFactory.html">AvroWriterFactory</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/formats/sequencefile/SequenceFileWriterFactory.html">SequenceFileWriterFactory</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/formats/compress/CompressWriterFactory.html">CompressWriterFactory</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/orc/writer/OrcBulkWriterFactory.html">OrcBulkWriterFactory</a></li>
+</ul>
+<p>For Bulk-encoded formats, they <strong>only</strong> have <code>OnCheckpointRollingPolicy</code>, which rolls (ONLY) on every checkpoint.</p>
+<h2 id="Bucket-Assignment-1"><a href="#Bucket-Assignment-1" class="headerlink" title="Bucket Assignment"></a>Bucket Assignment</h2><p>The bucketing logic defines how the data will be structured into subdirectories inside the base output directory. (like partitioning in Hive)</p>
+<p>Both row and bulk formats use the <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/bucketassigners/DateTimeBucketAssigner.html">DateTimeBucketAssigner</a> as the default assigner.</p>
+<p>By default the <code>DateTimeBucketAssigner</code> creates <strong>hourly buckets based on the system default timezone</strong> with the following format: <code>yyyy-MM-dd--HH</code></p>
+<p>Flink can specify a custom <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/BucketAssigner.html">BucketAssigner</a> by calling <code>.withBucketAssigner(assigner)</code> on the format builders. And Flink provides two built-in BulkAssigners:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/bucketassigners/DateTimeBucketAssigner.html">DateTimeBucketAssigner</a> : Default time based assigner</li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/bucketassigners/BasePathBucketAssigner.html">BasePathBucketAssigner</a> : Assigner that stores all part files in the base path (single global bucket)</li>
+</ul>
+<h2 id="Rolling-Policy-3"><a href="#Rolling-Policy-3" class="headerlink" title="Rolling Policy"></a>Rolling Policy</h2><p>The <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/RollingPolicy.html">RollingPolicy</a> defines when a given <strong>in-progress part file will be closed and moved to the pending and later to finished state</strong>. <em>Part files in the “finished” state are the ones that are ready for viewing and are guaranteed to contain valid data that will not be reverted in case of failure</em>. The Rolling Policy in combination with the checkpointing interval (pending files become finished on the next checkpoint) control how quickly part files become available for downstream readers and also the size and number of these parts.</p>
+<p>Two built-in RollingPolicies:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/rollingpolicies/DefaultRollingPolicy.html">DefaultRollingPolicy</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.11/api/java/org/apache/flink/streaming/api/functions/sink/filesystem/rollingpolicies/OnCheckpointRollingPolicy.html">OnCheckpointRollingPolicy</a></li>
+</ul>
+<h2 id="Part-file-lifecycle-1"><a href="#Part-file-lifecycle-1" class="headerlink" title="Part file lifecycle"></a>Part file lifecycle</h2><p>Part files states:</p>
+<ol>
+<li><strong>In-progress</strong> : The part file that is currently being written to is in-progress</li>
+<li><strong>Pending</strong> : Closed (due to the specified rolling policy) in-progress files that are waiting to be committed</li>
+<li><strong>Finished</strong> : On successful checkpoints pending files transition to “Finished”</li>
+</ol>
+<p>Part files indexes are <strong>strictly increasing</strong> for any given subtask but <em>not</em> always sequential.</p>
+<p>Each writer subtask will <strong>have a single in-progress part file at any given time for every active bucket</strong>, but there can be several pending and finished files.</p>
+<p>Default naming strategy:</p>
+<ul>
+<li><strong>In-progress &#x2F; Pending</strong>: <code>part-&lt;subtaskIndex&gt;-&lt;partFileIndex&gt;.inprogress.uid</code></li>
+<li><strong>Finished:</strong> <code>part-&lt;subtaskIndex&gt;-&lt;partFileIndex&gt;</code></li>
+</ul>
+<p>Use <code>OutputFileConfig</code> to customize a prefix and&#x2F;or  a suffix for part files. For example for a prefix “prefix” and a suffix “.ext” the sink will create the following files:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">└── 2019-08-25--12</span><br><span class="line">    ├── prefix-0-0.ext</span><br><span class="line">    ├── prefix-0-1.ext.inprogress.bd053eb0-5ecf-4c85-8433-9eff486ac334</span><br><span class="line">    ├── prefix-1-0.ext</span><br><span class="line">    └── prefix-1-1.ext.inprogress.bc279efe-b16f-47d8-b828-00ef6e2fbd11</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">OutputFileConfig</span> <span class="variable">config</span> <span class="operator">=</span> OutputFileConfig</span><br><span class="line"> .builder()</span><br><span class="line"> .withPartPrefix(<span class="string">&quot;prefix&quot;</span>)</span><br><span class="line"> .withPartSuffix(<span class="string">&quot;.ext&quot;</span>)</span><br><span class="line"> .build();</span><br><span class="line">            </span><br><span class="line">StreamingFileSink&lt;Tuple2&lt;Integer, Integer&gt;&gt; sink = StreamingFileSink</span><br><span class="line"> .forRowFormat((<span class="keyword">new</span> <span class="title class_">Path</span>(outputPath), <span class="keyword">new</span> <span class="title class_">SimpleStringEncoder</span>&lt;&gt;(<span class="string">&quot;UTF-8&quot;</span>))</span><br><span class="line"> .withBucketAssigner(<span class="keyword">new</span> <span class="title class_">KeyBucketAssigner</span>())</span><br><span class="line"> .withRollingPolicy(OnCheckpointRollingPolicy.build())</span><br><span class="line"> .withOutputFileConfig(config)</span><br><span class="line"> .build();</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="StreamingFileSink-Implementation-1"><a href="#StreamingFileSink-Implementation-1" class="headerlink" title="StreamingFileSink Implementation"></a>StreamingFileSink Implementation</h1><p>StreamingFileSink的定义如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public class StreamingFileSink&lt;IN&gt;</span><br><span class="line">		extends RichSinkFunction&lt;IN&gt;</span><br><span class="line">		implements CheckpointedFunction, CheckpointListener, ProcessingTimeCallback</span><br></pre></td></tr></table></figure>
+
+<p>用于存储状态的描述符，主要有两种状态：</p>
+<ul>
+<li>每个Bucket的状态</li>
+<li>每个subtask的Part File的状态</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ListStateDescriptor&lt;<span class="type">byte</span>[]&gt; BUCKET_STATE_DESC =</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">ListStateDescriptor</span>&lt;&gt;(<span class="string">&quot;bucket-states&quot;</span>, BytePrimitiveArraySerializer.INSTANCE);</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> ListState&lt;<span class="type">byte</span>[]&gt; bucketStates;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ListStateDescriptor&lt;Long&gt; MAX_PART_COUNTER_STATE_DESC =</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">ListStateDescriptor</span>&lt;&gt;(<span class="string">&quot;max-part-counter&quot;</span>, LongSerializer.INSTANCE);</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> ListState&lt;Long&gt; maxPartCountersState;</span><br></pre></td></tr></table></figure>
+
+<p>配置和运行时：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The sink will check periodically and roll the part file if the specified rolling policy says so</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">long</span> bucketCheckInterval;</span><br><span class="line"><span class="comment">// BulckBuilder used to create new Buckets</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> StreamingFileSink.BucketsBuilder&lt;IN, ?, ? <span class="keyword">extends</span> <span class="title class_">BucketsBuilder</span>&lt;IN, ?, ?&gt;&gt; bucketsBuilder;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> Buckets&lt;IN, ?&gt; buckets;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> ProcessingTimeService processingTimeService;</span><br></pre></td></tr></table></figure>
+
+<p>StreamingFileSink中定义了BucketsBuilder抽象类，用于创建Buckets：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">abstract</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">BucketsBuilder</span>&lt;IN, BucketID, T <span class="keyword">extends</span> <span class="title class_">BucketsBuilder</span>&lt;IN, BucketID, T&gt;&gt; <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">	<span class="comment">// createBuckets</span></span><br><span class="line">  <span class="keyword">abstract</span> Buckets&lt;IN, BucketID&gt; <span class="title function_">createBuckets</span><span class="params">(<span class="keyword">final</span> <span class="type">int</span> subtaskIndex)</span> <span class="keyword">throws</span> IOException;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>并为RowFormat和BulkFormat两种格式提供了DefaultRowFormatBuilder和DefaultBulkFormatBulder两种实现。两者都需要配置：</p>
+<ol>
+<li>PartFileWriter，对于RowFormat各种，采用RowWisePartWriter，RowWisePartWriter中包含了Encoder用于对于Row进行编码；而对于BulkFormat，则是利用BulkPartWriter来完成。RowWisePartWriter和BulkPartWriter都是PartFileWriter的具体实现</li>
+<li>BucketAssigner</li>
+<li>RollingPolicy，RowFormat可以有多种RollingPolicy，但是对于BulkFormat只能为CheckpointRollingPolicy。</li>
+<li>BucketFactory</li>
+<li>BucketCheckInterval</li>
+<li>OutputFileConfig</li>
+</ol>
+<p>具体的关于所有Bucket的操作由Buckets完成。</p>
+<h2 id="Buckets-1"><a href="#Buckets-1" class="headerlink" title="Buckets"></a>Buckets</h2><p>Buckets用于管理处于StreamingFileSink中处于活跃状态的Bucket，封装了所有Bucket相关的操作，是StreamingFileSink的核心。每个subtask都会创建一个Buckets，各个subtask相互独立。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Buckets</span>&lt;IN, BucketID&gt; &#123;</span><br><span class="line">  <span class="comment">// Base path of these buckets</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Path basePath;</span><br><span class="line">  <span class="comment">// Used to create a new bucket</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> BucketFactory&lt;IN, BucketID&gt; bucketFactory;</span><br><span class="line">  <span class="comment">// Assign records to a bucket</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> BucketAssigner&lt;IN, BucketID&gt; bucketAssigner;</span><br><span class="line">  <span class="comment">// PartialFileWriterFactory for creating in-progress write files</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> PartFileWriter.PartFileFactory&lt;IN, BucketID&gt; partFileWriterFactory;</span><br><span class="line">  <span class="comment">// Rolling policy</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RollingPolicy&lt;IN, BucketID&gt; rollingPolicy;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> subtaskIndex;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Buckets.BucketerContext bucketerContext;</span><br><span class="line">  <span class="comment">// Active Buckets</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;BucketID, Bucket&lt;IN, BucketID&gt;&gt; activeBuckets;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">long</span> maxPartCounter;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RecoverableWriter fsWriter;</span><br><span class="line">  <span class="comment">// OutputFileConfig for customizing prefix and suffix</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> OutputFileConfig outputFileConfig;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Buckets的onElement()方法完成对记录的写入：</p>
+<ol>
+<li>根据BucketAssigner得到记录的BucketID</li>
+<li>根据BucketID获取或创建对应的Bucket</li>
+<li>向Bucket中写入记录</li>
+<li>更新maxPartCounter，因为新写入的记录可能会写入到一个全新的Part File中，所以需要更新</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Bucket&lt;IN, BucketID&gt; <span class="title function_">onElement</span><span class="params">(<span class="keyword">final</span> IN value, <span class="keyword">final</span> SinkFunction.Context context)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">long</span> <span class="variable">currentProcessingTime</span> <span class="operator">=</span> context.currentProcessingTime();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// setting the values in the bucketer context</span></span><br><span class="line">  bucketerContext.update(</span><br><span class="line">    context.timestamp(),</span><br><span class="line">    context.currentWatermark(),</span><br><span class="line">    currentProcessingTime);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="type">BucketID</span> <span class="variable">bucketId</span> <span class="operator">=</span> bucketAssigner.getBucketId(value, bucketerContext);</span><br><span class="line">  <span class="comment">// BucketFactory will be responsible for creating new buckets</span></span><br><span class="line">  <span class="keyword">final</span> Bucket&lt;IN, BucketID&gt; bucket = getOrCreateBucketForBucketId(bucketId);</span><br><span class="line">  bucket.write(value, currentProcessingTime);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// we update the global max counter here because as buckets become inactive and</span></span><br><span class="line">  <span class="comment">// get removed from the list of active buckets, at the time when we want to create</span></span><br><span class="line">  <span class="comment">// another part file for the bucket, if we start from 0 we may overwrite previous parts.</span></span><br><span class="line">  <span class="built_in">this</span>.maxPartCounter = Math.max(maxPartCounter, bucket.getPartCounter());</span><br><span class="line">  <span class="keyword">return</span> bucket;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Buckets-States"><a href="#Buckets-States" class="headerlink" title="Buckets States"></a>Buckets States</h3><p>Buckets描述了如何处理”bucket-states”和”max-part-counter”两种ListState类型的状态。</p>
+<h4 id="initializeState"><a href="#initializeState" class="headerlink" title="initializeState()"></a>initializeState()</h4><p>对于”max-part-counter”状态，选择之前所有子任务的最大的PartCounter作为新的maxPartCounter，从而避免覆盖历史数据：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">initializePartCounter</span><span class="params">(<span class="keyword">final</span> ListState&lt;Long&gt; partCounterState)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="type">long</span> <span class="variable">maxCounter</span> <span class="operator">=</span> <span class="number">0L</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">long</span> partCounter: partCounterState.get()) &#123;</span><br><span class="line">    maxCounter = Math.max(partCounter, maxCounter);</span><br><span class="line">  &#125;</span><br><span class="line">  maxPartCounter = maxCounter;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于”bucket-states”状态，需要恢复snapshot中处于Active状态的Buckets：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">initializeActiveBuckets</span><span class="params">(<span class="keyword">final</span> ListState&lt;<span class="type">byte</span>[]&gt; bucketStates)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">byte</span>[] serializedRecoveredState : bucketStates.get()) &#123;</span><br><span class="line">    ....</span><br><span class="line">    handleRestoredBucketState(recoveredState);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">handleRestoredBucketState</span><span class="params">(<span class="keyword">final</span> BucketState&lt;BucketID&gt; recoveredState)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">BucketID</span> <span class="variable">bucketId</span> <span class="operator">=</span> recoveredState.getBucketId();</span><br><span class="line">  <span class="keyword">final</span> Bucket&lt;IN, BucketID&gt; restoredBucket = bucketFactory</span><br><span class="line">    .restoreBucket(......);</span><br><span class="line">  updateActiveBucketId(bucketId, restoredBucket);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">updateActiveBucketId</span><span class="params">(<span class="keyword">final</span> BucketID bucketId, <span class="keyword">final</span> Bucket&lt;IN, BucketID&gt; restoredBucket)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  <span class="comment">// Only restore active buckets</span></span><br><span class="line">  <span class="keyword">if</span> (!restoredBucket.isActive()) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">final</span> Bucket&lt;IN, BucketID&gt; bucket = activeBuckets.get(bucketId);</span><br><span class="line">  <span class="comment">// If the bucket already exists, we need to merge the two buckets with same bucektId</span></span><br><span class="line">  <span class="keyword">if</span> (bucket != <span class="literal">null</span>) &#123;</span><br><span class="line">    bucket.merge(restoredBucket);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    activeBuckets.put(bucketId, restoredBucket);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="snapshotState"><a href="#snapshotState" class="headerlink" title="snapshotState()"></a>snapshotState()</h4><p>在对Buckets的状态进行快照时，需要保存”max-part-counter”和”bucket-states”两种状态：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">snapshotState</span><span class="params">(</span></span><br><span class="line"><span class="params">  <span class="keyword">final</span> <span class="type">long</span> checkpointId,</span></span><br><span class="line"><span class="params">  <span class="keyword">final</span> ListState&lt;<span class="type">byte</span>[]&gt; bucketStatesContainer,</span></span><br><span class="line"><span class="params">  <span class="keyword">final</span> ListState&lt;Long&gt; partCounterStateContainer)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  Preconditions.checkState(</span><br><span class="line">    fsWriter != <span class="literal">null</span> &amp;&amp; bucketStateSerializer != <span class="literal">null</span>,</span><br><span class="line">    <span class="string">&quot;sink has not been initialized&quot;</span>);</span><br><span class="line">  <span class="comment">// Clear state containers</span></span><br><span class="line">  bucketStatesContainer.clear();</span><br><span class="line">  partCounterStateContainer.clear();</span><br><span class="line">  <span class="comment">// Snapshot all active buckets</span></span><br><span class="line">  snapshotActiveBuckets(checkpointId, bucketStatesContainer);</span><br><span class="line">  <span class="comment">// Snapshot the maxPartCounter</span></span><br><span class="line">  partCounterStateContainer.add(maxPartCounter);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>snapshotActiveBuckets()会遍历所有Active的Buckets，然后通过Bucket.onReceptionOfCheckpoint(id)获取该Bucket的状态，并进行序列化：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">snapshotActiveBuckets</span><span class="params">(</span></span><br><span class="line"><span class="params">  <span class="keyword">final</span> <span class="type">long</span> checkpointId,</span></span><br><span class="line"><span class="params">  <span class="keyword">final</span> ListState&lt;<span class="type">byte</span>[]&gt; bucketStatesContainer)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="keyword">for</span> (Bucket&lt;IN, BucketID&gt; bucket : activeBuckets.values()) &#123;</span><br><span class="line">    <span class="keyword">final</span> BucketState&lt;BucketID&gt; bucketState = bucket.onReceptionOfCheckpoint(checkpointId);</span><br><span class="line">    <span class="keyword">final</span> <span class="type">byte</span>[] serializedBucketState = SimpleVersionedSerialization</span><br><span class="line">      .writeVersionAndSerialize(bucketStateSerializer, bucketState);</span><br><span class="line">    bucketStatesContainer.add(serializedBucketState);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Bucket"><a href="#Bucket" class="headerlink" title="Bucket"></a>Bucket</h2><p>Bucket负责具体的记录的写入和对Part File的管理。该Bucket下的所有Part Files都写入到bucketPath下面，Part File的命令规则由OutputFileConfig来配置，rolling由rolling policy控制。对于Part Flies命令和生命周期可以参考上文的Part File lifecyle部分。</p>
+<p>Bucket还需要维护处于in Progress状态的Part Files和处于准备好提交的Pending Part Files。记录的写入由PartFileWriter负责，在创建新的Part File时，使用PartFileWriter.PartFileFactory。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Bucket</span>&lt;IN, BucketID&gt; &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> BucketID bucketId;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> Path bucketPath;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> subtaskIndex;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">long</span> partCounter;</span><br><span class="line">	</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> PartFileWriter.PartFileFactory&lt;IN, BucketID&gt; partFileFactory;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> RecoverableWriter fsWriter;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> RollingPolicy&lt;IN, BucketID&gt; rollingPolicy;</span><br><span class="line">  </span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> OutputFileConfig outputFileConfig;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> NavigableMap&lt;Long, ResumeRecoverable&gt; resumablesPerCheckpoint;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> NavigableMap&lt;Long, List&lt;CommitRecoverable&gt;&gt; pendingPartsPerCheckpoint;</span><br><span class="line">	<span class="meta">@Nullable</span></span><br><span class="line">	<span class="keyword">private</span> PartFileWriter&lt;IN, BucketID&gt; inProgressPart;</span><br><span class="line">	<span class="keyword">private</span> List&lt;CommitRecoverable&gt; pendingPartsForCurrentCheckpoint;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Bucket-States"><a href="#Bucket-States" class="headerlink" title="Bucket States"></a>Bucket States</h3><p>当Bucket恢复时，会去恢复处于in progess和commit pending状态下的文件：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">restoreInProgressFile</span><span class="params">(<span class="keyword">final</span> BucketState&lt;BucketID&gt; state)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  <span class="keyword">if</span> (!state.hasInProgressResumableFile()) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// we try to resume the previous in-progress file</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">ResumeRecoverable</span> <span class="variable">resumable</span> <span class="operator">=</span> state.getInProgressResumableFile();</span><br><span class="line">  <span class="keyword">if</span> (fsWriter.supportsResume()) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">RecoverableFsDataOutputStream</span> <span class="variable">stream</span> <span class="operator">=</span> fsWriter.recover(resumable);</span><br><span class="line">    inProgressPart = partFileFactory.resumeFrom(</span><br><span class="line">      bucketId, stream, resumable, state.getInProgressFileCreationTime());</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// if the writer does not support resume, then we close the</span></span><br><span class="line">    <span class="comment">// in-progress part and commit it, as done in the case of pending files.</span></span><br><span class="line">    fsWriter.recoverForCommit(resumable).commitAfterRecovery();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">commitRecoveredPendingFiles</span><span class="params">(<span class="keyword">final</span> BucketState&lt;BucketID&gt; state)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  <span class="comment">// we commit pending files for checkpoints that precess the last successful one, from which we are recovering</span></span><br><span class="line">  <span class="keyword">for</span> (List&lt;CommitRecoverable&gt; committables: state.getCommittableFilesPerCheckpoint().values()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (CommitRecoverable committable: committables) &#123;</span><br><span class="line">      fsWriter.recoverForCommit(committable).commitAfterRecovery();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Checkpoint-Rolling"><a href="#Checkpoint-Rolling" class="headerlink" title="Checkpoint Rolling"></a>Checkpoint Rolling</h4><p>当收到一个新的Checkpoint，采用onReceptionOfCheckpoint()构建该Bucket的BucketState：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">BucketState&lt;BucketID&gt; <span class="title function_">onReceptionOfCheckpoint</span><span class="params">(<span class="type">long</span> checkpointId)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  <span class="comment">// Close current inProgressPart only if we need to roll the inProgressPart and add pendingPartsForCurrentCheckpoint into pendingPartsPerCheckpoint</span></span><br><span class="line">  prepareBucketForCheckpointing(checkpointId);</span><br><span class="line"></span><br><span class="line">  <span class="type">ResumeRecoverable</span> <span class="variable">inProgressResumable</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  <span class="type">long</span> <span class="variable">inProgressFileCreationTime</span> <span class="operator">=</span> Long.MAX_VALUE;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (inProgressPart != <span class="literal">null</span>) &#123;</span><br><span class="line">    inProgressResumable = inProgressPart.persist();</span><br><span class="line">    inProgressFileCreationTime = inProgressPart.getCreationTime();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// the following is an optimization so that writers that do not</span></span><br><span class="line">    <span class="comment">// require cleanup, they do not have to keep track of resumables</span></span><br><span class="line">    <span class="comment">// and later iterate over the active buckets.</span></span><br><span class="line">    <span class="comment">// (see onSuccessfulCompletionOfCheckpoint())</span></span><br><span class="line">    <span class="keyword">if</span> (fsWriter.requiresCleanupOfRecoverableState()) &#123;</span><br><span class="line">      <span class="built_in">this</span>.resumablesPerCheckpoint.put(checkpointId, inProgressResumable);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">BucketState</span>&lt;&gt;(bucketId, bucketPath, inProgressFileCreationTime, inProgressResumable, pendingPartsPerCheckpoint);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>BucketState包含本次checkpoint中pendingParts以及inProgressPart的inProgressResumable信息。如果checkpoint成功完成，那么会提交位于pendingPartsPerCheckpoint中本次checkpoint的所有Part Files：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">onSuccessfulCompletionOfCheckpoint</span><span class="params">(<span class="type">long</span> checkpointId)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  checkNotNull(fsWriter);</span><br><span class="line"></span><br><span class="line">  Iterator&lt;Map.Entry&lt;Long, List&lt;CommitRecoverable&gt;&gt;&gt; it =</span><br><span class="line">    pendingPartsPerCheckpoint.headMap(checkpointId, <span class="literal">true</span>)</span><br><span class="line">    .entrySet().iterator();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (it.hasNext()) &#123;</span><br><span class="line">    Map.Entry&lt;Long, List&lt;CommitRecoverable&gt;&gt; entry = it.next();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (CommitRecoverable committable : entry.getValue()) &#123;</span><br><span class="line">      fsWriter.recoverForCommit(committable).commit();</span><br><span class="line">    &#125;</span><br><span class="line">    it.remove();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Also clean up the inProgressResumable files</span></span><br><span class="line">  cleanupOutdatedResumables(checkpointId);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Process-Time-Rolling"><a href="#Process-Time-Rolling" class="headerlink" title="Process Time Rolling"></a>Process Time Rolling</h4><p>Process time rolling相对比较简单，每次收到onProcessingTime的信息时，判断是否需要进行Rolling，如果需要直接关闭inProgressPart File：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void onProcessingTime(long timestamp) throws IOException &#123;</span><br><span class="line">	if (inProgressPart != null &amp;&amp; rollingPolicy.shouldRollOnProcessingTime(inProgressPart, timestamp)) &#123;</span><br><span class="line">		closePartFile();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Part-File"><a href="#Part-File" class="headerlink" title="Part File"></a>Part File</h3><p>当有记录来时，首先检查当前的inProgressPart如果null或者需要rolling，那么会执行rollPartFile()来关闭当前的inProgressPart，并新建一个Part File：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">write</span><span class="params">(IN element, <span class="type">long</span> currentTime)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  <span class="keyword">if</span> (inProgressPart == <span class="literal">null</span> || rollingPolicy.shouldRollOnEvent(inProgressPart, element)) &#123;</span><br><span class="line">    rollPartFile(currentTime);</span><br><span class="line">  &#125;</span><br><span class="line">  inProgressPart.write(element, currentTime);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">rollPartFile</span><span class="params">(<span class="keyword">final</span> <span class="type">long</span> currentTime)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  closePartFile();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="type">Path</span> <span class="variable">partFilePath</span> <span class="operator">=</span> assembleNewPartPath();</span><br><span class="line">  <span class="keyword">final</span> <span class="type">RecoverableFsDataOutputStream</span> <span class="variable">stream</span> <span class="operator">=</span> fsWriter.open(partFilePath);</span><br><span class="line">  inProgressPart = partFileFactory.openNew(bucketId, stream, partFilePath, currentTime);</span><br><span class="line">  partCounter++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// The part file name pattern:</span></span><br><span class="line"><span class="keyword">private</span> Path <span class="title function_">assembleNewPartPath</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Path</span>(bucketPath, outputFileConfig.getPartPrefix() + <span class="string">&#x27;-&#x27;</span> + subtaskIndex + <span class="string">&#x27;-&#x27;</span> + partCounter + outputFileConfig.getPartSuffix());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>closePartFile()在关闭inProgressPart时，会将其加入到pendingPartsForCurrentCheckpoint中，从而在下次checkpoint的时候进行提交：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> CommitRecoverable <span class="title function_">closePartFile</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  <span class="type">CommitRecoverable</span> <span class="variable">committable</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">if</span> (inProgressPart != <span class="literal">null</span>) &#123;</span><br><span class="line">    committable = inProgressPart.closeForCommit();</span><br><span class="line">    pendingPartsForCurrentCheckpoint.add(committable);</span><br><span class="line">    inProgressPart = <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> committable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="FileSystemTableSink"><a href="#FileSystemTableSink" class="headerlink" title="FileSystemTableSink"></a>FileSystemTableSink</h1><p>FileSytemTableSink是Flink向FileSystem输出表的Sink，支持流式和批处理的方式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileSystemTableSink</span> <span class="keyword">implements</span></span><br><span class="line">		<span class="title class_">AppendStreamTableSink</span>&lt;RowData&gt;,</span><br><span class="line">		PartitionableTableSink,</span><br><span class="line">		OverwritableTableSink &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FileSystemTableSink支持分区、Overwrite和Appending。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> DataStreamSink&lt;RowData&gt; <span class="title function_">consumeDataStream</span><span class="params">(DataStream&lt;RowData&gt; dataStream)</span> &#123;</span><br><span class="line">  <span class="type">RowDataPartitionComputer</span> <span class="variable">computer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RowDataPartitionComputer</span>(</span><br><span class="line">    defaultPartName,</span><br><span class="line">    schema.getFieldNames(),</span><br><span class="line">    schema.getFieldDataTypes(),</span><br><span class="line">    partitionKeys.toArray(<span class="keyword">new</span> <span class="title class_">String</span>[<span class="number">0</span>]));</span><br><span class="line"></span><br><span class="line">  <span class="type">EmptyMetaStoreFactory</span> <span class="variable">metaStoreFactory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">EmptyMetaStoreFactory</span>(path);</span><br><span class="line">  <span class="type">OutputFileConfig</span> <span class="variable">outputFileConfig</span> <span class="operator">=</span> OutputFileConfig.builder()</span><br><span class="line">    .withPartPrefix(<span class="string">&quot;part-&quot;</span> + UUID.randomUUID().toString())</span><br><span class="line">    .build();</span><br><span class="line">  <span class="type">FileSystemFactory</span> <span class="variable">fsFactory</span> <span class="operator">=</span> FileSystem::get;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isBounded) &#123;</span><br><span class="line">    FileSystemOutputFormat.Builder&lt;RowData&gt; builder = <span class="keyword">new</span> <span class="title class_">FileSystemOutputFormat</span>.Builder&lt;&gt;();</span><br><span class="line">    builder.setPartitionComputer(computer);</span><br><span class="line">    builder.setDynamicGrouped(dynamicGrouping);</span><br><span class="line">    builder.setPartitionColumns(partitionKeys.toArray(<span class="keyword">new</span> <span class="title class_">String</span>[<span class="number">0</span>]));</span><br><span class="line">    builder.setFormatFactory(createOutputFormatFactory());</span><br><span class="line">    builder.setMetaStoreFactory(metaStoreFactory);</span><br><span class="line">    builder.setFileSystemFactory(fsFactory);</span><br><span class="line">    builder.setOverwrite(overwrite);</span><br><span class="line">    builder.setStaticPartitions(staticPartitions);</span><br><span class="line">    builder.setTempPath(toStagingPath());</span><br><span class="line">    builder.setOutputFileConfig(outputFileConfig);</span><br><span class="line">    <span class="keyword">return</span> dataStream.writeUsingOutputFormat(builder.build())</span><br><span class="line">      .setParallelism(dataStream.getParallelism());</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="type">Configuration</span> <span class="variable">conf</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Configuration</span>();</span><br><span class="line">    properties.forEach(conf::setString);</span><br><span class="line">    <span class="type">Object</span> <span class="variable">writer</span> <span class="operator">=</span> createWriter();</span><br><span class="line">    <span class="type">TableBucketAssigner</span> <span class="variable">assigner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TableBucketAssigner</span>(computer);</span><br><span class="line">    <span class="type">TableRollingPolicy</span> <span class="variable">rollingPolicy</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TableRollingPolicy</span>(</span><br><span class="line">      !(writer <span class="keyword">instanceof</span> Encoder),</span><br><span class="line">      conf.get(SINK_ROLLING_POLICY_FILE_SIZE).getBytes(),</span><br><span class="line">      conf.get(SINK_ROLLING_POLICY_ROLLOVER_INTERVAL).toMillis());</span><br><span class="line"></span><br><span class="line">    BucketsBuilder&lt;RowData, String, ? <span class="keyword">extends</span> <span class="title class_">BucketsBuilder</span>&lt;RowData, ?, ?&gt;&gt; bucketsBuilder;</span><br><span class="line">    <span class="comment">// RowFormatData</span></span><br><span class="line">    <span class="keyword">if</span> (writer <span class="keyword">instanceof</span> Encoder) &#123;</span><br><span class="line">      bucketsBuilder = StreamingFileSink.forRowFormat(</span><br><span class="line">        path, <span class="keyword">new</span> <span class="title class_">ProjectionEncoder</span>((Encoder&lt;RowData&gt;) writer, computer))</span><br><span class="line">        .withBucketAssigner(assigner)</span><br><span class="line">        .withOutputFileConfig(outputFileConfig)</span><br><span class="line">        .withRollingPolicy(rollingPolicy);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// BulkFormat  </span></span><br><span class="line">      bucketsBuilder = StreamingFileSink.forBulkFormat(</span><br><span class="line">        path, <span class="keyword">new</span> <span class="title class_">ProjectionBulkFactory</span>((BulkWriter.Factory&lt;RowData&gt;) writer, computer))</span><br><span class="line">        .withBucketAssigner(assigner)</span><br><span class="line">        .withOutputFileConfig(outputFileConfig)</span><br><span class="line">        .withRollingPolicy(rollingPolicy);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> createStreamingSink(</span><br><span class="line">      conf,</span><br><span class="line">      path,</span><br><span class="line">      partitionKeys,</span><br><span class="line">      tableIdentifier,</span><br><span class="line">      overwrite,</span><br><span class="line">      dataStream,</span><br><span class="line">      bucketsBuilder,</span><br><span class="line">      metaStoreFactory,</span><br><span class="line">      fsFactory,</span><br><span class="line">      conf.get(SINK_ROLLING_POLICY_CHECK_INTERVAL).toMillis());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于批处理数据，则是构建FileSystemOutputFormat，让各个subtask根据FileSystemOutputFormat进行写入。对于流式数据，基于StreamingFileWriter和StreamingFileCommitter。其中StreamingFileWriter是StreamingFlieSink的operator版本，StreamingFileWriter会发送commit信息给下游的StreamingFileCommitter进行提交。</p>
+<p>StreamingFileCommitter，用于提交写入的文件，目前支持两种方式(SINK_PARTITION_COMMIT_POLICY_KIND: sink.partition-commit.policy.kind)：</p>
+<ul>
+<li>metastore</li>
+<li>success-file</li>
+</ul>
+<h2 id="Streaming-FileSystem"><a href="#Streaming-FileSystem" class="headerlink" title="Streaming FileSystem"></a>Streaming FileSystem</h2><p>对于流式数据，会根据createStreamingSink()创建：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> DataStreamSink&lt;RowData&gt; <span class="title function_">createStreamingSink</span><span class="params">(....)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (overwrite) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalStateException</span>(<span class="string">&quot;Streaming mode not support overwrite.&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">StreamingFileWriter</span> <span class="variable">fileWriter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StreamingFileWriter</span>(</span><br><span class="line">    rollingCheckInterval,</span><br><span class="line">    bucketsBuilder);</span><br><span class="line">  <span class="comment">// Add StreamingFileWriter as an operator</span></span><br><span class="line">  DataStream&lt;CommitMessage&gt; writerStream = inputStream.transform(</span><br><span class="line">    StreamingFileWriter.class.getSimpleName(),</span><br><span class="line">    TypeExtractor.createTypeInfo(CommitMessage.class),</span><br><span class="line">    fileWriter).setParallelism(inputStream.getParallelism());</span><br><span class="line"></span><br><span class="line">  DataStream&lt;?&gt; returnStream = writerStream;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Create StreamingFileCommitter if configured</span></span><br><span class="line">  <span class="keyword">if</span> (partitionKeys.size() &gt; <span class="number">0</span> &amp;&amp; conf.contains(SINK_PARTITION_COMMIT_POLICY_KIND)) &#123;</span><br><span class="line">    <span class="type">StreamingFileCommitter</span> <span class="variable">committer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StreamingFileCommitter</span>(</span><br><span class="line">      path, tableIdentifier, partitionKeys, msFactory, fsFactory, conf);</span><br><span class="line">    returnStream = writerStream</span><br><span class="line">      .transform(StreamingFileCommitter.class.getSimpleName(), Types.VOID, committer)</span><br><span class="line">      .setParallelism(<span class="number">1</span>)</span><br><span class="line">      .setMaxParallelism(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> returnStream.addSink(<span class="keyword">new</span> <span class="title class_">DiscardingSink</span>()).setParallelism(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Batch-OutputFormatSinkFunction"><a href="#Batch-OutputFormatSinkFunction" class="headerlink" title="Batch OutputFormatSinkFunction"></a>Batch OutputFormatSinkFunction</h2><p>对于DataStream，可以通过writeUsingOutputFormat()方法创建一个DataStreamSink。需要注意的是，这种DataStreamSink主要是为批处理任务，所以不会有Flink的checkpoint。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> DataStreamSink&lt;T&gt; <span class="title function_">writeUsingOutputFormat</span><span class="params">(OutputFormat&lt;T&gt; format)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> addSink(<span class="keyword">new</span> <span class="title class_">OutputFormatSinkFunction</span>&lt;&gt;(format));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="OutputFormat"><a href="#OutputFormat" class="headerlink" title="OutputFormat"></a>OutputFormat</h3><p>OutputFormat描述了输出如何消费和存储记录数据。OutputFormat的生命周期如下：</p>
+<ol>
+<li>configure(Configuration parameters)用于从对OutputFormat进行初始化，在实例化时调用一次</li>
+<li>open(int taskNumber, int numTasks)打开OutputFormat，每个并行的输出任务都会实例化一个OutputFormat</li>
+<li>writeRecord(IT record)写入数据</li>
+<li>close()关闭，用于关闭文件，通道和释放资源</li>
+</ol>
+<h3 id="OutputFormatSinkFunction"><a href="#OutputFormatSinkFunction" class="headerlink" title="OutputFormatSinkFunction"></a>OutputFormatSinkFunction</h3><p>OutputFormatSinkFunction对OutputFormat进行了简单的封装，每次调用invoke(IN record)时，通过转发给OutputFormat的writeRecord(IT record)写入：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">invoke</span><span class="params">(IN record)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    format.writeRecord(record);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">    cleanup();</span><br><span class="line">    <span class="keyword">throw</span> ex;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/11/03/Flink-Flink-Scheduler/" title= "Flink Scheduler">
+                    <div class="nextTitle">Flink Scheduler</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/09/17/Calcite-Planner/" title= "Calcite SQL Planner">
+                    <div class="prevTitle">Calcite SQL Planner</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2020/11/02/Flink-flink-file-system-connector/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink FileSystem Connector"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#FileSystem-SQL-Connector"><span class="toc-number">1.</span> <span class="toc-text">FileSystem SQL Connector</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Partition-Files"><span class="toc-number">1.1.</span> <span class="toc-text">Partition Files</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Streaming-Sinks"><span class="toc-number">1.2.</span> <span class="toc-text">Streaming Sinks</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Rolling-Policy"><span class="toc-number">1.2.1.</span> <span class="toc-text">Rolling Policy</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Partition-Commit"><span class="toc-number">1.3.</span> <span class="toc-text">Partition Commit</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Commit-Trigger"><span class="toc-number">1.3.1.</span> <span class="toc-text">Commit Trigger</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Partition-Time-Extractor"><span class="toc-number">1.3.1.1.</span> <span class="toc-text">Partition Time Extractor</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Commit-Policy"><span class="toc-number">1.3.2.</span> <span class="toc-text">Commit Policy</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Streaming-File-Sink"><span class="toc-number">2.</span> <span class="toc-text">Streaming File Sink</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#File-Formats"><span class="toc-number">2.1.</span> <span class="toc-text">File Formats</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Row-encoded-Formats"><span class="toc-number">2.1.1.</span> <span class="toc-text">Row-encoded Formats</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bulk-encoded-Formats"><span class="toc-number">2.1.2.</span> <span class="toc-text">Bulk-encoded Formats</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bucket-Assignment"><span class="toc-number">2.2.</span> <span class="toc-text">Bucket Assignment</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Rolling-Policy-1"><span class="toc-number">2.3.</span> <span class="toc-text">Rolling Policy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-file-lifecycle"><span class="toc-number">2.4.</span> <span class="toc-text">Part file lifecycle</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#StreamingFileSink-Implementation"><span class="toc-number">3.</span> <span class="toc-text">StreamingFileSink Implementation</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Buckets"><span class="toc-number">3.1.</span> <span class="toc-text">Buckets</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sink-State"><span class="toc-number">3.2.</span> <span class="toc-text">Sink State</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9C%A8snapshotState-%E4%B8%AD%EF%BC%8C%E5%B0%86"><span class="toc-number">4.</span> <span class="toc-text">在snapshotState()中，将</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#FileSystem-SQL-Connector-1"><span class="toc-number">5.</span> <span class="toc-text">FileSystem SQL Connector</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Partition-Files-1"><span class="toc-number">5.1.</span> <span class="toc-text">Partition Files</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Streaming-Sinks-1"><span class="toc-number">5.2.</span> <span class="toc-text">Streaming Sinks</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Rolling-Policy-2"><span class="toc-number">5.2.1.</span> <span class="toc-text">Rolling Policy</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Partition-Commit-1"><span class="toc-number">5.3.</span> <span class="toc-text">Partition Commit</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Commit-Trigger-1"><span class="toc-number">5.3.1.</span> <span class="toc-text">Commit Trigger</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Partition-Time-Extractor-1"><span class="toc-number">5.3.1.1.</span> <span class="toc-text">Partition Time Extractor</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Commit-Policy-1"><span class="toc-number">5.3.2.</span> <span class="toc-text">Commit Policy</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Streaming-File-Sink-1"><span class="toc-number">6.</span> <span class="toc-text">Streaming File Sink</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#File-Formats-1"><span class="toc-number">6.1.</span> <span class="toc-text">File Formats</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Row-encoded-Formats-1"><span class="toc-number">6.1.1.</span> <span class="toc-text">Row-encoded Formats</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bulk-encoded-Formats-1"><span class="toc-number">6.1.2.</span> <span class="toc-text">Bulk-encoded Formats</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bucket-Assignment-1"><span class="toc-number">6.2.</span> <span class="toc-text">Bucket Assignment</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Rolling-Policy-3"><span class="toc-number">6.3.</span> <span class="toc-text">Rolling Policy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-file-lifecycle-1"><span class="toc-number">6.4.</span> <span class="toc-text">Part file lifecycle</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#StreamingFileSink-Implementation-1"><span class="toc-number">7.</span> <span class="toc-text">StreamingFileSink Implementation</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Buckets-1"><span class="toc-number">7.1.</span> <span class="toc-text">Buckets</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Buckets-States"><span class="toc-number">7.1.1.</span> <span class="toc-text">Buckets States</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#initializeState"><span class="toc-number">7.1.1.1.</span> <span class="toc-text">initializeState()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#snapshotState"><span class="toc-number">7.1.1.2.</span> <span class="toc-text">snapshotState()</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bucket"><span class="toc-number">7.2.</span> <span class="toc-text">Bucket</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Bucket-States"><span class="toc-number">7.2.1.</span> <span class="toc-text">Bucket States</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Checkpoint-Rolling"><span class="toc-number">7.2.1.1.</span> <span class="toc-text">Checkpoint Rolling</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Process-Time-Rolling"><span class="toc-number">7.2.1.2.</span> <span class="toc-text">Process Time Rolling</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Part-File"><span class="toc-number">7.2.2.</span> <span class="toc-text">Part File</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#FileSystemTableSink"><span class="toc-number">8.</span> <span class="toc-text">FileSystemTableSink</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Streaming-FileSystem"><span class="toc-number">8.1.</span> <span class="toc-text">Streaming FileSystem</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Batch-OutputFormatSinkFunction"><span class="toc-number">8.2.</span> <span class="toc-text">Batch OutputFormatSinkFunction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#OutputFormat"><span class="toc-number">8.2.1.</span> <span class="toc-text">OutputFormat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OutputFormatSinkFunction"><span class="toc-number">8.2.2.</span> <span class="toc-text">OutputFormatSinkFunction</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

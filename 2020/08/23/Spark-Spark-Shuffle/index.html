@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Spark Shuffle · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Spark Shuffle</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Spark Shuffle
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Runtime">Runtime</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Spark">Spark</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">7.1k</span>Reading time: <span class="post-count reading-time">35 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/08/23</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="ShuffleManager"><a href="#ShuffleManager" class="headerlink" title="ShuffleManager"></a>ShuffleManager</h1><p>Driver端的SparkEnv和Executor中都持有一个ShuffleManager实例，具体的实现由<code>spark.shuffle.manager</code>配置。在Driver端对shuffle进行注册，Executors端通过ShuffleReader和ShuffleWriter读写shuffle数据。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">registerShuffle</span></span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">C</span>](</span><br><span class="line">  shuffleId: <span class="type">Int</span>,</span><br><span class="line">  numMaps: <span class="type">Int</span>,</span><br><span class="line">  dependency: <span class="type">ShuffleDependency</span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">C</span>]): <span class="type">ShuffleHandle</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getWriter</span></span>[<span class="type">K</span>, <span class="type">V</span>](handle: <span class="type">ShuffleHandle</span>, mapId: <span class="type">Int</span>, context: <span class="type">TaskContext</span>): <span class="type">ShuffleWriter</span>[<span class="type">K</span>, <span class="type">V</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getReader</span></span>[<span class="type">K</span>, <span class="type">C</span>](</span><br><span class="line">  handle: <span class="type">ShuffleHandle</span>,</span><br><span class="line">  startPartition: <span class="type">Int</span>,</span><br><span class="line">  endPartition: <span class="type">Int</span>,</span><br><span class="line">  context: <span class="type">TaskContext</span>): <span class="type">ShuffleReader</span>[<span class="type">K</span>, <span class="type">C</span>]</span><br></pre></td></tr></table></figure>
+
+<p>在Spark2.0以上版本中，只有一个ShuffleManager实现：SortShuffleManager。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">SortShuffleManager</span>(<span class="params">conf: <span class="type">SparkConf</span></span>) <span class="keyword">extends</span> <span class="title">ShuffleManager</span> <span class="keyword">with</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line">  <span class="comment">// A mapping from shuffle ids to the task ids of mappers producing output for those shuffles.</span></span><br><span class="line">  <span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">val</span> taskIdMapsForShuffle = <span class="keyword">new</span> <span class="type">ConcurrentHashMap</span>[<span class="type">Int</span>, <span class="type">OpenHashSet</span>[<span class="type">Long</span>]]()</span><br><span class="line"></span><br><span class="line">  <span class="comment">// LocalDiskShuffleExecutorComponents </span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">lazy</span> <span class="keyword">val</span> shuffleExecutorComponents = loadShuffleExecutorComponents(conf)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="keyword">val</span> shuffleBlockResolver = <span class="keyword">new</span> <span class="type">IndexShuffleBlockResolver</span>(conf)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ShuffleWriter-amp-Shuffle-Reader"><a href="#ShuffleWriter-amp-Shuffle-Reader" class="headerlink" title="ShuffleWriter &amp; Shuffle Reader"></a>ShuffleWriter &amp; Shuffle Reader</h2><p>在SortShuffleManager中，ShuffleBlockResolver的实现为IndexShuffleBlockResolver，ShuffleReader实现为BlockStoreShuffleReader，而ShuffleWriter实现按照使用条件分为三种：</p>
+<ul>
+<li><p>BypassMergeSortShuffleWriter：当ShuffleDependency的partition的数量小于<code> spark.shuffle.sort.bypassMergeThreshold</code>时使用，直接写入到<code>numPartitions</code>个文件中，之后将这些文件拼接在一起。优点是避免了合并spilled文件中需要的两次序列化和反序列化过程，缺点是需要同时打开多个文件，并且需要更多的缓存内存。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">shouldBypassMergeSort</span></span>(conf: <span class="type">SparkConf</span>, dep: <span class="type">ShuffleDependency</span>[_, _, _]): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  <span class="comment">// We cannot bypass sorting if we need to do map-side aggregation.</span></span><br><span class="line">  <span class="keyword">if</span> (dep.mapSideCombine) &#123;</span><br><span class="line">    <span class="literal">false</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> bypassMergeThreshold: <span class="type">Int</span> = conf.getInt(<span class="string">&quot;spark.shuffle.sort.bypassMergeThreshold&quot;</span>, <span class="number">200</span>)</span><br><span class="line">    dep.partitioner.numPartitions &lt;= bypassMergeThreshold</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>UnsafeShuffleWriter：将map任务的输出以序列化后的字节进行缓存，从而提高效率。能否启用通过<code>canUseSerializedShffule()</code>决定：</p>
+<ul>
+<li><p>ShuffleDependency的Serializer支持序列化的对象的移动，简单来说，Serializer是无状态的，整体改变对象序列化后的字节的顺序并不破坏对象反序列化：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// output is the serialized result of obj1 obj2</span></span><br><span class="line">obj1Bytes = output[<span class="number">0</span>:position<span class="number">-1</span>]</span><br><span class="line">obj2Bytes = output[position:position2<span class="number">-1</span>]</span><br><span class="line">serIn.open([obj2bytes] concatenate [obj1bytes]) should <span class="keyword">return</span> (obj2, obj1)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>没有开启<code>mapSideCombine</code>并且<code>numPartitions</code>小于<code>MAX_SHUFFLE_OUTPUT_PARTITIONS_FOR_SERIALIZED_MODE</code></p>
+</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">canUseSerializedShuffle</span></span>(dependency: <span class="type">ShuffleDependency</span>[_, _, _]): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> shufId = dependency.shuffleId</span><br><span class="line">  <span class="keyword">val</span> numPartitions = dependency.partitioner.numPartitions</span><br><span class="line">  <span class="keyword">if</span> (!dependency.serializer.supportsRelocationOfSerializedObjects) &#123;</span><br><span class="line">    <span class="literal">false</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (dependency.mapSideCombine) &#123;</span><br><span class="line">    <span class="literal">false</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (numPartitions &gt; <span class="type">MAX_SHUFFLE_OUTPUT_PARTITIONS_FOR_SERIALIZED_MODE</span>) &#123;</span><br><span class="line">    <span class="literal">false</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SortShuffleWriter：将map任务的输出以Java对象进行缓存，除了上述两种情况之外时使用。</p>
+</li>
+</ul>
+<p>针对这三种ShuffleWriter实现，分别提供了对应的ShuffleHandle实现：BypassMergeSortShuffleHandle，SerializedShuffleHandle和BaseShuffleHandle。</p>
+<p>ShuffleMapTask任务通过ShuffleWriter将shuffle的结果输出到磁盘以后，在任务完成时，会向MapOutputTrackerMaster注册shuffle结果，从而使得Reduce任务通过ShuffleReader读取时，可以获得对应shuffle文件的位置信息。 </p>
+<h2 id="MapOutputTrackerMaster"><a href="#MapOutputTrackerMaster" class="headerlink" title="MapOutputTrackerMaster"></a>MapOutputTrackerMaster</h2><p>在DAGScheduler中，当收到ShuffleMapTask完成的事件后，会向MapOutputTrackerMaster注册对应的shuffle文件：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> smt: <span class="type">ShuffleMapTask</span> =&gt;</span><br><span class="line">  <span class="keyword">val</span> shuffleStage = stage.asInstanceOf[<span class="type">ShuffleMapStage</span>]</span><br><span class="line">  shuffleStage.pendingPartitions -= task.partitionId</span><br><span class="line">  <span class="keyword">val</span> status = event.result.asInstanceOf[<span class="type">MapStatus</span>]</span><br><span class="line">  <span class="keyword">val</span> execId = status.location.executorId</span><br><span class="line">  <span class="keyword">if</span> (failedEpoch.contains(execId) &amp;&amp; smt.epoch &lt;= failedEpoch(execId)) &#123;</span><br><span class="line">    logInfo(<span class="string">s&quot;Ignoring possibly bogus <span class="subst">$smt</span> completion from executor <span class="subst">$execId</span>&quot;</span>)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// The epoch of the task is acceptable (i.e., the task was launched after the most recent failure we&#x27;re aware of for the executor), so mark the task&#x27;s output as available.</span></span><br><span class="line">    mapOutputTracker.registerMapOutput(</span><br><span class="line">      shuffleStage.shuffleDep.shuffleId, smt.partitionId, status)</span><br><span class="line">  &#125;</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+
+<p>注意：在MapStatus信息中包含了保存各个shuffle block的BlockManager的地址。</p>
+<p>MapOutputTrackerMaster的定义如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MapOutputTrackerMaster</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    conf: <span class="type">SparkConf</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    private[spark] val broadcastManager: <span class="type">BroadcastManager</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    private[spark] val isLocal: <span class="type">Boolean</span></span>)</span></span><br><span class="line">  <span class="keyword">extends</span> <span class="type">MapOutputTracker</span>(conf)&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>MapOutputTrackerMaster继承自MapOutputTracker，抽象类MapOutputTracker持有了一个RpcEndpointRef的引用，用于向MapOutputTrackerMasterEndpoint（Tracker）发送各种请求信息：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">askTracker</span></span>[<span class="type">T</span>: <span class="type">ClassTag</span>](message: <span class="type">Any</span>): <span class="type">T</span> = &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    trackerEndpoint.askSync[<span class="type">T</span>](message)</span><br><span class="line">  &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>MapOutputTracker需要实现<code>getMapSizesByExecutorId()</code>方法：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Called from executors to get the server URIs and output sizes for each shuffle block that</span></span><br><span class="line"><span class="comment"> * needs to be read from a given range of map output partitions (startPartition is included but</span></span><br><span class="line"><span class="comment"> * endPartition is excluded from the range).</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @return A sequence of 2-item tuples, where the first item in the tuple is a BlockManagerId,</span></span><br><span class="line"><span class="comment"> *         and the second item is a sequence of (shuffle block id, shuffle block size, map index)</span></span><br><span class="line"><span class="comment"> *         tuples describing the shuffle blocks that are stored at that block manager.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getMapSizesByExecutorId</span></span>(</span><br><span class="line">    shuffleId: <span class="type">Int</span>,</span><br><span class="line">    startPartition: <span class="type">Int</span>,</span><br><span class="line">    endPartition: <span class="type">Int</span>)</span><br><span class="line">: <span class="type">Iterator</span>[(<span class="type">BlockManagerId</span>, <span class="type">Seq</span>[(<span class="type">BlockId</span>, <span class="type">Long</span>, <span class="type">Int</span>)])]</span><br></pre></td></tr></table></figure>
+
+<p>MapOutputTracker的另外一个实现是MapOutputTrackerWorker，用于在每个Executor中获取对应的shuffle block的位置信息。MapOutputTrackerWorker会向MapOutputTrackerMaster通过RPC接口抓取对应shuffle的ShuffleStatus信息。</p>
+<p>MapOutputTrackerMaster中，使用shuffleStatues来记录所有的shuffle的状态信息。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HashMap for storing shuffleStatuses in the driver.</span></span><br><span class="line"><span class="comment">// Statuses are dropped only by explicit de-registering.</span></span><br><span class="line"><span class="comment">// Exposed for testing</span></span><br><span class="line"><span class="keyword">val</span> shuffleStatuses = <span class="keyword">new</span> <span class="type">ConcurrentHashMap</span>[<span class="type">Int</span>, <span class="type">ShuffleStatus</span>]().asScala</span><br></pre></td></tr></table></figure>
+
+<p>对外暴露了读写shuffleStatuses的方法，从而可以完成注册等操作。</p>
+<p>MapOutputTrackerMaster对外暴露了<code>getPreferredLocationsForShuffle()</code>方法，用于返回具有指定partition的block size最大的BlockManager信息。这样可以尽可能的利用数据局部性原理，减少数据的网络传输。&#96;&#96;getPreferredLocationsForShuffle()&#96;的行为由多个参数控制：</p>
+<ul>
+<li><code>spark.shuffle.reduceLocality.enabled</code>需要开启</li>
+<li>SHUFFLE_PREF_MAP_THRESHOLD和SHUFFLE_PREF_REDUCE_THRESHOLD都小于1000</li>
+<li>REDUCER_PREF_LOCS_FRACTION，返回的preferred的节点上的数据必须大于该阈值</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return the preferred hosts on which to run the given map output partition in a given shuffle,</span></span><br><span class="line"><span class="comment">   * i.e. the nodes that the most outputs for that partition are on.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">getPreferredLocationsForShuffle</span></span>(dep: <span class="type">ShuffleDependency</span>[_, _, _], partitionId: <span class="type">Int</span>)</span><br><span class="line">      : <span class="type">Seq</span>[<span class="type">String</span>] = &#123;</span><br><span class="line">    <span class="keyword">if</span> (shuffleLocalityEnabled &amp;&amp; dep.rdd.partitions.length &lt; <span class="type">SHUFFLE_PREF_MAP_THRESHOLD</span> &amp;&amp;</span><br><span class="line">        dep.partitioner.numPartitions &lt; <span class="type">SHUFFLE_PREF_REDUCE_THRESHOLD</span>) &#123;</span><br><span class="line">      <span class="keyword">val</span> blockManagerIds = getLocationsWithLargestOutputs(dep.shuffleId, partitionId,</span><br><span class="line">        dep.partitioner.numPartitions, <span class="type">REDUCER_PREF_LOCS_FRACTION</span>)</span><br><span class="line">      <span class="keyword">if</span> (blockManagerIds.nonEmpty) &#123;</span><br><span class="line">        blockManagerIds.get.map(_.host)</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="type">Nil</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="type">Nil</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>getLocationsWithLargestOutputs()</code>会查找拥有block size超过总的大小的BlockManager节点进行返回：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getLocationsWithLargestOutputs</span></span>(</span><br><span class="line">    shuffleId: <span class="type">Int</span>,</span><br><span class="line">    reducerId: <span class="type">Int</span>,</span><br><span class="line">    numReducers: <span class="type">Int</span>,</span><br><span class="line">    fractionThreshold: <span class="type">Double</span>)</span><br><span class="line">  : <span class="type">Option</span>[<span class="type">Array</span>[<span class="type">BlockManagerId</span>]] = &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> shuffleStatus = shuffleStatuses.get(shuffleId).orNull</span><br><span class="line">  <span class="keyword">if</span> (shuffleStatus != <span class="literal">null</span>) &#123;</span><br><span class="line">    shuffleStatus.withMapStatuses &#123; statuses =&gt;</span><br><span class="line">      <span class="keyword">if</span> (statuses.nonEmpty) &#123;</span><br><span class="line">        <span class="comment">// HashMap to add up sizes of all blocks at the same location</span></span><br><span class="line">        <span class="keyword">val</span> locs = <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">BlockManagerId</span>, <span class="type">Long</span>]</span><br><span class="line">        <span class="keyword">var</span> totalOutputSize = <span class="number">0</span>L</span><br><span class="line">        <span class="keyword">var</span> mapIdx = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> (mapIdx &lt; statuses.length) &#123;</span><br><span class="line">          <span class="keyword">val</span> status = statuses(mapIdx)</span><br><span class="line">          <span class="keyword">if</span> (status != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">val</span> blockSize = status.getSizeForBlock(reducerId)</span><br><span class="line">            <span class="keyword">if</span> (blockSize &gt; <span class="number">0</span>) &#123;</span><br><span class="line">              locs(status.location) = locs.getOrElse(status.location, <span class="number">0</span>L) + blockSize</span><br><span class="line">              totalOutputSize += blockSize</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">          mapIdx = mapIdx + <span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Return if we have any locations which satisfy the required threshold</span></span><br><span class="line">        <span class="keyword">val</span> topLocs = locs.filter &#123; <span class="keyword">case</span> (loc, size) =&gt;</span><br><span class="line">          size.toDouble / totalOutputSize &gt;= fractionThreshold</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (topLocs.nonEmpty) &#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="type">Some</span>(topLocs.keys.toArray)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">None</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>另外，作为Master，还需要处理来自于其他MapOutputTracker的shuffle block的位置请求：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// requests for map output statuses</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> mapOutputRequests = <span class="keyword">new</span> <span class="type">LinkedBlockingQueue</span>[<span class="type">GetMapOutputMessage</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> threadpool: <span class="type">ThreadPoolExecutor</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> numThreads = conf.get(<span class="type">SHUFFLE_MAPOUTPUT_DISPATCHER_NUM_THREADS</span>)</span><br><span class="line">  <span class="keyword">val</span> pool = <span class="type">ThreadUtils</span>.newDaemonFixedThreadPool(numThreads, <span class="string">&quot;map-output-dispatcher&quot;</span>)</span><br><span class="line">  <span class="keyword">for</span> (i &lt;- <span class="number">0</span> until numThreads) &#123;</span><br><span class="line">    pool.execute(<span class="keyword">new</span> <span class="type">MessageLoop</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  pool</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在MessageLoop中，不断的处理mapOutputRequests中的请求，并回复请求的ShuffleStatus信息给MapOutputTrackerWorker：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">MessageLoop</span> <span class="keyword">extends</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">run</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">val</span> data = mapOutputRequests.take()</span><br><span class="line">             <span class="keyword">if</span> (data == <span class="type">PoisonPill</span>) &#123;</span><br><span class="line">              <span class="comment">// Put PoisonPill back so that other MessageLoops can see it.</span></span><br><span class="line">              mapOutputRequests.offer(<span class="type">PoisonPill</span>)</span><br><span class="line">              <span class="keyword">return</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">val</span> context = data.context</span><br><span class="line">            <span class="keyword">val</span> shuffleId = data.shuffleId</span><br><span class="line">            <span class="keyword">val</span> hostPort = context.senderAddress.hostPort</span><br><span class="line">            <span class="keyword">val</span> shuffleStatus = shuffleStatuses.get(shuffleId).head</span><br><span class="line">            <span class="comment">// Reply</span></span><br><span class="line">context.reply(shuffleStatus.serializedMapStatus(broadcastManager, isLocal, minSizeForBroadcast,</span><br><span class="line">                conf))</span><br><span class="line">          &#125;</span><br><span class="line">          .....</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ShuffleStatus"><a href="#ShuffleStatus" class="headerlink" title="ShuffleStatus"></a>ShuffleStatus</h2><p>ShuffleStatus用于保存单个ShuffleMapStage的相关信息。在ShuffleStatus中，通过mapStatues来保存各个注册的Map任务shuffle输出信息：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> mapStatuses = <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">MapStatus</span>](numPartitions)</span><br></pre></td></tr></table></figure>
+
+<p>并且，通过<code>serializedMapStatus()</code>和<code>invalidateSerializedMapOutputStatusCache()</code>两个方法维护了对整个数组的序列化缓存：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">var</span> cachedSerializedMapStatus: <span class="type">Array</span>[<span class="type">Byte</span>] = _</span><br><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">var</span> cachedSerializedBroadcast: <span class="type">Broadcast</span>[<span class="type">Array</span>[<span class="type">Byte</span>]] = _</span><br></pre></td></tr></table></figure>
+
+<p>如果序列化以后数组的大小太大（由参数<code>spark.shuffle.mapOutput.minSizeForBroadcast</code>控制），会保存到Broadcast变量中。</p>
+<p>对于mapStatuses的读写操作，采用了Read-Write lock的加锁方式进行保护。</p>
+<h2 id="ShuffleBlockResolver"><a href="#ShuffleBlockResolver" class="headerlink" title="ShuffleBlockResolver"></a>ShuffleBlockResolver</h2><p>###ShuffleBlockResolver </p>
+<p>ShuffleBlockResolver用于获取ShuffleBlock的数据块，核心的方法为：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Retrieve the data for the specified block. If the data for that block is not available, throws an unspecified exception. */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getBlockData</span></span>(blockId: <span class="type">ShuffleBlockId</span>): <span class="type">ManagedBuffer</span></span><br></pre></td></tr></table></figure>
+
+<p>数据块通过ManagedBuffer返回，ManagedBuffer有三种实现：</p>
+<ul>
+<li>FileSegmentManagedBuffer：数据存储在一个文件中</li>
+<li>NioManagedBuffer：数据存储在一个NIO ByteBuffer中</li>
+<li>NettyManagedBuffer：数据存储在Netty ByteBuf中</li>
+</ul>
+<h3 id="IndexShuffleBlockResolver"><a href="#IndexShuffleBlockResolver" class="headerlink" title="IndexShuffleBlockResolver"></a>IndexShuffleBlockResolver</h3><p>ShuffleBlockResolver的实现为IndexShuffleBlockResolver。IndexShuffleBlockResolver创建并维护了ShuffleBlock和对应的物理文件位置的映射信息。来自同一个Map Task的ShuffleBlock被合并存储在一个文件中，各个ShuffleBlock的offset信息被单独存储在一个index文件中。</p>
+<p>对于数据文件，采用<code>&quot;shuffle_&quot; + shuffleId + &quot;_&quot; + mapId + &quot;_&quot; + reduceId + &quot;.data&quot;</code>的格式命名，索引文件则为：<code>&quot;shuffle_&quot; + shuffleId + &quot;_&quot; + mapId + &quot;_&quot; + reduceId + &quot;.index</code>。<strong>由于单个Map Task输出的数据块都合并在一个文件</strong>，所以<code>reduceid</code>设置为NOOP_REDUCE_ID（0）。具体的文件存储则是通过BlockManager中的DiskBlockManager完成。</p>
+<p>在<code>getBlockData()</code>中，首先获取数据块在对应Index文件中的offset，然后创建一个<code>FileSegementManagedBuffer</code>。对于每个Map Task，其输出的数据块的个数等于Reduce Task的数量。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">getBlockData</span></span>(blockId: <span class="type">BlockId</span>): <span class="type">ManagedBuffer</span> = &#123;</span><br><span class="line">  <span class="comment">// Use the reduceId to get the offset of the blockId</span></span><br><span class="line">  <span class="keyword">val</span> (shuffleId, mapId, startReduceId, endReduceId) = blockId <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> id: <span class="type">ShuffleBlockId</span> =&gt;</span><br><span class="line">    (id.shuffleId, id.mapId, id.reduceId, id.reduceId + <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">case</span> batchId: <span class="type">ShuffleBlockBatchId</span> =&gt;</span><br><span class="line">    (batchId.shuffleId, batchId.mapId, batchId.startReduceId, batchId.endReduceId)</span><br><span class="line">    <span class="keyword">case</span> _ =&gt;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">&quot;unexpected shuffle block id format: &quot;</span> + blockId)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> indexFile = getIndexFile(shuffleId, mapId)</span><br><span class="line">  <span class="keyword">val</span> channel = <span class="type">Files</span>.newByteChannel(indexFile.toPath)</span><br><span class="line">  channel.position(startReduceId * <span class="number">8</span>L)</span><br><span class="line">  <span class="keyword">val</span> in = <span class="keyword">new</span> <span class="type">DataInputStream</span>(<span class="type">Channels</span>.newInputStream(channel))</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> startOffset = in.readLong()</span><br><span class="line">    channel.position(endReduceId * <span class="number">8</span>L)</span><br><span class="line">    <span class="keyword">val</span> endOffset = in.readLong()</span><br><span class="line">    <span class="keyword">val</span> actualPosition = channel.position()</span><br><span class="line">    <span class="keyword">val</span> expectedPosition = endReduceId * <span class="number">8</span>L + <span class="number">8</span></span><br><span class="line">    <span class="keyword">if</span> (actualPosition != expectedPosition) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">Exception</span>(<span class="string">s&quot;SPARK-22982: Incorrect channel position after index file reads: &quot;</span> +</span><br><span class="line">                          <span class="string">s&quot;expected <span class="subst">$expectedPosition</span> but actual position was <span class="subst">$actualPosition</span>.&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">new</span> <span class="type">FileSegmentManagedBuffer</span>(</span><br><span class="line">      transportConf,</span><br><span class="line">      getDataFile(shuffleId, mapId),</span><br><span class="line">      startOffset,</span><br><span class="line">      endOffset - startOffset)</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    in.close()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ShuffleExecutorComponents"><a href="#ShuffleExecutorComponents" class="headerlink" title="ShuffleExecutorComponents"></a>ShuffleExecutorComponents</h2><p>ShuffleExecutorComponents接口为Executor提供Shuffle的支持，LocalDiskShuffleExecutorComponents是其实现。ShuffleExecutorComponents的<code>createMapOutputWriter()</code>用于创建一个ShuffleMapOutputWriter，使得Map可以将输出通过ShuffleMapOutputWriter写入到文件中。</p>
+<h3 id="LocalDiskShuffleMapOutputWriter"><a href="#LocalDiskShuffleMapOutputWriter" class="headerlink" title="LocalDiskShuffleMapOutputWriter"></a>LocalDiskShuffleMapOutputWriter</h3><p>LocalDiskShuffleMapOutputWriter是ShuffleMapOutputWriter的实现，用于持久化Map输出的结果，并且创建对应的索引文件。使用的步骤如下：</p>
+<ol>
+<li>首先调用<code>getPartitionWriter()</code> 获取ShufflePartitionWriter，ShufflePartitionWriter提供了打开输出流的方式，以便写入partition的数据。</li>
+<li>当所有partition的数据写入完毕后，通过<code>commitAllPartitions()</code>进行提交。提交时会调用BlockResolver生成对应的索引文件。</li>
+</ol>
+<h1 id="Shuffle-Reader"><a href="#Shuffle-Reader" class="headerlink" title="Shuffle Reader"></a>Shuffle Reader</h1><p>ShuffleReader用于在Reduce任务中读取来自多个Map任务输出的记录：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">trait</span> <span class="title">ShuffleReader</span>[<span class="type">K</span>, <span class="type">C</span>] </span>&#123;</span><br><span class="line">  <span class="comment">/** Read the combined key-values for this reduce task */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">read</span></span>(): <span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">C</span>]]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Spark只提供了一个实现：BlockStoreShuffleReader。BlockStoreShuffleReader会抓取并读取来自于其他节点block store中的shuffle block。</p>
+<p>在SortShuffleManager中，通过<code>getReader()</code>返回给Reduce任务：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Get a reader for a range of reduce partitions (startPartition to endPartition-1, inclusive).</span></span><br><span class="line"><span class="comment">   * Called on executors by reduce tasks.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">getReader</span></span>[<span class="type">K</span>, <span class="type">C</span>](</span><br><span class="line">  handle: <span class="type">ShuffleHandle</span>,</span><br><span class="line">  startPartition: <span class="type">Int</span>,</span><br><span class="line">  endPartition: <span class="type">Int</span>,</span><br><span class="line">  context: <span class="type">TaskContext</span>,</span><br><span class="line">  metrics: <span class="type">ShuffleReadMetricsReporter</span>): <span class="type">ShuffleReader</span>[<span class="type">K</span>, <span class="type">C</span>] = &#123;</span><br><span class="line">  <span class="comment">// Get block addresses from mapOutputTracker</span></span><br><span class="line">  <span class="keyword">val</span> blocksByAddress = <span class="type">SparkEnv</span>.get.mapOutputTracker.getMapSizesByExecutorId(</span><br><span class="line">    handle.shuffleId, startPartition, endPartition)</span><br><span class="line">  <span class="comment">// Create a BlockStoreShuffleReader</span></span><br><span class="line">  <span class="keyword">new</span> <span class="type">BlockStoreShuffleReader</span>(</span><br><span class="line">    handle.asInstanceOf[<span class="type">BaseShuffleHandle</span>[<span class="type">K</span>, _, <span class="type">C</span>]], blocksByAddress, context, metrics,</span><br><span class="line">    <span class="comment">// If num of partitions to fetch &gt; 1 &amp;&amp; __fetch_continuous_blocks_in_batch_enabled = true, use a batch fetch</span></span><br><span class="line">    shouldBatchFetch = canUseBatchFetch(startPartition, endPartition, context))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="BlockStoreShuffleReader"><a href="#BlockStoreShuffleReader" class="headerlink" title="BlockStoreShuffleReader"></a>BlockStoreShuffleReader</h2><p>BlockStoreShuffleReader的<code>read()</code>实现主要考虑：</p>
+<ol>
+<li>利用<code>ShuffleBlockFetcherIterator</code>从其他节点抓取Map输出的shuffle block</li>
+<li>如果定义了combine，那么会对记录利用aggregator进行聚集</li>
+<li>如果定义了Ordering，那么会利用ExternalSorter进行排序</li>
+</ol>
+<p>整个Iterator的装饰流程（Decorator pattern）：</p>
+<p>ShuffleBlockFetcherIterator –deserialize–&gt; KeyValueIterator –&gt; CompletionIterator –&gt; InterruptibleIterator –mapSideCombine–&gt; KeyValueIterator –keyOrdering–&gt; Iterator</p>
+<h3 id="ShuffleBlockFetcherIterator"><a href="#ShuffleBlockFetcherIterator" class="headerlink" title="ShuffleBlockFetcherIterator"></a>ShuffleBlockFetcherIterator</h3><p>ShuffleBlockFetcherIterator用于抓取block的迭代器，如果是本地的block，那么直接从本地的BlockManager中获取，否则通过BlockTransferService从其他节点抓取。返回的迭代器是(BlockID, Inputstream)的方式，使得调用者可以以管道的方式处理。定义如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">ShuffleBlockFetcherIterator</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">  context: <span class="type">TaskContext</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">  shuffleClient: <span class="type">BlockStoreClient</span>, // <span class="type">For</span> fetching remote blocks</span></span></span><br><span class="line"><span class="params"><span class="class">  blockManager: <span class="type">BlockManager</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">  blocksByAddress: <span class="type">Iterator</span>[(<span class="type">BlockManagerId</span>, <span class="type">Seq</span>[(<span class="type">BlockId</span>, <span class="type">Long</span>, <span class="type">Int</span></span>)])], <span class="comment">// Locations of blocks</span></span></span><br><span class="line">  streamWrapper: (<span class="type">BlockId</span>, <span class="type">InputStream</span>) =&gt; <span class="type">InputStream</span>,</span><br><span class="line">  maxBytesInFlight: <span class="type">Long</span>, <span class="comment">// Max size (in bytes) of remote blocks to fetch at any given point</span></span><br><span class="line">  maxReqsInFlight: <span class="type">Int</span>, <span class="comment">// Max number of remote requests to fetch blocks at any given point.</span></span><br><span class="line">  maxBlocksInFlightPerAddress: <span class="type">Int</span>,</span><br><span class="line">  maxReqSizeShuffleToMem: <span class="type">Long</span>,</span><br><span class="line">  detectCorrupt: <span class="type">Boolean</span>,</span><br><span class="line">  detectCorruptUseExtraMemory: <span class="type">Boolean</span>,</span><br><span class="line">  shuffleMetrics: <span class="type">ShuffleReadMetricsReporter</span>,</span><br><span class="line">  doBatchFetch: <span class="type">Boolean</span>)</span><br><span class="line"><span class="keyword">extends</span> <span class="type">Iterator</span>[(<span class="type">BlockId</span>, <span class="type">InputStream</span>)] <span class="keyword">with</span> <span class="type">DownloadFileManager</span> <span class="comment">//  A manager to create temp block files used when fetching remote data to reduce the memory usage.</span></span><br><span class="line"><span class="keyword">with</span> <span class="type">Logging</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ShuffleBlockFetcherIterator实现的难点是带宽控制，提供了下面的参数：</p>
+<ul>
+<li><p>maxBytesInFlight &amp; maxReqsInFlight，在每次发请求以前，会根据<code>isRemoteBlockFetchable()</code>进行判断：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">isRemoteBlockFetchable</span></span>(fetchReqQueue: <span class="type">Queue</span>[<span class="type">FetchRequest</span>]): <span class="type">Boolean</span> = &#123;</span><br><span class="line">      fetchReqQueue.nonEmpty &amp;&amp;</span><br><span class="line">        (bytesInFlight == <span class="number">0</span> ||</span><br><span class="line">          (reqsInFlight + <span class="number">1</span> &lt;= maxReqsInFlight &amp;&amp;</span><br><span class="line">            bytesInFlight + fetchReqQueue.front.size &lt;= maxBytesInFlight))</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>maxBlocksInFlightPerAddress，<code>numBlocksInFlightPerAddress = new HashMap[BlockManagerId, Int]()</code>来保存每个BlockManager的带宽使用情况，在每次发送请求之前，都会检查是否超过了对应BlockManager的带宽阈值：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">isRemoteAddressMaxedOut</span></span>(remoteAddress: <span class="type">BlockManagerId</span>, request: <span class="type">FetchRequest</span>): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  numBlocksInFlightPerAddress.getOrElse(remoteAddress, <span class="number">0</span>) + request.blocks.size &gt;</span><br><span class="line">    maxBlocksInFlightPerAddress</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>maxReqSizeShuffleToMem，如果单个请求的字节大小超过了该阈值，会将结果先写入磁盘中。</p>
+</li>
+</ul>
+<p>保证请求block时，占用的网络带宽不超过一定的阈值。如果某个请求由于带宽限制，不能发送请求，会加入到defferredFetchRequests中：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">val</span> deferredFetchRequests = <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">BlockManagerId</span>, <span class="type">Queue</span>[<span class="type">FetchRequest</span>]]()</span><br></pre></td></tr></table></figure>
+
+<p>在下次发送时，会优先发送defferredFetchRequests中的请求。</p>
+<p>在<code>initialize()</code>时，会首先利用<code>splitLocalRemoteBlocks()</code>对请求的block按照是否是本地的block进行分类，并构建请求。之后，会先请求位于其他节点上的block，然后在获取本地的block：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="function"><span class="keyword">def</span> <span class="title">initialize</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="comment">// Add a task completion callback (called in both success case and failure case) to cleanup.</span></span><br><span class="line">  context.addTaskCompletionListener(onCompleteCallback)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Split local and remote blocks.</span></span><br><span class="line">  <span class="keyword">val</span> remoteRequests = splitLocalRemoteBlocks()</span><br><span class="line">  <span class="comment">// Add the remote requests into our queue in a random order</span></span><br><span class="line">  fetchRequests ++= <span class="type">Utils</span>.randomize(remoteRequests)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// Send out initial requests for blocks, up to our maxBytesInFlight</span></span><br><span class="line">  fetchUpToMaxBytes()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> numFetches = remoteRequests.size - fetchRequests.size</span><br><span class="line">  logInfo(<span class="string">s&quot;Started <span class="subst">$numFetches</span> remote fetches in <span class="subst">$&#123;Utils.getUsedTimeNs(startTimeNs)&#125;</span>&quot;</span>)</span><br><span class="line">  <span class="comment">// Get Local Blocks</span></span><br><span class="line">  fetchLocalBlocks()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>splitLocalRemoteBlocks()</code>中，会针对每个BlockManager的block划分成<code>maxBytesInFlight / 5</code>大小的FetchRequest，此外，如果启用了doBatchFetch，那么还会通过<code>mergeContinuousShuffleBlockIdsIfNeeded()</code>合并属于同一个BlockManager上的同一个Map任务输出的block：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> startBlockId = toBeMerged.head.blockId.asInstanceOf[<span class="type">ShuffleBlockId</span>]</span><br><span class="line"><span class="type">FetchBlockInfo</span>(</span><br><span class="line">  <span class="type">ShuffleBlockBatchId</span>(</span><br><span class="line">    startBlockId.shuffleId,</span><br><span class="line">    startBlockId.mapId,</span><br><span class="line">    startBlockId.reduceId,</span><br><span class="line">    <span class="comment">// Batch: reduceId -&gt; last.reduceId + 1</span></span><br><span class="line">  toBeMerged.last.blockId.asInstanceOf[<span class="type">ShuffleBlockId</span>].reduceId + <span class="number">1</span>),</span><br><span class="line">  toBeMerged.map(_.size).sum,</span><br><span class="line">  toBeMerged.head.mapIndex)</span><br></pre></td></tr></table></figure>
+
+<p>在<code>fetchUpToMaxBytes()</code>中，会按照上面参数设定的带宽设定通过<code>sendRequest()</code>发送请求。实际的请求由<code>shuffleClient.fetchBlocks()</code>完成：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (req.size &gt; maxReqSizeShuffleToMem) &#123;</span><br><span class="line">  shuffleClient.fetchBlocks(address.host, address.port, address.executorId, blockIds.toArray,</span><br><span class="line">                            blockFetchingListener, </span><br><span class="line">                            <span class="keyword">this</span>) <span class="comment">// DownloadFileManager</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  shuffleClient.fetchBlocks(address.host, address.port, address.executorId, blockIds.toArray,</span><br><span class="line">                            blockFetchingListener, <span class="literal">null</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>blockFetchingListener用于将请求的结果FetchResult添加到一个结果队列中：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> blockFetchingListener = <span class="keyword">new</span> <span class="type">BlockFetchingListener</span> &#123;</span><br><span class="line">      <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onBlockFetchSuccess</span></span>(blockId: <span class="type">String</span>, buf: <span class="type">ManagedBuffer</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">        <span class="type">ShuffleBlockFetcherIterator</span>.<span class="keyword">this</span>.synchronized &#123;</span><br><span class="line">          <span class="keyword">if</span> (!isZombie) &#123;</span><br><span class="line">            <span class="comment">// Increment the ref count because we need to pass this to a different thread.</span></span><br><span class="line">            buf.retain()</span><br><span class="line">            remainingBlocks -= blockId</span><br><span class="line">            results.put(<span class="keyword">new</span> <span class="type">SuccessFetchResult</span>(<span class="type">BlockId</span>(blockId), infoMap(blockId)._2,</span><br><span class="line">              address, infoMap(blockId)._1, buf, remainingBlocks.isEmpty))</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onBlockFetchFailure</span></span>(blockId: <span class="type">String</span>, e: <span class="type">Throwable</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">        results.put(<span class="keyword">new</span> <span class="type">FailureFetchResult</span>(<span class="type">BlockId</span>(blockId), infoMap(blockId)._2, address, e))</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>ShuffleBlockFetcherIterator的<code>next()</code>会检查保存在results中的FetchResult，然后返回以InputStream的方式返回给BlockStoreShuffleReader。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">next</span></span>(): (<span class="type">BlockId</span>, <span class="type">InputStream</span>) = &#123;</span><br><span class="line">  <span class="keyword">if</span> (!hasNext) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">NoSuchElementException</span>()</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  numBlocksProcessed += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> result: <span class="type">FetchResult</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">var</span> input: <span class="type">InputStream</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">var</span> streamCompressedOrEncrypted: <span class="type">Boolean</span> = <span class="literal">false</span></span><br><span class="line">  <span class="comment">// Take the next fetched result and try to decompress it to detect data corruption</span></span><br><span class="line">  <span class="keyword">while</span> (result == <span class="literal">null</span>) &#123;</span><br><span class="line">    result = results.take()</span><br><span class="line">    </span><br><span class="line">    result <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> r @ <span class="type">SuccessFetchResult</span>(blockId, mapIndex, address, size, buf, isNetworkReqDone) =&gt;</span><br><span class="line">      <span class="comment">// Non local</span></span><br><span class="line">      <span class="keyword">if</span> (address != blockManager.blockManagerId) &#123;</span><br><span class="line">        numBlocksInFlightPerAddress(address) = numBlocksInFlightPerAddress(address) - <span class="number">1</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (!localBlocks.contains((blockId, mapIndex))) &#123;</span><br><span class="line">        bytesInFlight -= size</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (isNetworkReqDone) &#123;</span><br><span class="line">        reqsInFlight -= <span class="number">1</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (buf.size == <span class="number">0</span>) &#123;</span><br><span class="line">        throwFetchFailedException(blockId, mapIndex, address, <span class="keyword">new</span> <span class="type">IOException</span>(msg))</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">val</span> in = <span class="keyword">try</span> &#123;</span><br><span class="line">        buf.createInputStream()</span><br><span class="line">      &#125; <span class="keyword">catch</span> &#123;&#125;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        input = streamWrapper(blockId, in)</span><br><span class="line">        <span class="comment">// If the stream is compressed or wrapped, then we optionally decompress/unwrap themnfirst maxBytesInFlight/3 bytes into memory, to check for corruption in that portion</span></span><br><span class="line">        streamCompressedOrEncrypted = !input.eq(in)</span><br><span class="line">        <span class="keyword">if</span> (streamCompressedOrEncrypted &amp;&amp; detectCorruptUseExtraMemory) &#123;</span><br><span class="line">          input = <span class="type">Utils</span>.copyStreamUpTo(input, maxBytesInFlight / <span class="number">3</span>)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> e: <span class="type">IOException</span> =&gt;</span><br><span class="line">        buf.release()</span><br><span class="line">        <span class="keyword">if</span> (buf.isInstanceOf[<span class="type">FileSegmentManagedBuffer</span>]</span><br><span class="line">            || corruptedBlocks.contains(blockId)) &#123;</span><br><span class="line">          throwFetchFailedException(blockId, mapIndex, address, e)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="comment">// For currupted block, add to a new request to retry</span></span><br><span class="line">          corruptedBlocks += blockId</span><br><span class="line">          fetchRequests += <span class="type">FetchRequest</span>(</span><br><span class="line">            address, <span class="type">Array</span>(<span class="type">FetchBlockInfo</span>(blockId, size, mapIndex)))</span><br><span class="line">          result = <span class="literal">null</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (input == <span class="literal">null</span>) &#123;</span><br><span class="line">          in.close()</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="type">FailureFetchResult</span>(blockId, mapIndex, address, e) =&gt;</span><br><span class="line">      throwFetchFailedException(blockId, mapIndex, address, e)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Send fetch requests up to maxBytesInFlight</span></span><br><span class="line">    fetchUpToMaxBytes()</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  currentResult = result.asInstanceOf[<span class="type">SuccessFetchResult</span>]</span><br><span class="line">  (currentResult.blockId,</span><br><span class="line">   <span class="keyword">new</span> <span class="type">BufferReleasingInputStream</span>(</span><br><span class="line">     input,</span><br><span class="line">     <span class="keyword">this</span>,</span><br><span class="line">     currentResult.blockId,</span><br><span class="line">     currentResult.mapIndex,</span><br><span class="line">     currentResult.address,</span><br><span class="line">     detectCorrupt &amp;&amp; streamCompressedOrEncrypted))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="ShuffleWriter"><a href="#ShuffleWriter" class="headerlink" title="ShuffleWriter"></a>ShuffleWriter</h1><p>ShuffleWriter用于Map Task将记录写入到Shuffle系统中，定义如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ShuffleWriter</span>[<span class="type">K</span>, <span class="type">V</span>] </span>&#123;</span><br><span class="line">  <span class="comment">/** Write a sequence of records to this task&#x27;s output */</span></span><br><span class="line">  <span class="meta">@throws</span>[<span class="type">IOException</span>]</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">write</span></span>(records: <span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">V</span>]]): <span class="type">Unit</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/** Close this writer, passing along whether the map completed */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">stop</span></span>(success: <span class="type">Boolean</span>): <span class="type">Option</span>[<span class="type">MapStatus</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于<code>write()</code>，通常的实现步骤为：对传入的Product2[K, V]进行排序，然后通过ShuffleMapOutputWriter写入到输出文件中，并通过BlockResolver进行提交，从而使得Reduce任务可以获取该Map任务的输出。</p>
+<p>Spark提供了三种实现：</p>
+<ul>
+<li>BypassMergeSortShuffleWriter</li>
+<li>UnsafeShuffleWriter</li>
+<li>SortShuffleWriter</li>
+</ul>
+<h2 id="BypassMergeSortShuffleWriter"><a href="#BypassMergeSortShuffleWriter" class="headerlink" title="BypassMergeSortShuffleWriter"></a>BypassMergeSortShuffleWriter</h2><p>当ShuffleDependency的partition的数量小于<code> spark.shuffle.sort.bypassMergeThreshold</code>时使用，直接写入到<code>numPartitions</code>个文件中，之后将这些文件拼接在一起。优点是避免了合并spilled文件中需要的两次序列化和反序列化过程，缺点是需要同时打开多个文件，并且需要更多的缓存内存。</p>
+<h2 id="UnsafeShuffleWriter"><a href="#UnsafeShuffleWriter" class="headerlink" title="UnsafeShuffleWriter"></a>UnsafeShuffleWriter</h2><p>UnsafeShuffleWriter作为ShuffleWriter最重要的实现，记录以序列化的形式按照partition进行排序后写入到Map任务的输出文件中。核心的<code>write()</code>方法通过不断的将记录插入到Sorter中，直到所有的记录都插入完毕。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">boolean success = <span class="literal">false</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="keyword">while</span> (records.hasNext()) &#123;</span><br><span class="line">    insertRecordIntoSorter(records.next());</span><br><span class="line">  &#125;</span><br><span class="line">  closeAndWriteOutput();</span><br><span class="line">  success = <span class="literal">true</span>;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">  <span class="comment">// ....</span></span><br><span class="line">  sorter.cleanupResources();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>insertRecordIntoSorter()</code>中，首先根据partitioner计算key对应的partition，然后将记录写入到serBuffer中，最后插入到sorter里。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">void insertRecordIntoSorter(<span class="type">Product2</span>&lt;<span class="type">K</span>, <span class="type">V</span>&gt; record) <span class="keyword">throws</span> <span class="type">IOException</span> &#123;</span><br><span class="line">  assert(sorter != <span class="literal">null</span>);</span><br><span class="line">  <span class="comment">// Get the partition of the record</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">K</span> key = record._1();</span><br><span class="line">  <span class="keyword">final</span> int partitionId = partitioner.getPartition(key);</span><br><span class="line">  <span class="comment">// Write it to serBuffer</span></span><br><span class="line">  serBuffer.reset();</span><br><span class="line">  serOutputStream.writeKey(key, <span class="type">OBJECT_CLASS_TAG</span>);</span><br><span class="line">  serOutputStream.writeValue(record._2(), <span class="type">OBJECT_CLASS_TAG</span>);</span><br><span class="line">  serOutputStream.flush();</span><br><span class="line">	<span class="comment">// Insert the record into sorter</span></span><br><span class="line">  <span class="keyword">final</span> int serializedRecordSize = serBuffer.size();</span><br><span class="line">  assert (serializedRecordSize &gt; <span class="number">0</span>);</span><br><span class="line">  sorter.insertRecord(</span><br><span class="line">    serBuffer.getBuf(), <span class="type">Platform</span>.<span class="type">BYTE_ARRAY_OFFSET</span>, serializedRecordSize, partitionId);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>sorter是ShuffleExternalSorter的实例，在UnsafeShuffleWriter构造函数中的<code>open()</code>中创建。</p>
+<p>在<code>closeAndWriteOutput()</code>中，会合并ShuffleExternalSorter返回的所有spills，得到最终的MapStatus进行返回。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">void closeAndWriteOutput() <span class="keyword">throws</span> <span class="type">IOException</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="comment">// Merge spills</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">SpillInfo</span>[] spills = sorter.closeAndGetSpills();</span><br><span class="line">  sorter = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">final</span> long[] partitionLengths;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    partitionLengths = mergeSpills(spills);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">SpillInfo</span> spill : spills) &#123;</span><br><span class="line">      <span class="keyword">if</span> (spill.file.exists() &amp;&amp; !spill.file.delete()) &#123;</span><br><span class="line">        logger.error(<span class="string">&quot;Error while deleting spill file &#123;&#125;&quot;</span>, spill.file.getPath());</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  mapStatus = <span class="type">MapStatus</span>$.<span class="type">MODULE</span>$.apply(</span><br><span class="line">    blockManager.shuffleServerId(), partitionLengths, mapId);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>mergeSpills()</code>会根据Spill的数量选择最快的合并策略，通用的是<code>mergeSpillsUsingStandardWriter()</code>。<code>mergeSpillsUsingStandardWriter()</code>会根据是否对进行压缩，加密以及快速合并等选项进行判断，并选择合适的合并策略。主要有两种：</p>
+<ol>
+<li>基于NIO FileChannel的<code>mergeSpillsWithTransferTo()</code></li>
+<li>基于字节流的<code>mergeSpillsWithFileStream()</code></li>
+</ol>
+<p>主要过程是按照partition递增的顺序将所有Spills中的partition写入到mapOutputFile中：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Iterates partitions over all spills</span></span><br><span class="line"><span class="keyword">for</span> (int partition = <span class="number">0</span>; partition &lt; numPartitions; partition++) &#123;</span><br><span class="line">  boolean copyThrewException = <span class="literal">true</span>;</span><br><span class="line">  <span class="type">ShufflePartitionWriter</span> writer = mapWriter.getPartitionWriter(partition);</span><br><span class="line">  <span class="type">WritableByteChannelWrapper</span> resolvedChannel = writer.openChannelWrapper()</span><br><span class="line">  .orElseGet(() -&gt; <span class="keyword">new</span> <span class="type">StreamFallbackChannelWrapper</span>(openStreamUnchecked(writer)));</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (int i = <span class="number">0</span>; i &lt; spills.length; i++) &#123;</span><br><span class="line">      long partitionLengthInSpill = spills[i].partitionLengths[partition];</span><br><span class="line">      <span class="keyword">final</span> <span class="type">FileChannel</span> spillInputChannel = spillInputChannels[i];</span><br><span class="line">      <span class="keyword">final</span> long writeStartTime = <span class="type">System</span>.nanoTime();</span><br><span class="line">      <span class="comment">// Nio channel transfer</span></span><br><span class="line">      <span class="type">Utils</span>.copyFileStreamNIO(</span><br><span class="line">        spillInputChannel,</span><br><span class="line">        resolvedChannel.channel(),</span><br><span class="line">        spillInputChannelPositions[i],</span><br><span class="line">        partitionLengthInSpill);</span><br><span class="line">      copyThrewException = <span class="literal">false</span>;</span><br><span class="line">      <span class="comment">// Advances the pos of the input spill channel</span></span><br><span class="line">      spillInputChannelPositions[i] += partitionLengthInSpill;</span><br><span class="line">      writeMetrics.incWriteTime(<span class="type">System</span>.nanoTime() - writeStartTime);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="type">Closeables</span>.close(resolvedChannel, copyThrewException);</span><br><span class="line">  &#125;</span><br><span class="line">  long numBytes = writer.getNumBytesWritten();</span><br><span class="line">  writeMetrics.incBytesWritten(numBytes);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在合并完成以后，通过ShuffleMapOutputWriter的<code>commitAllPartitions()</code>进行提交。提交由BlockResolver完成，BlockResolver会根据数据文件建立对应的索引文件：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public long[] commitAllPartitions() <span class="keyword">throws</span> <span class="type">IOException</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (outputFileChannel != <span class="literal">null</span> &amp;&amp; outputFileChannel.position() != bytesWrittenToMergedFile) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IOException</span>()</span><br><span class="line">  &#125;</span><br><span class="line">  cleanUp();</span><br><span class="line">  <span class="type">File</span> resolvedTmp = outputTempFile != <span class="literal">null</span> &amp;&amp; outputTempFile.isFile() ? outputTempFile : <span class="literal">null</span>;</span><br><span class="line">	<span class="comment">// Commit</span></span><br><span class="line">  blockResolver.writeIndexFileAndCommit(shuffleId, mapId, partitionLengths, resolvedTmp);</span><br><span class="line">  <span class="keyword">return</span> partitionLengths;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ShuffleExternalSorter"><a href="#ShuffleExternalSorter" class="headerlink" title="ShuffleExternalSorter"></a>ShuffleExternalSorter</h3><p>ShuffleExternalSorter是一个专门为sort-based shuffle设计的外部排序器。新来的记录被追加到内存页中，当所有的记录都插入完毕或者当前线程shuffle使用的内存超过阈值后，在内存中的记录将会按照partitionid利用ShuffleInMemorySorter进行排序，然后写入到的单个输出文件中（如果有spill，那么就是多个文件）。</p>
+<p>控制ShuffleExternalSorter行为的参数有：</p>
+<ul>
+<li><code>spark.shuffle.file.buffer</code> ， 默认为32K，每个shuffle file在内存中的缓存大小</li>
+<li><code>spark.shuffle.spill.numElementsForceSpillThreshold</code>，Shuffle Sorter内存中能够保留的记录的最大数量</li>
+<li><code>spark.shuffle.sort.useRadixSort</code>，在对内存中的记录根据partition id排序时使用基数排序</li>
+<li><code>spark.shuffle.spill.diskWriteBufferSize</code>，用于将排序后的记录写入到文件时的缓存区大小，默认为1MB</li>
+</ul>
+<p>ShuffleExternalSorter使用下面的两种形式保存记录：</p>
+<ul>
+<li>内存中：<code>private final LinkedList&lt;MemoryBlock&gt; allocatedPages = new LinkedList&lt;&gt;();</code></li>
+<li>磁盘上：<code>private final LinkedList&lt;SpillInfo&gt; spills = new LinkedList&lt;&gt;();</code></li>
+</ul>
+<p>并且持有一个ShuffleInMemorySorter的实例，用于对内存中的记录排序。</p>
+<h3 id="Insert"><a href="#Insert" class="headerlink" title="Insert"></a>Insert</h3><p><code>insertRecord()</code>的实现如下：</p>
+<ol>
+<li><p>首先检查内存中的记录数量是否已经超过<code>numElementsForceSpillThreshold</code>阈值，如果超过，则进行<code>spill()</code></p>
+<figure class="highlight pascal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (inMemSorter.numRecords() &gt;= numElementsForSpillThreshold) <span class="comment">&#123;</span></span><br><span class="line"><span class="comment">  spill();</span></span><br><span class="line"><span class="comment">&#125;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>计算插入记录需要的内存大小，检查是否需要申请新的Page</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">growPointerArrayIfNecessary();</span><br><span class="line"><span class="keyword">final</span> int uaoSize = <span class="type">UnsafeAlignedOffset</span>.getUaoSize();</span><br><span class="line"><span class="comment">// Need 4 or 8 bytes to store the record length.</span></span><br><span class="line"><span class="keyword">final</span> int required = length + uaoSize;</span><br><span class="line">acquireNewPageIfNecessary(required);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将记录拷贝到当前Page中，并将当前记录的Page信息插入到ShuffleInMemorySorter中，以便排序时索引</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">Object</span> base = currentPage.getBaseObject();</span><br><span class="line"><span class="keyword">final</span> long recordAddress = taskMemoryManager.encodePageNumberAndOffset(currentPage, pageCursor);</span><br><span class="line"><span class="type">UnsafeAlignedOffset</span>.putSize(base, pageCursor, length);</span><br><span class="line">pageCursor += uaoSize;</span><br><span class="line"><span class="type">Platform</span>.copyMemory(recordBase, recordOffset, base, pageCursor, length);</span><br><span class="line">pageCursor += length;</span><br><span class="line">inMemSorter.insertRecord(recordAddress, partitionId);</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="Spill"><a href="#Spill" class="headerlink" title="Spill"></a>Spill</h3><p><code>spill()</code>会将ShuffleInMemorySorter中的记录进行排序，并调用<code>writeSortedFile()</code>将记录排序并写入到文件中。之后会释放ShuffleInMemorySorter的内存，并清除所有在ShuffleInMemorySorter的记录。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">writeSortedFile(<span class="literal">false</span>);</span><br><span class="line"><span class="keyword">final</span> long spillSize = freeMemory();</span><br><span class="line">inMemSorter.reset();</span><br></pre></td></tr></table></figure>
+
+<p>在<code>writeSortedFile()</code>中，排序由ShuffleInMemorySorter完成，之后会对按照partitionId升序排列的<code>sortedRecords</code>逐一遍历写入到BlockManager创建的TempShuffleBlock文件中。</p>
+<p>整个写入过程如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">int currentPartition = <span class="number">-1</span>;</span><br><span class="line"><span class="keyword">final</span> <span class="type">FileSegment</span> committedSegment;</span><br><span class="line"><span class="keyword">try</span> (<span class="type">DiskBlockObjectWriter</span> writer =</span><br><span class="line">     blockManager.getDiskWriter(blockId, file, ser, fileBufferSizeBytes, writeMetricsToUse)) &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> int uaoSize = <span class="type">UnsafeAlignedOffset</span>.getUaoSize();</span><br><span class="line">  <span class="comment">// Iterate all sorted records</span></span><br><span class="line">  <span class="keyword">while</span> (sortedRecords.hasNext()) &#123;</span><br><span class="line">    sortedRecords.loadNext();</span><br><span class="line">    <span class="keyword">final</span> int partition = sortedRecords.packedRecordPointer.getPartitionId();</span><br><span class="line">    assert (partition &gt;= currentPartition);</span><br><span class="line">    <span class="keyword">if</span> (partition != currentPartition) &#123;</span><br><span class="line">      <span class="comment">// Switch to the new partition</span></span><br><span class="line">      <span class="keyword">if</span> (currentPartition != <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="comment">// Commit the current partition, each partition is represented by FileSegement.</span></span><br><span class="line">        <span class="keyword">final</span> <span class="type">FileSegment</span> fileSegment = writer.commitAndGet();</span><br><span class="line">        spillInfo.partitionLengths[currentPartition] = fileSegment.length();</span><br><span class="line">      &#125;</span><br><span class="line">      currentPartition = partition;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Get data the current record by recordPointer from MemoryManger and write it to output file.</span></span><br><span class="line">    <span class="keyword">final</span> long recordPointer = sortedRecords.packedRecordPointer.getRecordPointer();</span><br><span class="line">    <span class="keyword">final</span> <span class="type">Object</span> recordPage = taskMemoryManager.getPage(recordPointer);</span><br><span class="line">    <span class="keyword">final</span> long recordOffsetInPage = taskMemoryManager.getOffsetInPage(recordPointer);</span><br><span class="line">    int dataRemaining = <span class="type">UnsafeAlignedOffset</span>.getSize(recordPage, recordOffsetInPage);</span><br><span class="line">    long recordReadPosition = recordOffsetInPage + uaoSize; <span class="comment">// skip over record length</span></span><br><span class="line">    <span class="keyword">while</span> (dataRemaining &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">final</span> int toTransfer = <span class="type">Math</span>.min(diskWriteBufferSize, dataRemaining);</span><br><span class="line">      <span class="type">Platform</span>.copyMemory(</span><br><span class="line">        recordPage, recordReadPosition, writeBuffer, <span class="type">Platform</span>.<span class="type">BYTE_ARRAY_OFFSET</span>, toTransfer);</span><br><span class="line">      writer.write(writeBuffer, <span class="number">0</span>, toTransfer);</span><br><span class="line">      recordReadPosition += toTransfer;</span><br><span class="line">      dataRemaining -= toTransfer;</span><br><span class="line">    &#125;</span><br><span class="line">    writer.recordWritten();</span><br><span class="line">  &#125;</span><br><span class="line">	<span class="comment">// This is the last FileSegment</span></span><br><span class="line">  committedSegment = writer.commitAndGet();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (currentPartition != <span class="number">-1</span>) &#123;</span><br><span class="line">  spillInfo.partitionLengths[currentPartition] = committedSegment.length();</span><br><span class="line">  spills.add(spillInfo);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ShuffleInMemorySorter"><a href="#ShuffleInMemorySorter" class="headerlink" title="ShuffleInMemorySorter"></a>ShuffleInMemorySorter</h3><p>ShuffleInMemorySorter使用一个LongArray数组来保存各个记录对应的PackedRecordPointer。PackedRecordPointer包含记录在MemoryManager中的指针：recorderPointer(PageNum + OffsetInPage)以及对应的PartitionID。</p>
+<p>ShuffleInMemorySorter通过持有的MemoryConsumer申请和扩容持有的LongArray数组。支持两种内存排序：</p>
+<ul>
+<li>RadixSort（基数排序），具有更快的排序速度，但是需要的内存量更多。相同大小的LongArray可以使用的容量较小。</li>
+<li>TimSort，速度较慢，但是排序时所需的内存空间更小。</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> int getUsableCapacity() &#123;</span><br><span class="line">  <span class="comment">// Radix sort requires same amount of used memory as buffer, Tim sort requires</span></span><br><span class="line">  <span class="comment">// half of the used memory as buffer.</span></span><br><span class="line">  <span class="keyword">return</span> (int) (array.size() / (useRadixSort ? <span class="number">2</span> : <span class="number">1.5</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对外暴露的迭代器实现如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">public <span class="type">ShuffleSorterIterator</span> getSortedIterator() &#123;</span><br><span class="line">  int offset = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> (useRadixSort) &#123;</span><br><span class="line">    offset = <span class="type">RadixSort</span>.sort(</span><br><span class="line">      array, pos,</span><br><span class="line">      <span class="type">PackedRecordPointer</span>.<span class="type">PARTITION_ID_START_BYTE_INDEX</span>,</span><br><span class="line">      <span class="type">PackedRecordPointer</span>.<span class="type">PARTITION_ID_END_BYTE_INDEX</span>, <span class="literal">false</span>, <span class="literal">false</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="type">MemoryBlock</span> unused = <span class="keyword">new</span> <span class="type">MemoryBlock</span>(</span><br><span class="line">      array.getBaseObject(),</span><br><span class="line">      array.getBaseOffset() + pos * <span class="number">8</span>L,</span><br><span class="line">      (array.size() - pos) * <span class="number">8</span>L);</span><br><span class="line">    <span class="type">LongArray</span> buffer = <span class="keyword">new</span> <span class="type">LongArray</span>(unused);</span><br><span class="line">    <span class="type">Sorter</span>&lt;<span class="type">PackedRecordPointer</span>, <span class="type">LongArray</span>&gt; sorter =</span><br><span class="line">    <span class="keyword">new</span> <span class="type">Sorter</span>&lt;&gt;(<span class="keyword">new</span> <span class="type">ShuffleSortDataFormat</span>(buffer));</span><br><span class="line"></span><br><span class="line">    sorter.sort(array, <span class="number">0</span>, pos, <span class="type">SORT_COMPARATOR</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">ShuffleSorterIterator</span>(pos, array, offset);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="SortShuffleWriter"><a href="#SortShuffleWriter" class="headerlink" title="SortShuffleWriter"></a>SortShuffleWriter</h2><p>SortShuffleWriter是最基本的ShuffleWriter，在Java Heap对记录进行排序并写入到文件中。排序通过<code>ExternalSorter</code>完成：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Write a bunch of records to this task&#x27;s output */</span></span><br><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">write</span></span>(records: <span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">V</span>]]): <span class="type">Unit</span> = &#123;</span><br><span class="line">  sorter = <span class="keyword">if</span> (dep.mapSideCombine) &#123;</span><br><span class="line">    <span class="keyword">new</span> <span class="type">ExternalSorter</span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">C</span>](</span><br><span class="line">      context, dep.aggregator, <span class="type">Some</span>(dep.partitioner), dep.keyOrdering, dep.serializer)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// In this case we pass neither an aggregator nor an ordering to the sorter, because we don&#x27;t care whether the keys get sorted in each partition; that will be done on the reduce side if the operation being run is sortByKey.</span></span><br><span class="line">    <span class="keyword">new</span> <span class="type">ExternalSorter</span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">V</span>](</span><br><span class="line">      context, aggregator = <span class="type">None</span>, <span class="type">Some</span>(dep.partitioner), ordering = <span class="type">None</span>, dep.serializer)</span><br><span class="line">  &#125;</span><br><span class="line">  sorter.insertAll(records)</span><br><span class="line">	...</span><br><span class="line">  <span class="keyword">val</span> mapOutputWriter = shuffleExecutorComponents.createMapOutputWriter(</span><br><span class="line">    dep.shuffleId, mapId, dep.partitioner.numPartitions)</span><br><span class="line">  sorter.writePartitionedMapOutput(dep.shuffleId, mapId, mapOutputWriter)</span><br><span class="line">  <span class="keyword">val</span> partitionLengths = mapOutputWriter.commitAllPartitions()</span><br><span class="line">  mapStatus = <span class="type">MapStatus</span>(blockManager.shuffleServerId, partitionLengths, mapId)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ExternalSorter"><a href="#ExternalSorter" class="headerlink" title="ExternalSorter"></a>ExternalSorter</h3><p>ExternalSorter用于对记录按照分区进行排序（支持外部排序），定义如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">ExternalSorter</span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">C</span>](<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="class">    context: <span class="type">TaskContext</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    // <span class="type">Map</span> side combiner: <span class="type">K</span>, <span class="type">V</span> -&gt; <span class="type">K</span>, <span class="type">C</span></span></span></span><br><span class="line"><span class="params"><span class="class">    aggregator: <span class="type">Option</span>[<span class="type">Aggregator</span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">C</span>]] = <span class="type">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    partitioner: <span class="type">Option</span>[<span class="type">Partitioner</span>] = <span class="type">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    // ordering within a partition</span></span></span><br><span class="line"><span class="params"><span class="class">    ordering: <span class="type">Option</span>[<span class="type">Ordering</span>[<span class="type">K</span>]] = <span class="type">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="class">    serializer: <span class="type">Serializer</span> = <span class="type">SparkEnv</span>.get.serializer</span>)</span></span><br><span class="line">  <span class="keyword">extends</span> <span class="type">Spillable</span>[<span class="type">WritablePartitionedPairCollection</span>[<span class="type">K</span>, <span class="type">C</span>]](context.taskMemoryManager())</span><br><span class="line">  <span class="keyword">with</span> <span class="type">Logging</span> &#123;</span><br><span class="line">    </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> fileBufferSize = conf.get(config.<span class="type">SHUFFLE_FILE_BUFFER_SIZE</span>).toInt * <span class="number">1024</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Size of object batches when reading/writing from serializers.</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> serializerBatchSize = conf.get(config.<span class="type">SHUFFLE_SPILL_BATCH_SIZE</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Data structures to store in-memory objects before we spill. Depending on whether we have an Aggregator set, we either put objects into an AppendOnlyMap where we combine them, or we store them in an array buffer.</span></span><br><span class="line">  <span class="meta">@volatile</span> <span class="keyword">private</span> <span class="keyword">var</span> map = <span class="keyword">new</span> <span class="type">PartitionedAppendOnlyMap</span>[<span class="type">K</span>, <span class="type">C</span>]</span><br><span class="line">  <span class="meta">@volatile</span> <span class="keyword">private</span> <span class="keyword">var</span> buffer = <span class="keyword">new</span> <span class="type">PartitionedPairBuffer</span>[<span class="type">K</span>, <span class="type">C</span>]</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> spills = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">SpilledFile</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在排序的过程中，ExternalSorter会将记录依次插入到PartitionedAppendOlnyMap（需要进行combine时）或PartitionedPairBuffer中，如果占用的内存超出阈值，则会spill到一个文件中。支持：</p>
+<ul>
+<li>Combiner：用于将具有相同key的记录进行合并</li>
+<li>Ordering：用于对属于同一分区的记录排序</li>
+<li>Spill：继承自Spillable，当占用的内存或记录数量超过阈值后，能够将排序后的结果写入到文件中</li>
+</ul>
+<p>排序后的记录可以通过<code>iterator()</code>方法进行返回，ExternalSorter会合并磁盘和内存中的记录，提供一个统一的视图给用户。</p>
+<h4 id="Implementation"><a href="#Implementation" class="headerlink" title="Implementation"></a>Implementation</h4><p><strong>Write Path</strong></p>
+<p>记录通过<code>insertAll()</code>方法依次插入，如果需要combine，那么使用PartitionedAppendOlnyMap存储记录，否则使用PartitionedPairBuffer：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">insertAll</span></span>(records: <span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">V</span>]]): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> shouldCombine = aggregator.isDefined</span><br><span class="line">  <span class="keyword">if</span> (shouldCombine) &#123;</span><br><span class="line">    <span class="comment">// Combine values in-memory first using our AppendOnlyMap</span></span><br><span class="line">    <span class="keyword">val</span> mergeValue = aggregator.get.mergeValue</span><br><span class="line">    <span class="keyword">val</span> createCombiner = aggregator.get.createCombiner</span><br><span class="line">    <span class="keyword">var</span> kv: <span class="type">Product2</span>[<span class="type">K</span>, <span class="type">V</span>] = <span class="literal">null</span></span><br><span class="line">    <span class="keyword">val</span> update = (hadValue: <span class="type">Boolean</span>, oldValue: <span class="type">C</span>) =&gt; &#123;</span><br><span class="line">      <span class="keyword">if</span> (hadValue) mergeValue(oldValue, kv._2) <span class="keyword">else</span> createCombiner(kv._2)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (records.hasNext) &#123;</span><br><span class="line">      addElementsRead()</span><br><span class="line">      kv = records.next()</span><br><span class="line">      map.changeValue((getPartition(kv._1), kv._1), update)</span><br><span class="line">      maybeSpillCollection(usingMap = <span class="literal">true</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Stick values into our buffer</span></span><br><span class="line">    <span class="keyword">while</span> (records.hasNext) &#123;</span><br><span class="line">      addElementsRead()</span><br><span class="line">      <span class="keyword">val</span> kv = records.next()</span><br><span class="line">      buffer.insert(getPartition(kv._1), kv._1, kv._2.asInstanceOf[<span class="type">C</span>])</span><br><span class="line">      maybeSpillCollection(usingMap = <span class="literal">false</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每次插入后，<code>maybeSpillCollection()</code>会根据<code>maybeSpill()</code>来确定是否进行spill。<code>maybeSpill()</code>会首先尝试对申请新的内存，如果失败才会进行spill。此外，还会根据内存中记录数量来确定是否会进行spill。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">maybeSpill</span></span>(collection: <span class="type">C</span>, currentMemory: <span class="type">Long</span>): <span class="type">Boolean</span> = &#123;</span><br><span class="line">    <span class="keyword">var</span> shouldSpill = <span class="literal">false</span></span><br><span class="line">    <span class="keyword">if</span> (elementsRead % <span class="number">32</span> == <span class="number">0</span> &amp;&amp; currentMemory &gt;= myMemoryThreshold) &#123;</span><br><span class="line">      <span class="comment">// Claim up to double our current memory from the shuffle memory pool</span></span><br><span class="line">      <span class="keyword">val</span> amountToRequest = <span class="number">2</span> * currentMemory - myMemoryThreshold</span><br><span class="line">      <span class="keyword">val</span> granted = acquireMemory(amountToRequest)</span><br><span class="line">      myMemoryThreshold += granted</span><br><span class="line">      <span class="comment">// If we were granted too little memory to grow further (either tryToAcquire returned 0,</span></span><br><span class="line">      <span class="comment">// or we already had more memory than myMemoryThreshold), spill the current collection</span></span><br><span class="line">      shouldSpill = currentMemory &gt;= myMemoryThreshold</span><br><span class="line">    &#125;</span><br><span class="line">    shouldSpill = shouldSpill || _elementsRead &gt; numElementsForceSpillThreshold</span><br><span class="line">    <span class="comment">// Actually spill</span></span><br><span class="line">    <span class="keyword">if</span> (shouldSpill) &#123;</span><br><span class="line">      _spillCount += <span class="number">1</span></span><br><span class="line">      logSpillage(currentMemory)</span><br><span class="line">      spill(collection)</span><br><span class="line">      _elementsRead = <span class="number">0</span></span><br><span class="line">      _memoryBytesSpilled += currentMemory</span><br><span class="line">      releaseMemory()</span><br><span class="line">    &#125;</span><br><span class="line">    shouldSpill</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>具体的<code>spill()</code>实现分为两步：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="keyword">protected</span>[<span class="keyword">this</span>] <span class="function"><span class="keyword">def</span> <span class="title">spill</span></span>(collection: <span class="type">WritablePartitionedPairCollection</span>[<span class="type">K</span>, <span class="type">C</span>]): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="comment">// 1. Get the inMemoryIterator, if comparator provided, the records are sorted by comparator</span></span><br><span class="line">  <span class="keyword">val</span> inMemoryIterator = collection.destructiveSortedWritablePartitionedIterator(comparator)</span><br><span class="line">  <span class="comment">// 2. Write the records to disk</span></span><br><span class="line">  <span class="keyword">val</span> spillFile = spillMemoryIteratorToDisk(inMemoryIterator)</span><br><span class="line">  spills += spillFile</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>spillMemoryIteratorToDisk()</code>以按照设定的serializerBatchSize大小分批将记录写入到磁盘。写入磁盘依然是通过DiskBlockObjectWriter的方式：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="function"><span class="keyword">def</span> <span class="title">spillMemoryIteratorToDisk</span></span>(inMemoryIterator: <span class="type">WritablePartitionedIterator</span>)</span><br><span class="line">: <span class="type">SpilledFile</span> = &#123;</span><br><span class="line">  <span class="comment">// Get a tmp block</span></span><br><span class="line">  <span class="keyword">val</span> (blockId, file) = diskBlockManager.createTempShuffleBlock()</span><br><span class="line">	<span class="comment">// Create the ObjectWriter</span></span><br><span class="line">  <span class="keyword">val</span> writer: <span class="type">DiskBlockObjectWriter</span> =</span><br><span class="line">  blockManager.getDiskWriter(blockId, file, serInstance, fileBufferSize, spillMetrics)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// List of batch sizes (bytes) in the order they are written to disk</span></span><br><span class="line">  <span class="keyword">val</span> batchSizes = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">Long</span>]</span><br><span class="line">  <span class="comment">// How many elements we have in each partition</span></span><br><span class="line">  <span class="keyword">val</span> elementsPerPartition = <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">Long</span>](numPartitions)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Flush the disk writer&#x27;s contents to disk, and update relevant variables. The writer is committed at the end of this process.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">flush</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> segment = writer.commitAndGet()</span><br><span class="line">    batchSizes += segment.length</span><br><span class="line">    _diskBytesSpilled += segment.length</span><br><span class="line">    objectsWritten = <span class="number">0</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> success = <span class="literal">false</span></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span> (inMemoryIterator.hasNext) &#123;</span><br><span class="line">      <span class="keyword">val</span> partitionId = inMemoryIterator.nextPartition()</span><br><span class="line">      require(partitionId &gt;= <span class="number">0</span> &amp;&amp; partitionId &lt; numPartitions,</span><br><span class="line">              <span class="string">s&quot;partition Id: <span class="subst">$&#123;partitionId&#125;</span> should be in the range [0, <span class="subst">$&#123;numPartitions&#125;</span>)&quot;</span>)</span><br><span class="line">      inMemoryIterator.writeNext(writer)</span><br><span class="line">      elementsPerPartition(partitionId) += <span class="number">1</span></span><br><span class="line">      objectsWritten += <span class="number">1</span></span><br><span class="line">			<span class="comment">// If we hit the batch size, do commit by flush()</span></span><br><span class="line">      <span class="keyword">if</span> (objectsWritten == serializerBatchSize) &#123;</span><br><span class="line">        flush()</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (objectsWritten &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      flush()</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      writer.revertPartialWritesAndClose()</span><br><span class="line">    &#125;</span><br><span class="line">    success = <span class="literal">true</span></span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    ....</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="type">SpilledFile</span>(file, blockId, batchSizes.toArray, elementsPerPartition)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Read Path</strong></p>
+<p>排序完成的记录通过<code>iterator()</code>进行访问，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">partitionedIterator</span></span>: <span class="type">Iterator</span>[(<span class="type">Int</span>, <span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">C</span>]])] = &#123;</span><br><span class="line">  <span class="keyword">val</span> usingMap = aggregator.isDefined</span><br><span class="line">  <span class="keyword">val</span> collection: <span class="type">WritablePartitionedPairCollection</span>[<span class="type">K</span>, <span class="type">C</span>] = <span class="keyword">if</span> (usingMap) map <span class="keyword">else</span> buffer</span><br><span class="line">  <span class="comment">// Only hava in-memory data</span></span><br><span class="line">  <span class="keyword">if</span> (spills.isEmpty) &#123;</span><br><span class="line">    <span class="keyword">if</span> (ordering.isEmpty) &#123;</span><br><span class="line">      <span class="comment">// The user hasn&#x27;t requested sorted keys, so only sort by partition ID, not key</span></span><br><span class="line">groupByPartition(destructiveIterator(collection.partitionedDestructiveSortedIterator(<span class="type">None</span>)))</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// We do need to sort by both partition ID and key</span></span><br><span class="line">      groupByPartition(destructiveIterator(</span><br><span class="line">collection.partitionedDestructiveSortedIterator(<span class="type">Some</span>(keyComparator))))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Merge spilled and in-memory data</span></span><br><span class="line">    merge(spills, destructiveIterator(</span><br><span class="line">collection.partitionedDestructiveSortedIterator(comparator)))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>核心的<code>merge()</code>实现如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">merge</span></span>(spills: <span class="type">Seq</span>[<span class="type">SpilledFile</span>], inMemory: <span class="type">Iterator</span>[((<span class="type">Int</span>, <span class="type">K</span>), <span class="type">C</span>)])</span><br><span class="line">: <span class="type">Iterator</span>[(<span class="type">Int</span>, <span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">C</span>]])] = &#123;</span><br><span class="line">  <span class="keyword">val</span> readers = spills.map(<span class="keyword">new</span> <span class="type">SpillReader</span>(_))</span><br><span class="line">  <span class="keyword">val</span> inMemBuffered = inMemory.buffered</span><br><span class="line">  (<span class="number">0</span> until numPartitions).iterator.map &#123; p =&gt;</span><br><span class="line">    <span class="keyword">val</span> inMemIterator = <span class="keyword">new</span> <span class="type">IteratorForPartition</span>(p, inMemBuffered)</span><br><span class="line">    <span class="comment">// Combine the spills and in memory data into a iterator array</span></span><br><span class="line">    <span class="keyword">val</span> iterators = readers.map(_.readNextPartition()) ++ <span class="type">Seq</span>(inMemIterator)</span><br><span class="line">    <span class="keyword">if</span> (aggregator.isDefined) &#123;</span><br><span class="line">      <span class="comment">// Perform partial aggregation across partitions</span></span><br><span class="line">      (p, mergeWithAggregation(</span><br><span class="line">        iterators, aggregator.get.mergeCombiners, keyComparator, ordering.isDefined))</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ordering.isDefined) &#123;</span><br><span class="line">      <span class="comment">// No aggregator given, but we have an ordering (e.g. used by reduce tasks in sortByKey);</span></span><br><span class="line">      <span class="comment">// sort the elements without trying to merge them</span></span><br><span class="line">      (p, mergeSort(iterators, ordering.get))</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      (p, iterators.iterator.flatten)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p>如果定义了combine对应的Agrregator，那么对同一分区的具有相同key的记录进行聚集。<code>mergeWithAggregation()</code>为了方便聚集，会首先对记录利用<code>mergeSort()</code>进行排序，使得具有相同key的记录是相邻的，从而便于合并。另外，如果没有定义全序（!ordering.isDefined），即keyComparator相同的记录的key只是哈希值相同，那么在合并同一分区的记录时，会针对每个具有相同哈希值的key建立一个对应的combiner实例。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> it = <span class="keyword">new</span> <span class="type">Iterator</span>[<span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">C</span>]]] &#123;</span><br><span class="line">  <span class="keyword">val</span> sorted = mergeSort(iterators, comparator).buffered</span><br><span class="line">  <span class="comment">// Buffers reused across elements to decrease memory allocation</span></span><br><span class="line">  <span class="keyword">val</span> keys = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">K</span>]</span><br><span class="line">  <span class="keyword">val</span> combiners = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">C</span>]</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">hasNext</span></span>: <span class="type">Boolean</span> = sorted.hasNext</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">next</span></span>(): <span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">C</span>]] = &#123;</span><br><span class="line">    <span class="keyword">if</span> (!hasNext) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">NoSuchElementException</span></span><br><span class="line">    &#125;</span><br><span class="line">    keys.clear()</span><br><span class="line">    combiners.clear()</span><br><span class="line">    <span class="keyword">val</span> firstPair = sorted.next()</span><br><span class="line">    keys += firstPair._1</span><br><span class="line">    combiners += firstPair._2</span><br><span class="line">    <span class="keyword">val</span> key = firstPair._1</span><br><span class="line">    <span class="comment">// Keys of records have the same hash code:</span></span><br><span class="line">    <span class="keyword">while</span> (sorted.hasNext &amp;&amp; comparator.compare(sorted.head._1, key) == <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">val</span> pair = sorted.next()</span><br><span class="line">      <span class="keyword">var</span> i = <span class="number">0</span></span><br><span class="line">      <span class="keyword">var</span> foundKey = <span class="literal">false</span></span><br><span class="line">      <span class="comment">// Find the combiner belongs to this key</span></span><br><span class="line">      <span class="keyword">while</span> (i &lt; keys.size &amp;&amp; !foundKey) &#123;</span><br><span class="line">        <span class="keyword">if</span> (keys(i) == pair._1) &#123;</span><br><span class="line">          combiners(i) = mergeCombiners(combiners(i), pair._2)</span><br><span class="line">          foundKey = <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">        i += <span class="number">1</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (!foundKey) &#123;</span><br><span class="line">        keys += pair._1</span><br><span class="line">        combiners += pair._2</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Note that we return an iterator of elements since we could&#x27;ve had many keys marked equal by the partial order; we flatten this below to get a flat iterator of (K, C).</span></span><br><span class="line">    keys.iterator.zip(combiners.iterator)</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果只定义了Ordering，但是不需要combine，那么直接进行mergeSort即可。针对多个迭代器的归并排序的实现采用优先级队列（堆）：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">mergeSort</span></span>(iterators: <span class="type">Seq</span>[<span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">C</span>]]], comparator: <span class="type">Comparator</span>[<span class="type">K</span>])</span><br><span class="line">: <span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">C</span>]] = &#123;</span><br><span class="line">  <span class="keyword">val</span> bufferedIters = iterators.filter(_.hasNext).map(_.buffered)</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">Iter</span> </span>= <span class="type">BufferedIterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">C</span>]]</span><br><span class="line">  <span class="comment">// Use the reverse order (compare(y,x)) because PriorityQueue dequeues the max</span></span><br><span class="line">  <span class="keyword">val</span> heap = <span class="keyword">new</span> mutable.<span class="type">PriorityQueue</span>[<span class="type">Iter</span>]()(</span><br><span class="line">    (x: <span class="type">Iter</span>, y: <span class="type">Iter</span>) =&gt; comparator.compare(y.head._1, x.head._1))</span><br><span class="line">  heap.enqueue(bufferedIters: _*)  <span class="comment">// Will contain only the iterators with hasNext = true</span></span><br><span class="line">  <span class="keyword">new</span> <span class="type">Iterator</span>[<span class="type">Product2</span>[<span class="type">K</span>, <span class="type">C</span>]] &#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">hasNext</span></span>: <span class="type">Boolean</span> = heap.nonEmpty</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">next</span></span>(): <span class="type">Product2</span>[<span class="type">K</span>, <span class="type">C</span>] = &#123;</span><br><span class="line">      <span class="keyword">if</span> (!hasNext) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">NoSuchElementException</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">val</span> firstBuf = heap.dequeue()</span><br><span class="line">      <span class="keyword">val</span> firstPair = firstBuf.next()</span><br><span class="line">      <span class="keyword">if</span> (firstBuf.hasNext) &#123;</span><br><span class="line">        heap.enqueue(firstBuf)</span><br><span class="line">      &#125;</span><br><span class="line">      firstPair</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>没有定义Ordering和combine，那么只需直接对所有迭代器进行展开</p>
+</li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/08/23/Flink-Flink-JobManager/" title= "Flink JobManager">
+                    <div class="nextTitle">Flink JobManager</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/08/15/Flink-Hive-integration-of-Flink/" title= "Flink Hive Integration">
+                    <div class="prevTitle">Flink Hive Integration</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2020/08/23/Spark-Spark-Shuffle/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Spark Shuffle"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ShuffleManager"><span class="toc-number">1.</span> <span class="toc-text">ShuffleManager</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ShuffleWriter-amp-Shuffle-Reader"><span class="toc-number">1.1.</span> <span class="toc-text">ShuffleWriter &amp; Shuffle Reader</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MapOutputTrackerMaster"><span class="toc-number">1.2.</span> <span class="toc-text">MapOutputTrackerMaster</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ShuffleStatus"><span class="toc-number">1.3.</span> <span class="toc-text">ShuffleStatus</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ShuffleBlockResolver"><span class="toc-number">1.4.</span> <span class="toc-text">ShuffleBlockResolver</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IndexShuffleBlockResolver"><span class="toc-number">1.4.1.</span> <span class="toc-text">IndexShuffleBlockResolver</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ShuffleExecutorComponents"><span class="toc-number">1.5.</span> <span class="toc-text">ShuffleExecutorComponents</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LocalDiskShuffleMapOutputWriter"><span class="toc-number">1.5.1.</span> <span class="toc-text">LocalDiskShuffleMapOutputWriter</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Shuffle-Reader"><span class="toc-number">2.</span> <span class="toc-text">Shuffle Reader</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#BlockStoreShuffleReader"><span class="toc-number">2.1.</span> <span class="toc-text">BlockStoreShuffleReader</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ShuffleBlockFetcherIterator"><span class="toc-number">2.1.1.</span> <span class="toc-text">ShuffleBlockFetcherIterator</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ShuffleWriter"><span class="toc-number">3.</span> <span class="toc-text">ShuffleWriter</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#BypassMergeSortShuffleWriter"><span class="toc-number">3.1.</span> <span class="toc-text">BypassMergeSortShuffleWriter</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UnsafeShuffleWriter"><span class="toc-number">3.2.</span> <span class="toc-text">UnsafeShuffleWriter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ShuffleExternalSorter"><span class="toc-number">3.2.1.</span> <span class="toc-text">ShuffleExternalSorter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Insert"><span class="toc-number">3.2.2.</span> <span class="toc-text">Insert</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Spill"><span class="toc-number">3.2.3.</span> <span class="toc-text">Spill</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ShuffleInMemorySorter"><span class="toc-number">3.2.4.</span> <span class="toc-text">ShuffleInMemorySorter</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SortShuffleWriter"><span class="toc-number">3.3.</span> <span class="toc-text">SortShuffleWriter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ExternalSorter"><span class="toc-number">3.3.1.</span> <span class="toc-text">ExternalSorter</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Implementation"><span class="toc-number">3.3.1.1.</span> <span class="toc-text">Implementation</span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

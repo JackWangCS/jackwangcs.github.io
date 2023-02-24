@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink Integration with Hudi · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink Integration with Hudi</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink Integration with Hudi
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Hudi">Hudi</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "DataLake">DataLake</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">3k</span>Reading time: <span class="post-count reading-time">15 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2022/01/15</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>这篇blog主要是记录Flink于Hudi的集成。主要分析Flink写入Hudi的过程实现。</p>
+<h2 id="AbstractHoodieClient"><a href="#AbstractHoodieClient" class="headerlink" title="AbstractHoodieClient"></a>AbstractHoodieClient</h2><p>AbstractHoodieClient是实现HoodieClient的基类，包含了公共的成员变量（FileSystem，HoodieConfigs）等，以及管理了一个嵌入式的timeline-server。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractHoodieClient</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span>, AutoCloseable &#123;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">transient</span> FileSystem fs;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">transient</span> HoodieEngineContext context;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">transient</span> Configuration hadoopConf;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> HoodieWriteConfig config;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> String basePath;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> HoodieHeartbeatClient heartbeatClient</span><br><span class="line">  </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Timeline Server has the same lifetime as that of Client. Any operations done on the same timeline service will be</span></span><br><span class="line"><span class="comment">   * able to take advantage of the cached file-system view. New completed actions will be synced automatically in an</span></span><br><span class="line"><span class="comment">   * incremental fashion.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">transient</span> Option&lt;EmbeddedTimelineService&gt; timelineServer;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> shouldStopTimelineServer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>AbstractHoodieClient的主要子类为AbstractHoodieWriteClient，各种引擎都会提供对应的HoodieWriteClient的实现：</p>
+<ul>
+<li>HoodieFlinkWriteClient</li>
+<li>HoodieJavaWriteClient</li>
+<li>HoodieSparkWriteClient</li>
+</ul>
+<h3 id="AbstractHoodieWriteClient"><a href="#AbstractHoodieWriteClient" class="headerlink" title="AbstractHoodieWriteClient"></a>AbstractHoodieWriteClient</h3><p>AbstractHoodieWriteClient提供了write操作（upsert&#x2F;insert&#x2F;bulk-insert）中可以重用的公共功能，包含提交，索引更新和回滚等。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractHoodieWriteClient</span>&lt;T <span class="keyword">extends</span> <span class="title class_">HoodieRecordPayload</span>, I, K, O&gt; <span class="keyword">extends</span> <span class="title class_">AbstractHoodieClient</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">LOOKUP_STR</span> <span class="operator">=</span> <span class="string">&quot;lookup&quot;</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">1L</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">transient</span> HoodieMetrics metrics;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">transient</span> HoodieIndex&lt;T, I, K, O&gt; index;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">transient</span> Timer.<span class="type">Context</span> <span class="variable">writeTimer</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">transient</span> Timer.Context compactionTimer;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">transient</span> Timer.Context clusteringTimer;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">transient</span> WriteOperationType operationType;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">transient</span> HoodieWriteCommitCallback commitCallback;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">transient</span> AsyncCleanerService asyncCleanerService;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> TransactionManager txnManager;</span><br><span class="line">  <span class="keyword">protected</span> Option&lt;Pair&lt;HoodieInstant, Map&lt;String, String&gt;&gt;&gt; lastCompletedTxnAndMetadata = Option.empty();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而对于upsert等操作，AbstractHoodieWriteClient只提供了抽象方法，并不提供具体实现。</p>
+<h3 id="HoodieEngineContext"><a href="#HoodieEngineContext" class="headerlink" title="HoodieEngineContext"></a>HoodieEngineContext</h3><p>HoodieEngineContext包含了引擎运行时的上下文信息，不同的引擎具有不同的实现。在构造时，需要接收Hadoop Configuration和TaskContextSuppiler。TaskContextSuppiler用于提供Task相关的上下文信息，主要是Task处理的PartitionId，StageId，AttemptId等。</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210829203859.png"></p>
+<h2 id="HoodieTable"><a href="#HoodieTable" class="headerlink" title="HoodieTable"></a>HoodieTable</h2><p>org.apache.hudi.table.HoodieTable用于表示一个HoodieTable：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> HoodieWriteConfig config;</span><br><span class="line"><span class="comment">// Client to get table metadata information</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> HoodieTableMetaClient metaClient;</span><br><span class="line"><span class="comment">// Index</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> HoodieIndex&lt;T, I, K, O&gt; index;</span><br><span class="line"><span class="keyword">private</span> SerializableConfiguration hadoopConfiguration;</span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> TaskContextSupplier taskContextSupplier;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> HoodieTableMetadata metadata;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> FileSystemViewManager viewManager;</span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">transient</span> HoodieEngineContext context</span><br></pre></td></tr></table></figure>
+
+<p>HoodieTable定义了用户对Hudi表的各种对数据读写操作，此外还包含了对底层文件的管理功能。</p>
+<p>HoodieTable的继承结构如下：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210829215605.png"></p>
+<p>HoodieFlinkTable提供了<code>create()</code>静态方法，用于创建一个具体的HoodieTable实例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T <span class="keyword">extends</span> <span class="title class_">HoodieRecordPayload</span>&gt; HoodieFlinkTable&lt;T&gt; <span class="title function_">create</span><span class="params">(HoodieWriteConfig config, HoodieFlinkEngineContext context,                                                              HoodieTableMetaClient metaClient)</span> &#123;</span><br><span class="line">  <span class="keyword">switch</span> (metaClient.getTableType()) &#123;</span><br><span class="line">    <span class="keyword">case</span> COPY_ON_WRITE:</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">HoodieFlinkCopyOnWriteTable</span>&lt;&gt;(config, context, metaClient);</span><br><span class="line">    <span class="keyword">case</span> MERGE_ON_READ:</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">HoodieFlinkMergeOnReadTable</span>&lt;&gt;(config, context, metaClient);</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">HoodieException</span>(<span class="string">&quot;Unsupported table type :&quot;</span> + metaClient.getTableType());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="HoodieFlinkCopyOnWriteTable-amp-HoodieFlinkMergeOnReadTable"><a href="#HoodieFlinkCopyOnWriteTable-amp-HoodieFlinkMergeOnReadTable" class="headerlink" title="HoodieFlinkCopyOnWriteTable &amp; HoodieFlinkMergeOnReadTable"></a>HoodieFlinkCopyOnWriteTable &amp; HoodieFlinkMergeOnReadTable</h3><p>HoodieFlinkCopyOnWriteTable是Flink的COW HoodieTable实现。对于INSERTS，HoodieFlinkCopyOnWriteTable会产生新的文件，并且提供了对文件大小的控制能力；对于UPDATES，也会根据更新的Records产生一个新版本的文件。</p>
+<p>HoodieFlinkCopyOnWriteTable中对HoodieTable的各种操作都由对应的BaseActionExecutor完成：</p>
+<h3 id="ActionExecutor"><a href="#ActionExecutor" class="headerlink" title="ActionExecutor"></a>ActionExecutor</h3><p>Hudi中对HoodieTable的操作都由对应的ActionExecutor来完成，抽象类BaseActionExecutor定义了<code>execute()</code>方法用于执行该Action：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">BaseActionExecutor</span>&lt;T <span class="keyword">extends</span> <span class="title class_">HoodieRecordPayload</span>, I, K, O, R&gt; <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">transient</span> HoodieEngineContext context;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">transient</span> Configuration hadoopConf;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> HoodieWriteConfig config;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> HoodieTable&lt;T, I, K, O&gt; table;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> String instantTime;</span><br><span class="line">	<span class="comment">// the execute function</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> R <span class="title function_">execute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>BaseCommitActionExecutor则会所有会产生提交的ActionExecutor的基类。BaseCommitActionExecutor.saveWorkloadProfileMetadataToInflight()方法用于将当前的Workload信息写入到action.inflight文件中，用于最后的提交：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">saveWorkloadProfileMetadataToInflight</span><span class="params">(WorkloadProfile profile, String instantTime)</span></span><br><span class="line">  <span class="keyword">throws</span> HoodieCommitException &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="type">HoodieCommitMetadata</span> <span class="variable">metadata</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HoodieCommitMetadata</span>();</span><br><span class="line">    profile.getPartitionPaths().forEach(path -&gt; &#123;</span><br><span class="line">      <span class="type">WorkloadStat</span> <span class="variable">partitionStat</span> <span class="operator">=</span> profile.getWorkloadStat(path);</span><br><span class="line">      <span class="type">HoodieWriteStat</span> <span class="variable">insertStat</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HoodieWriteStat</span>();</span><br><span class="line">      insertStat.setNumInserts(partitionStat.getNumInserts());</span><br><span class="line">      insertStat.setFileId(<span class="string">&quot;&quot;</span>);</span><br><span class="line">      insertStat.setPrevCommit(HoodieWriteStat.NULL_COMMIT);</span><br><span class="line">      metadata.addWriteStat(path, insertStat);</span><br><span class="line">      partitionStat.getUpdateLocationToCount().forEach((key, value) -&gt; &#123;</span><br><span class="line">        <span class="type">HoodieWriteStat</span> <span class="variable">writeStat</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HoodieWriteStat</span>();</span><br><span class="line">        writeStat.setFileId(key);</span><br><span class="line">        <span class="comment">// TODO : Write baseCommitTime is possible here ?</span></span><br><span class="line">        writeStat.setPrevCommit(value.getKey());</span><br><span class="line">        writeStat.setNumUpdateWrites(value.getValue());</span><br><span class="line">        metadata.addWriteStat(path, writeStat);</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">    metadata.setOperationType(operationType);</span><br><span class="line"></span><br><span class="line">    <span class="type">HoodieActiveTimeline</span> <span class="variable">activeTimeline</span> <span class="operator">=</span> table.getActiveTimeline();</span><br><span class="line">    <span class="type">String</span> <span class="variable">commitActionType</span> <span class="operator">=</span> getCommitActionType();</span><br><span class="line">    <span class="type">HoodieInstant</span> <span class="variable">requested</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HoodieInstant</span>(State.REQUESTED, commitActionType, instantTime);</span><br><span class="line">    activeTimeline.transitionRequestedToInflight(requested,</span><br><span class="line">                                                 Option.of(metadata.toJsonString().getBytes(StandardCharsets.UTF_8)),</span><br><span class="line">                                                 config.shouldAllowMultiWriteOnSameInstant());</span><br><span class="line">  &#125; <span class="keyword">catch</span> (IOException io) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">HoodieCommitException</span>(<span class="string">&quot;Failed to commit &quot;</span> + instantTime + <span class="string">&quot; unable to save inflight metadata &quot;</span>, io);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="WorkloadProfile-amp-WorkloadStat"><a href="#WorkloadProfile-amp-WorkloadStat" class="headerlink" title="WorkloadProfile &amp; WorkloadStat"></a>WorkloadProfile &amp; WorkloadStat</h3><p>WorkloadProfile包含了upsert&#x2F;insert的负载信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WorkloadProfile</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">  <span class="comment">// partitionPath -&gt; WorkloadStat</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> HashMap&lt;String, WorkloadStat&gt; partitionPathStatMap;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> WorkloadStat globalStat;</span><br><span class="line">  <span class="keyword">private</span> WriteOperationType operationType;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中WorkloadStat包含了以下的信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">long</span> <span class="variable">numInserts</span> <span class="operator">=</span> <span class="number">0L</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="type">long</span> <span class="variable">numUpdates</span> <span class="operator">=</span> <span class="number">0L</span>;</span><br><span class="line"><span class="comment">// FileId -&gt; count, instant</span></span><br><span class="line"><span class="keyword">private</span> HashMap&lt;String, Pair&lt;String, Long&gt;&gt; updateLocationToCount</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="HoodieWriteMetadata"><a href="#HoodieWriteMetadata" class="headerlink" title="HoodieWriteMetadata"></a>HoodieWriteMetadata</h3><p>HoodieWriteMetadata包含了Hoodie写入操作的元信息，是所有HoodieTable的数据操作的返回值：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HoodieWriteMetadata</span>&lt;O&gt; &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> O writeStatuses;</span><br><span class="line">  <span class="keyword">private</span> Option&lt;Duration&gt; indexLookupDuration = Option.empty();</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// Will be set when auto-commit happens</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">boolean</span> isCommitted;</span><br><span class="line">  <span class="keyword">private</span> Option&lt;HoodieCommitMetadata&gt; commitMetadata = Option.empty();</span><br><span class="line">  <span class="keyword">private</span> Option&lt;List&lt;HoodieWriteStat&gt;&gt; writeStats = Option.empty();</span><br><span class="line">  <span class="keyword">private</span> Option&lt;Duration&gt; indexUpdateDuration = Option.empty();</span><br><span class="line">  <span class="keyword">private</span> Option&lt;Duration&gt; finalizeDuration = Option.empty();</span><br><span class="line">  <span class="keyword">private</span> Option&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; partitionToReplaceFileIds = Option.empty();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="HoodieTableMetaClient"><a href="#HoodieTableMetaClient" class="headerlink" title="HoodieTableMetaClient"></a>HoodieTableMetaClient</h2><p>HoodieTableMetaClient用于访问Hudi Table的HoodieTimeline元信息，包括commits，savepoints，compactions，cleanups等。在构造时，HoodieTableMetaClient需要一个FileSystem以及Hudi Table的basePath。</p>
+<p>所有的Timelines信息都是延迟计算的（computed lazily），当对Timelines完成计算后，进行缓存，且永不刷新。用户需要调用<code>reloadActiveTimeline()</code>去刷新。</p>
+<p>Hudi的Timeline分为两种：</p>
+<ul>
+<li>HoodieActiveTimeline：默认情况下，12小时内的Timeline信息</li>
+<li>HoodieArchivedTimeline：已经被归档的Timeline信息</li>
+</ul>
+<p>Hudi表的元信息都保持在的basePath&#x2F;.hoodie目录下：</p>
+<ul>
+<li>.temp：临时目录</li>
+<li>.aux</li>
+<li>.bootstrap：<ul>
+<li>.partition</li>
+<li>.fileids</li>
+</ul>
+</li>
+<li>.heartbeat</li>
+<li>.marker</li>
+<li>.archive</li>
+</ul>
+<p>HoodieTableMetaClient提供了initTableAndGetMetaClient()用于初始化并创建一个HoodieTableMetaClient实例的静态方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">public static HoodieTableMetaClient initTableAndGetMetaClient(Configuration hadoopConf, String basePath,</span><br><span class="line">    Properties props)</span><br></pre></td></tr></table></figure>
+
+<p>在initTableAndGetMetaClient()中，会创建用于存储元信息的目录，并创建hoodie.properties文件，写入Hudi表的信息：hoodie.table.name，hoodie.table.type，hoodie.archivelog.folder，hoodie.timeline.layout.version，hoodie.bootstrap.base.path等。</p>
+<h3 id="HoodieActiveTimeline"><a href="#HoodieActiveTimeline" class="headerlink" title="HoodieActiveTimeline"></a>HoodieActiveTimeline</h3><p>HoodieActiveTimeline在构造时，会扫描.hoodie下面的所有actions文件，得到所有的instants（actions）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> List&lt;HoodieInstant&gt; <span class="title function_">scanHoodieInstantsFromFileSystem</span><span class="params">(Path timelinePath, Set&lt;String&gt; includedExtensions,</span></span><br><span class="line"><span class="params">    <span class="type">boolean</span> applyLayoutVersionFilters)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  Stream&lt;HoodieInstant&gt; instantStream = Arrays.stream(</span><br><span class="line">      HoodieTableMetaClient</span><br><span class="line">          .scanFiles(getFs(), timelinePath, path -&gt; &#123;</span><br><span class="line">            <span class="comment">// Include only the meta files with extensions that needs to be included</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">extension</span> <span class="operator">=</span> HoodieInstant.getTimelineFileExtension(path.getName());</span><br><span class="line">            <span class="keyword">return</span> includedExtensions.contains(extension);</span><br><span class="line">          &#125;)).map(HoodieInstant::<span class="keyword">new</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (applyLayoutVersionFilters) &#123;</span><br><span class="line">    instantStream = TimelineLayout.getLayout(getTimelineLayoutVersion()).filterHoodieInstants(instantStream);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> instantStream.sorted().collect(Collectors.toList());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Hudi的Instants存储布局有两个版本，V0和V1。在V0版本时，通过重命名的方式提交，因此对于一个action，最终只会保留一个状态的instant文件；而在V1中，则会通过创建新文件的方式进行状态转移，因此会包含一个action所有状态的instant文件。</p>
+<p>在采用TimelineLayoutV1时，在加载Instants时，会应用一个Filter，只获取具有最高状态的Instant。详细的可以参考<a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/HUDI-308">HUDI-208</a>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">TimelineLayoutV1</span> <span class="keyword">extends</span> <span class="title class_">TimelineLayout</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> Stream&lt;HoodieInstant&gt; <span class="title function_">filterHoodieInstants</span><span class="params">(Stream&lt;HoodieInstant&gt; instantStream)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> instantStream.collect(Collectors.groupingBy(instant -&gt; Pair.of(instant.getTimestamp(),</span><br><span class="line">                                                                         HoodieInstant.getComparableAction(instant.getAction())))).values().stream()</span><br><span class="line">      .map(hoodieInstants -&gt; hoodieInstants.stream().reduce((x, y) -&gt; &#123;</span><br><span class="line">        <span class="comment">// Pick the one with the highest state</span></span><br><span class="line">        <span class="keyword">if</span> (x.getState().compareTo(y.getState()) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="keyword">return</span> x;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> y;</span><br><span class="line">      &#125;).get());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="HoodieInstant"><a href="#HoodieInstant" class="headerlink" title="HoodieInstant"></a>HoodieInstant</h3><p>一个HoodieInstant表示一个已经完成的Action。一个Action有四种状态：REQUESTED，INFLIGHT，COMPLETED和INVALID，每种状态都会在.hoodie目录下创建的对应的标志文件。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HoodieInstant</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span>, Comparable&lt;HoodieInstant&gt; &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">State</span> <span class="variable">state</span> <span class="operator">=</span> State.COMPLETED;</span><br><span class="line">  <span class="keyword">private</span> String action;</span><br><span class="line">  <span class="keyword">private</span> String timestamp;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">HoodieInstant</span><span class="params">(FileStatus fileStatus)</span> &#123;</span><br><span class="line">    <span class="comment">// First read the instant timestamp. [==&gt;20170101193025&lt;==].commit</span></span><br><span class="line">    <span class="type">String</span> <span class="variable">fileName</span> <span class="operator">=</span> fileStatus.getPath().getName();</span><br><span class="line">    <span class="type">String</span> <span class="variable">fileExtension</span> <span class="operator">=</span> getTimelineFileExtension(fileName);</span><br><span class="line">    timestamp = fileName.replace(fileExtension, <span class="string">&quot;&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Next read the action for this marker</span></span><br><span class="line">    action = fileExtension.replaceFirst(<span class="string">&quot;.&quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (action.equals(<span class="string">&quot;inflight&quot;</span>)) &#123;</span><br><span class="line">      <span class="comment">// This is to support backwards compatibility on how in-flight commit files were written</span></span><br><span class="line">      <span class="comment">// General rule is inflight extension is .&lt;action&gt;.inflight, but for commit it is .inflight</span></span><br><span class="line">      action = <span class="string">&quot;commit&quot;</span>;</span><br><span class="line">      state = State.INFLIGHT;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (action.contains(HoodieTimeline.INFLIGHT_EXTENSION)) &#123;</span><br><span class="line">      state = State.INFLIGHT;</span><br><span class="line">      action = action.replace(HoodieTimeline.INFLIGHT_EXTENSION, <span class="string">&quot;&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (action.contains(HoodieTimeline.REQUESTED_EXTENSION)) &#123;</span><br><span class="line">      state = State.REQUESTED;</span><br><span class="line">      action = action.replace(HoodieTimeline.REQUESTED_EXTENSION, <span class="string">&quot;&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="HoodieTimeline"><a href="#HoodieTimeline" class="headerlink" title="HoodieTimeline"></a>HoodieTimeline</h3><blockquote>
+<p>HoodieTimeline is a view of meta-data instants in the hoodie table. Instants are specific points in time represented as HoodieInstant.</p>
+</blockquote>
+<p>Timeline在创建后就不可变，如果对Timeline进行过滤，那么每次都会创建和返回一个新的Timeline实例，因此可以将多次过滤串联起来（chain）。</p>
+<p>HoodieTimeline的继承结构如下：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210829224402.png"></p>
+<p>HoodieActiveTimeline还会负责创建新的Instant并管理它的状态，内部维护了基于文件状态的状态转移：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">transitionState</span><span class="params">(HoodieInstant fromInstant, HoodieInstant toInstant, Option&lt;<span class="type">byte</span>[]&gt; data,</span></span><br><span class="line"><span class="params">                             <span class="type">boolean</span> allowRedundantTransitions)</span> &#123;</span><br><span class="line">  ValidationUtils.checkArgument(fromInstant.getTimestamp().equals(toInstant.getTimestamp()));</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (metaClient.getTimelineLayoutVersion().isNullVersion()) &#123;</span><br><span class="line">      <span class="comment">// Re-create the .inflight file by opening a new file and write the commit metadata in</span></span><br><span class="line">      createFileInMetaPath(fromInstant.getFileName(), data, allowRedundantTransitions);</span><br><span class="line">      <span class="type">Path</span> <span class="variable">fromInstantPath</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Path</span>(metaClient.getMetaPath(), fromInstant.getFileName());</span><br><span class="line">      <span class="type">Path</span> <span class="variable">toInstantPath</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Path</span>(metaClient.getMetaPath(), toInstant.getFileName());</span><br><span class="line">      <span class="type">boolean</span> <span class="variable">success</span> <span class="operator">=</span> metaClient.getFs().rename(fromInstantPath, toInstantPath);</span><br><span class="line">      <span class="keyword">if</span> (!success) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">HoodieIOException</span>(<span class="string">&quot;Could not rename &quot;</span> + fromInstantPath + <span class="string">&quot; to &quot;</span> + toInstantPath);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// Ensures old state exists in timeline</span></span><br><span class="line">      LOG.info(<span class="string">&quot;Checking for file exists ?&quot;</span> + <span class="keyword">new</span> <span class="title class_">Path</span>(metaClient.getMetaPath(), fromInstant.getFileName()));</span><br><span class="line">      ValidationUtils.checkArgument(metaClient.getFs().exists(<span class="keyword">new</span> <span class="title class_">Path</span>(metaClient.getMetaPath(),</span><br><span class="line">                                                                       fromInstant.getFileName())));</span><br><span class="line">      <span class="comment">// Use Write Once to create Target File</span></span><br><span class="line">      <span class="keyword">if</span> (allowRedundantTransitions) &#123;</span><br><span class="line">        createFileInPath(<span class="keyword">new</span> <span class="title class_">Path</span>(metaClient.getMetaPath(), toInstant.getFileName()), data);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        createImmutableFileInPath(<span class="keyword">new</span> <span class="title class_">Path</span>(metaClient.getMetaPath(), toInstant.getFileName()), data);</span><br><span class="line">      &#125;</span><br><span class="line">      LOG.info(<span class="string">&quot;Create new file for toInstant ?&quot;</span> + <span class="keyword">new</span> <span class="title class_">Path</span>(metaClient.getMetaPath(), toInstant.getFileName()));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">HoodieIOException</span>(<span class="string">&quot;Could not complete &quot;</span> + fromInstant, e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Hudi-Commit"><a href="#Hudi-Commit" class="headerlink" title="Hudi Commit"></a>Hudi Commit</h2><p>AbstractHoodieWriteClient提供了多种commit的方法，子类需要重写下面的<code>commit()</code>方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="type">boolean</span> <span class="title function_">commit</span><span class="params">(String instantTime, O writeStatuses, Option&lt;Map&lt;String, String&gt;&gt; extraMetadata,</span></span><br><span class="line"><span class="params">                               String commitActionType, Map&lt;String, List&lt;String&gt;&gt; partitionToReplacedFileIds)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>其中最核心的是WriteStatuses，包含了具体需要提交的写入的HoodieRecords信息</li>
+<li>extraMetadata则会包含Schema信息</li>
+<li>commitActionType根据表的类型分为：<ul>
+<li>COW：commit</li>
+<li>MOR：deltacommit</li>
+</ul>
+</li>
+<li>partitionToReplacedFileIds需要替换的Partition的信息</li>
+</ul>
+<p>AbstractHoodieWriteClient提供了commit的内部实现commitStats()。在提交过程中，不会将WriteStatuses中包含的信息都提交，只需要提交写入统计信息HoodieWriteStat即可。commitStats包含了整个commit的各种步骤：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">commitStats</span><span class="params">(String instantTime, List&lt;HoodieWriteStat&gt; stats, Option&lt;Map&lt;String, String&gt;&gt; extraMetadata,</span></span><br><span class="line"><span class="params">                           String commitActionType, Map&lt;String, List&lt;String&gt;&gt; partitionToReplaceFileIds)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (!config.allowEmptyCommit() &amp;&amp; stats.isEmpty()) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  LOG.info(<span class="string">&quot;Committing &quot;</span> + instantTime + <span class="string">&quot; action &quot;</span> + commitActionType);</span><br><span class="line">  <span class="comment">// Create a Hoodie table which encapsulated the commits and files visible</span></span><br><span class="line">  <span class="type">HoodieTable</span> <span class="variable">table</span> <span class="operator">=</span> createTable(config, hadoopConf);</span><br><span class="line">  <span class="comment">// Construct HoodieCommitMetadata</span></span><br><span class="line">  <span class="type">HoodieCommitMetadata</span> <span class="variable">metadata</span> <span class="operator">=</span> CommitUtils.buildMetadata(stats, partitionToReplaceFileIds,</span><br><span class="line">                                                            extraMetadata, operationType, config.getWriteSchema(), commitActionType);</span><br><span class="line">  HeartbeatUtils.abortIfHeartbeatExpired(instantTime, table, heartbeatClient, config);</span><br><span class="line">  <span class="comment">// TransactionManager is only used when OCC is enabled.</span></span><br><span class="line">  <span class="built_in">this</span>.txnManager.beginTransaction(Option.of(<span class="keyword">new</span> <span class="title class_">HoodieInstant</span>(State.INFLIGHT, table.getMetaClient().getCommitActionType(), instantTime)),</span><br><span class="line">                                   lastCompletedTxnAndMetadata.isPresent() ? Option.of(lastCompletedTxnAndMetadata.get().getLeft()) : Option.empty());</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    preCommit(instantTime, metadata);</span><br><span class="line">    commit(table, commitActionType, instantTime, metadata, stats);</span><br><span class="line">    postCommit(table, metadata, instantTime, extraMetadata);</span><br><span class="line">    LOG.info(<span class="string">&quot;Committed &quot;</span> + instantTime);</span><br><span class="line">    releaseResources();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">HoodieCommitException</span>(<span class="string">&quot;Failed to complete commit &quot;</span> + config.getBasePath() + <span class="string">&quot; at time &quot;</span> + instantTime, e);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.txnManager.endTransaction();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// do this outside of lock since compaction, clustering can be time taking and we don&#x27;t need a lock for the entire execution period</span></span><br><span class="line">  runTableServicesInline(table, metadata, extraMetadata);</span><br><span class="line">  emitCommitMetrics(instantTime, metadata, commitActionType);</span><br><span class="line">  <span class="comment">// callback if needed.</span></span><br><span class="line">  <span class="keyword">if</span> (config.writeCommitCallbackOn()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">null</span> == commitCallback) &#123;</span><br><span class="line">      commitCallback = HoodieCommitCallbackFactory.create(config);</span><br><span class="line">    &#125;</span><br><span class="line">    commitCallback.call(<span class="keyword">new</span> <span class="title class_">HoodieWriteCommitCallbackMessage</span>(instantTime, config.getTableName(), config.getBasePath(), stats));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>preCommit()设计的目的是用于Conflict resolution，但是目前并不支持，是一个no-op。</p>
+<p>commit()则是执行实际的commit动作：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">LOG.info(<span class="string">&quot;Committing &quot;</span> + instantTime + <span class="string">&quot; action &quot;</span> + commitActionType);</span><br><span class="line"><span class="type">HoodieActiveTimeline</span> <span class="variable">activeTimeline</span> <span class="operator">=</span> table.getActiveTimeline();</span><br><span class="line"><span class="comment">// Finalize write</span></span><br><span class="line">finalizeWrite(table, instantTime, stats);</span><br><span class="line">activeTimeline.saveAsComplete(<span class="keyword">new</span> <span class="title class_">HoodieInstant</span>(<span class="literal">true</span>, commitActionType, instantTime),                         Option.of(metadata.toJsonString().getBytes(StandardCharsets.UTF_8)))</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>finalizeWrite()则是通知HoodieTable对Finalize在存储中的写入数据，并且执行最终的cleanups等，实际会调用HoodieTable.reconcileAgainstMarkers()。reconcileAgainstMarkers()会清除掉由于Spark的Task重试等引入的重复数据文件。</li>
+<li>activeTimeline.saveAsComplete()会对该提交进行状态转换，创建最终的Action文件，并写入HoodieCommitMetadata。</li>
+</ul>
+<p>postCommit()用于执行post-commit处理：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Delete the marker directory for the instant.</span></span><br><span class="line">WriteMarkersFactory.get(config.getMarkersType(), table, instantTime)</span><br><span class="line">  .quietDeleteMarkerDir(context, config.getMarkersDeleteParallelism());</span><br><span class="line"><span class="comment">// We cannot have unbounded commit files. Archive commits if we have to archive</span></span><br><span class="line"><span class="type">HoodieTimelineArchiveLog</span> <span class="variable">archiveLog</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HoodieTimelineArchiveLog</span>(config, table);</span><br><span class="line">archiveLog.archiveIfRequired(context);</span><br><span class="line">autoCleanOnCommit();</span><br><span class="line"><span class="comment">// If there are new upserts, sync up the Metadata Table</span></span><br><span class="line"><span class="keyword">if</span> (operationType != <span class="literal">null</span> &amp;&amp; operationType != WriteOperationType.CLUSTER &amp;&amp; operationType != WriteOperationType.COMPACT) &#123;</span><br><span class="line">  syncTableMetadata();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>runTableServicesInline()在“hoodie.clean.automatic”，“hoodie.compact.inline”和“hoodie.clustering.inline”开启的情况下，会调度对应的TableServices执行。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (config.inlineTableServices()) &#123;</span><br><span class="line">  <span class="comment">// Do an inline compaction if enabled</span></span><br><span class="line">  <span class="keyword">if</span> (config.inlineCompactionEnabled()) &#123;</span><br><span class="line">    runAnyPendingCompactions(table);</span><br><span class="line">    metadata.addMetadata(HoodieCompactionConfig.INLINE_COMPACT.key(), <span class="string">&quot;true&quot;</span>);</span><br><span class="line">    inlineCompact(extraMetadata);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    metadata.addMetadata(HoodieCompactionConfig.INLINE_COMPACT.key(), <span class="string">&quot;false&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Do an inline clustering if enabled</span></span><br><span class="line">  <span class="keyword">if</span> (config.inlineClusteringEnabled()) &#123;</span><br><span class="line">    runAnyPendingClustering(table);</span><br><span class="line">    metadata.addMetadata(HoodieClusteringConfig.INLINE_CLUSTERING.key(), <span class="string">&quot;true&quot;</span>);</span><br><span class="line">    inlineCluster(extraMetadata);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    metadata.addMetadata(HoodieClusteringConfig.INLINE_CLUSTERING.key(), <span class="string">&quot;false&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="WriteStatus"><a href="#WriteStatus" class="headerlink" title="WriteStatus"></a>WriteStatus</h3><p>WriteStatus记录了HoodieRecord级别的写入状态信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WriteStatus</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;HoodieKey, Throwable&gt; errors = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> List&lt;HoodieRecord&gt; writtenRecords = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> List&lt;HoodieRecord&gt; failedRecords = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="type">Throwable</span> <span class="variable">globalError</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> <span class="type">String</span> <span class="variable">fileId</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">String</span> <span class="variable">partitionPath</span> <span class="operator">=</span> <span class="literal">null</span></span><br><span class="line">  <span class="comment">// write statictis information to be stored in commit metadata</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">HoodieWriteStat</span> <span class="variable">stat</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> <span class="type">long</span> <span class="variable">totalRecords</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">long</span> <span class="variable">totalErrorRecords</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">double</span> failureFraction;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> trackSuccessRecords;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="HoodieWriteStat"><a href="#HoodieWriteStat" class="headerlink" title="HoodieWriteStat"></a>HoodieWriteStat</h3><p>HoodieWriteStat表示当个Partition的写入统计信息，主要包括：</p>
+<ul>
+<li>fileId，path，partitionPath，prevCommit，</li>
+<li>numWrites，numDeletes，numUpdateWrites，totalWriteBytes，totalWriteErrors</li>
+<li>totalLogRecords，totalLogFilesCompacted，totalLogSizeCompacted，totalUpdatedRecordsCompacted，totalLogBlocks，totalCorruptLogBlock，totalRollbackBlocks</li>
+<li>fileSizeInBytes，minEventTime，maxEventTime</li>
+<li>RuntimeStats：totalScanTime，totalUpsertTime，totalCreateTime</li>
+</ul>
+<h3 id="HoodieCommitMetadata"><a href="#HoodieCommitMetadata" class="headerlink" title="HoodieCommitMetadata"></a>HoodieCommitMetadata</h3><p>HoodieCommitMetadata表示在一次commit中，需要存储的所有信息。主要包括：</p>
+<ul>
+<li><code>Map&lt;String, List&lt;HoodieWriteStat&gt;&gt; partitionToWriteStats</code> ：将要写入的Partition信息</li>
+<li><code>Boolean compacted</code>：是否是Compaction操作</li>
+<li><code>Map&lt;String, String&gt; extraMetadata</code>：额外的Metadata信息，主要会包含Schema信息</li>
+<li><code>WriteOperationType operationType </code>：写入操作的类型</li>
+</ul>
+<h3 id="WriteOperationType"><a href="#WriteOperationType" class="headerlink" title="WriteOperationType"></a>WriteOperationType</h3><p>WriteOperationType定义了Hudi支持的写入类型，包括：</p>
+<ul>
+<li>insert，insert_prepped，bulk_insert，bulk_insert_prepped</li>
+<li>upsert，upsert_prepped</li>
+<li>delete</li>
+<li>bootstrap</li>
+<li>cluster</li>
+<li>delete_partition</li>
+<li>insert_overwrite，insert_overwrite_table</li>
+<li>compact</li>
+<li>unknown</li>
+</ul>
+<p>WriteOperationType将会作为commit的元信息的一部分进行提交。</p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2022/02/13/Yarn-Yarn3-0-Features/" title= "Yarn 3.0+ New Features">
+                    <div class="nextTitle">Yarn 3.0+ New Features</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/12/23/Hudi/" title= "Hudi Overview">
+                    <div class="prevTitle">Hudi Overview</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2022/01/15/Hudi-Flink-Write/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink Integration with Hudi"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#AbstractHoodieClient"><span class="toc-number">1.</span> <span class="toc-text">AbstractHoodieClient</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AbstractHoodieWriteClient"><span class="toc-number">1.1.</span> <span class="toc-text">AbstractHoodieWriteClient</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HoodieEngineContext"><span class="toc-number">1.2.</span> <span class="toc-text">HoodieEngineContext</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HoodieTable"><span class="toc-number">2.</span> <span class="toc-text">HoodieTable</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HoodieFlinkCopyOnWriteTable-amp-HoodieFlinkMergeOnReadTable"><span class="toc-number">2.1.</span> <span class="toc-text">HoodieFlinkCopyOnWriteTable &amp; HoodieFlinkMergeOnReadTable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ActionExecutor"><span class="toc-number">2.2.</span> <span class="toc-text">ActionExecutor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WorkloadProfile-amp-WorkloadStat"><span class="toc-number">2.3.</span> <span class="toc-text">WorkloadProfile &amp; WorkloadStat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HoodieWriteMetadata"><span class="toc-number">2.4.</span> <span class="toc-text">HoodieWriteMetadata</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HoodieTableMetaClient"><span class="toc-number">3.</span> <span class="toc-text">HoodieTableMetaClient</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HoodieActiveTimeline"><span class="toc-number">3.1.</span> <span class="toc-text">HoodieActiveTimeline</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HoodieInstant"><span class="toc-number">3.2.</span> <span class="toc-text">HoodieInstant</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HoodieTimeline"><span class="toc-number">3.3.</span> <span class="toc-text">HoodieTimeline</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hudi-Commit"><span class="toc-number">4.</span> <span class="toc-text">Hudi Commit</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#WriteStatus"><span class="toc-number">4.1.</span> <span class="toc-text">WriteStatus</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HoodieWriteStat"><span class="toc-number">4.2.</span> <span class="toc-text">HoodieWriteStat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HoodieCommitMetadata"><span class="toc-number">4.3.</span> <span class="toc-text">HoodieCommitMetadata</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WriteOperationType"><span class="toc-number">4.4.</span> <span class="toc-text">WriteOperationType</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

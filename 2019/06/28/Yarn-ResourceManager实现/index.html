@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>ResourceManager实现 · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">ResourceManager实现</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            ResourceManager实现
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Yarn">Yarn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "ResourceScheduler">ResourceScheduler</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "ResourceManager">ResourceManager</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "NodeManager">NodeManager</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">5.3k</span>Reading time: <span class="post-count reading-time">24 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/06/28</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>YARN采用了Master&#x2F;Slave结构，其中的Master为ResourceManager，Slave为NodeManager。ResourceManager是YARN集群中最重要的组件，RM的功能包括：ApplicationMaster的管理、NodeManager的管理、Application的管理、状态机管理等。</p>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>RM的RPC协议：</p>
+<ul>
+<li>ResourceTrackerProtocol，NM与RM之间采用了“pull”模型，NM通过周期性地RPC协议注册、汇报Container的状态，并通过返回结果获取RM的命令。</li>
+<li>ApplicationMasterProtocol，应用程序的AM通过RPC协议向RM注册、申请资源和释放资源，依然采用了“pull”模型。</li>
+<li>ApplicationClientProtocol，客户端通过RPC协议向RM提交应用程序、查询应用程序状态和控制应用程序。</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20190604220431.png"></p>
+<p>此外，RM还负责资源管理与调度。</p>
+<h3 id="内部架构"><a href="#内部架构" class="headerlink" title="内部架构"></a>内部架构</h3><p>RM内部主要分为：</p>
+<ul>
+<li>用户交互模块：<ul>
+<li>ClientRMService，处理来自客户端的RPC请求</li>
+<li>AdminService，为管理员提供的服务接口用于管理集群</li>
+<li>WebApp，用于通过Web展示集群资源使用情况和应用程序运行状态信息等</li>
+</ul>
+</li>
+<li>NM管理模块<ul>
+<li>NMLivelinessMonitor，监控NM是否存活，将超过一定时间（默认10分钟）的未汇报心跳信息的NM进行移除</li>
+<li>NodesListManager，维护正常节点和异常节点列表，动态加载和管理exclude和include节点列表</li>
+<li>ResourceTrackerService，处理NM的注册和心跳等请求，NM启动时会向RM进行注册，上报NM包含的节点ID、可用的资源上限等信息；NM的周期性的心跳信息则包含各个Container的运行状态，运行的应用程序列表、节点的健康状况等信息。RM在响应时会返回NM待释放的Container列表、应用程序列表等。</li>
+</ul>
+</li>
+<li>AM管理模块<ul>
+<li>AMLivenessMonitor</li>
+<li>ApplicationMasterLauncher，与某个NM通信，启动应用程序的AM</li>
+<li>ApplicationMasterService，处理来自AM的注册和心跳等请求</li>
+</ul>
+</li>
+<li>Application管理模块<ul>
+<li>ApplicationACLsManager，管理应用程序的访问权限，包括查看权限和修改权限</li>
+<li>RMAppManager，管理应用程序的启动和关闭</li>
+<li>ContainerAllocationExpirer，用于管理分配给AM的Container，回收已经超时的Container</li>
+</ul>
+</li>
+<li>状态机管理模块<ul>
+<li>RMApp，维护了一个应用程序的整个运行周期</li>
+<li>RMAppAttempt，维护了一个应用程序的一次运行Attempt的整个生命周期</li>
+<li>RMContainer，维护了一个Container的运行周期</li>
+<li>RMNode，维护了一个NM的生命周期</li>
+</ul>
+</li>
+<li>安全管理模块，由ClientToAMSecretManager，ContainerTokenSecretManager，ApplicationTokenSecretManager等完成</li>
+<li>资源分配模块，资源调度器ResourceScheduler按照一定的约束条件将集群中的资源分配给各个应用程序。YARN提供了一个批处理资源调度器FIFO和两个用户调度FairScheduler和CapacityScheduler实现。</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20190604222133.png"></p>
+<h3 id="ResourceManager事件与事件处理器"><a href="#ResourceManager事件与事件处理器" class="headerlink" title="ResourceManager事件与事件处理器"></a>ResourceManager事件与事件处理器</h3><p>RM中各个模块中事件与事件处理器的相互关系：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20190608225208.png"></p>
+<h2 id="用户交互模块"><a href="#用户交互模块" class="headerlink" title="用户交互模块"></a>用户交互模块</h2><p>ClientRMService和AdminService两个服务分部负责处理来自普通用户和管理员的请求，两者使用分离的服务可以避免普通用户的请求过多而导致管理员请求被阻塞的情况。</p>
+<h3 id="ClientRMService"><a href="#ClientRMService" class="headerlink" title="ClientRMService"></a>ClientRMService</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClientRMService</span> <span class="keyword">extends</span> <span class="title class_">AbstractService</span> <span class="keyword">implements</span></span><br><span class="line">    <span class="title class_">ApplicationClientProtocol</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">private</span> <span class="type">AtomicInteger</span> <span class="variable">applicationCounter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>(<span class="number">0</span>);</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">private</span> YarnScheduler scheduler;</span><br><span class="line">  <span class="comment">// Context of RM</span></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">private</span> RMContext rmContext;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RMAppManager rmAppManager;</span><br><span class="line">	<span class="comment">// RPC server</span></span><br><span class="line">  <span class="keyword">private</span> Server server;</span><br><span class="line">  <span class="keyword">protected</span> RMDelegationTokenSecretManager rmDTSecretManager;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">RecordFactory</span> <span class="variable">recordFactory</span> <span class="operator">=</span> RecordFactoryProvider.getRecordFactory(<span class="literal">null</span>);</span><br><span class="line">  InetSocketAddress clientBindAddress;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ApplicationACLsManager applicationsACLsManager;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> QueueACLsManager queueACLsManager;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// For Reservation APIs</span></span><br><span class="line">  <span class="keyword">private</span> Clock clock;</span><br><span class="line">  <span class="keyword">private</span> ReservationSystem reservationSystem;</span><br><span class="line">  <span class="keyword">private</span> ReservationInputValidator rValidator;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">serviceStart</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">Configuration</span> <span class="variable">conf</span> <span class="operator">=</span> getConfig();</span><br><span class="line">    <span class="type">YarnRPC</span> <span class="variable">rpc</span> <span class="operator">=</span> YarnRPC.create(conf);</span><br><span class="line">    <span class="built_in">this</span>.server =   </span><br><span class="line">      rpc.getServer(ApplicationClientProtocol.class, <span class="built_in">this</span>,</span><br><span class="line">                    clientBindAddress,</span><br><span class="line">                    conf, <span class="built_in">this</span>.rmDTSecretManager,</span><br><span class="line">                    conf.getInt(YarnConfiguration.RM_CLIENT_THREAD_COUNT, </span><br><span class="line">                                YarnConfiguration.DEFAULT_RM_CLIENT_THREAD_COUNT));</span><br><span class="line">    ...</span><br><span class="line">      <span class="comment">// Start the ApplicationClientProtocol RPC Server</span></span><br><span class="line">      <span class="built_in">this</span>.server.start();</span><br><span class="line">    <span class="built_in">super</span>.serviceStart();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ClientRMService类中持有了<code>RMContext</code>的引用，通过<code>RMContext</code>可以获得RM中绝大部分的信息。<code>RMContext</code>的实现为<code>RMContextImpl</code>类：</p>
+<h3 id="AdminService"><a href="#AdminService" class="headerlink" title="AdminService"></a>AdminService</h3><p>AdminService除了实现ResourceManagerAdministrationProtocol协议的RPC，还对RM的HA状态进行管理，实现了HAServiceProtocol协议。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AdminService</span> <span class="keyword">extends</span> <span class="title class_">CompositeService</span> <span class="keyword">implements</span></span><br><span class="line">    <span class="title class_">HAServiceProtocol</span>, ResourceManagerAdministrationProtocol &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">serviceInit</span><span class="params">(Configuration conf)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="keyword">if</span> (rmContext.isHAEnabled()) &#123;</span><br><span class="line">      autoFailoverEnabled = HAUtil.isAutomaticFailoverEnabled(conf);</span><br><span class="line">      <span class="comment">// Create the embeddedElectorServive</span></span><br><span class="line">      <span class="keyword">if</span> (autoFailoverEnabled) &#123;</span><br><span class="line">        <span class="keyword">if</span> (HAUtil.isAutomaticFailoverEmbedded(conf)) &#123;</span><br><span class="line">          embeddedElector = createEmbeddedElectorService();</span><br><span class="line">          addIfService(embeddedElector);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">		...   </span><br><span class="line">    adminAcl = <span class="keyword">new</span> <span class="title class_">AccessControlList</span>(conf.get(</span><br><span class="line">        YarnConfiguration.YARN_ADMIN_ACL,</span><br><span class="line">        YarnConfiguration.DEFAULT_YARN_ADMIN_ACL));</span><br><span class="line">    rmId = conf.get(YarnConfiguration.RM_HA_ID);</span><br><span class="line">    <span class="built_in">super</span>.serviceInit(conf);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="ApplicationMaster管理"><a href="#ApplicationMaster管理" class="headerlink" title="ApplicationMaster管理"></a>ApplicationMaster管理</h2><p>AM的管理由ApplicationMasterLauncher、AMLivelinenessMonitor和ApplicationMasterService组成，三者共同管理AM的生命周期。AM生命周期中各个流程如下：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20190609091323.png"></p>
+<h3 id="ApplicationMasterLauncher"><a href="#ApplicationMasterLauncher" class="headerlink" title="ApplicationMasterLauncher"></a>ApplicationMasterLauncher</h3><p>负责处理AMLauncherEvent事件，该事件分为两种类型：</p>
+<ul>
+<li>LAUNCH，ApplicationMasterLauncher与对应的NodeManager通信，要求启动ApplicationMaster。</li>
+<li>CLEANUP，与对应的NM通信，要求杀死AM</li>
+</ul>
+<p>launcherHandlingThread从masterEvents阻塞队列中不断的获取需要执行的LauncherRunnable任务，然后通过launcherPool执行。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ApplicationMasterLauncher</span> <span class="keyword">extends</span> <span class="title class_">AbstractService</span> <span class="keyword">implements</span></span><br><span class="line">    <span class="title class_">EventHandler</span>&lt;AMLauncherEvent&gt; &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Log</span> <span class="variable">LOG</span> <span class="operator">=</span> LogFactory.getLog(</span><br><span class="line">      ApplicationMasterLauncher.class);</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ThreadPoolExecutor launcherPool;</span><br><span class="line">  <span class="keyword">private</span> LauncherThread launcherHandlingThread;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> BlockingQueue&lt;Runnable&gt; masterEvents</span><br><span class="line">    = <span class="keyword">new</span> <span class="title class_">LinkedBlockingQueue</span>&lt;Runnable&gt;();</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> RMContext context; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据事件的类型，创建AMLauncher的Runnable对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Runnable <span class="title function_">createRunnableLauncher</span><span class="params">(RMAppAttempt application, </span></span><br><span class="line"><span class="params">	AMLauncherEventType event)</span> &#123;</span><br><span class="line">  <span class="type">Runnable</span> <span class="variable">launcher</span> <span class="operator">=</span></span><br><span class="line">  	<span class="keyword">new</span> <span class="title class_">AMLauncher</span>(context, application, event, getConfig());</span><br><span class="line">  <span class="keyword">return</span> launcher;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="AMLauncher"><a href="#AMLauncher" class="headerlink" title="AMLauncher"></a>AMLauncher</h4><p>AMLauncher在<code>run()</code>方法中，根据不同的事件类型运行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">switch</span> (eventType) &#123;</span><br><span class="line">  <span class="keyword">case</span> LAUNCH:</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      launch();</span><br><span class="line">      handler.handle(<span class="keyword">new</span> <span class="title class_">RMAppAttemptEvent</span>(application.getAppAttemptId(),</span><br><span class="line">          RMAppAttemptEventType.LAUNCHED));</span><br><span class="line">      ...</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> CLEANUP:</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      cleanup();</span><br><span class="line">    &#125; </span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    LOG.warn(<span class="string">&quot;Received unknown event-type &quot;</span> + eventType + <span class="string">&quot;. Ignoring.&quot;</span>);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>launch()</code>方法将要启动的AM的<code>ApplicationSubmissionContext</code>封装成<code>StartContainerRequest</code>请求，向对应的NM发送请求，启动运行AM的Container。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">launch</span><span class="params">()</span> <span class="keyword">throws</span> IOException, YarnException &#123;</span><br><span class="line">   connect();</span><br><span class="line">   <span class="type">ContainerId</span> <span class="variable">masterContainerID</span> <span class="operator">=</span> masterContainer.getId();</span><br><span class="line">   <span class="type">ApplicationSubmissionContext</span> <span class="variable">applicationContext</span> <span class="operator">=</span></span><br><span class="line">     application.getSubmissionContext();</span><br><span class="line">   <span class="comment">// launcherContext contains envs, jar and resources related to the AM</span></span><br><span class="line">   <span class="type">ContainerLaunchContext</span> <span class="variable">launchContext</span> <span class="operator">=</span></span><br><span class="line">       createAMContainerLaunchContext(applicationContext, masterContainerID);</span><br><span class="line">	<span class="comment">// Package the launchContext to StartContainerRequest</span></span><br><span class="line">   <span class="type">StartContainerRequest</span> <span class="variable">scRequest</span> <span class="operator">=</span></span><br><span class="line">       StartContainerRequest.newInstance(launchContext,</span><br><span class="line">         masterContainer.getContainerToken());</span><br><span class="line">   List&lt;StartContainerRequest&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;StartContainerRequest&gt;();</span><br><span class="line">   list.add(scRequest);</span><br><span class="line">   <span class="type">StartContainersRequest</span> <span class="variable">allRequests</span> <span class="operator">=</span></span><br><span class="line">       StartContainersRequest.newInstance(list);</span><br><span class="line">	<span class="comment">// Start the container</span></span><br><span class="line">   <span class="type">StartContainersResponse</span> <span class="variable">response</span> <span class="operator">=</span></span><br><span class="line">       containerMgrProxy.startContainers(allRequests);</span><br><span class="line">   <span class="keyword">if</span> (response.getFailedRequests() != <span class="literal">null</span></span><br><span class="line">       &amp;&amp; response.getFailedRequests().containsKey(masterContainerID)) &#123;</span><br><span class="line">     <span class="type">Throwable</span> <span class="variable">t</span> <span class="operator">=</span></span><br><span class="line">         response.getFailedRequests().get(masterContainerID).deSerialize();</span><br><span class="line">     parseAndThrowException(t);</span><br><span class="line">   &#125; </span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于<code>cleanup()</code>，则是向对应的NM发送<code>stopContainer()</code>请求。</p>
+<h3 id="AMLivelinessMonitor"><a href="#AMLivelinessMonitor" class="headerlink" title="AMLivelinessMonitor"></a>AMLivelinessMonitor</h3><p>周期性地遍历管理的AM，检查AM是否在一段时间（yarn.am.liveness-monitor.expiry-interval-ms)内未汇报心跳信息。如果超过这段时间，则会认为AM管理的Container运行失败，RM不会重新执行这些Container，而是通过心跳机制告诉对应的AM，由AM决定是否重新执行。如果AM运行失败，RM会重新申请资源，以便分配到一个新的节点上重新执行（重试次数由yarn.resourcemanager.am.max-attempts决定）。AMLivelinessMonitor继承自AbstractLivelinessMonitor，对于超时的ApplicationAttemptId进行利用传入的EventHandler进行处理：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AMLivelinessMonitor</span> <span class="keyword">extends</span> <span class="title class_">AbstractLivelinessMonitor</span>&lt;ApplicationAttemptId&gt; &#123;</span><br><span class="line">  <span class="keyword">private</span> EventHandler dispatcher;  </span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">AMLivelinessMonitor</span><span class="params">(Dispatcher d)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>(<span class="string">&quot;AMLivelinessMonitor&quot;</span>, <span class="keyword">new</span> <span class="title class_">SystemClock</span>());</span><br><span class="line">    <span class="built_in">this</span>.dispatcher = d.getEventHandler();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">expire</span><span class="params">(ApplicationAttemptId id)</span> &#123;</span><br><span class="line">    dispatcher.handle(</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">RMAppAttemptEvent</span>(id, RMAppAttemptEventType.EXPIRE));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在AbstractLivelinessMonitor中，利用一个checkerThread周期性的检查running状态中保存的AM是否超时，如果超时就移除。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">PingChecker</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">while</span> (!stopped &amp;&amp; !Thread.currentThread().isInterrupted()) &#123;</span><br><span class="line">      <span class="keyword">synchronized</span> (AbstractLivelinessMonitor.<span class="built_in">this</span>) &#123;</span><br><span class="line">     		<span class="comment">// Iterate all running AM</span></span><br><span class="line">        Iterator&lt;Map.Entry&lt;O, Long&gt;&gt; iterator = </span><br><span class="line">          running.entrySet().iterator();</span><br><span class="line">        <span class="comment">// Avoid calculating current time everytime in loop</span></span><br><span class="line">        <span class="type">long</span> <span class="variable">currentTime</span> <span class="operator">=</span> clock.getTime();</span><br><span class="line">        <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">          Map.Entry&lt;O, Long&gt; entry = iterator.next();</span><br><span class="line">          <span class="keyword">if</span> (currentTime &gt; entry.getValue() + expireInterval) &#123;</span><br><span class="line">            iterator.remove();</span><br><span class="line">            expire(entry.getKey());</span><br><span class="line">            LOG.info(<span class="string">&quot;Expired:&quot;</span> + entry.getKey().toString() + </span><br><span class="line">                    <span class="string">&quot; Timed out after &quot;</span> + expireInterval/<span class="number">1000</span> + <span class="string">&quot; secs&quot;</span>);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// Sleep to next check</span></span><br><span class="line">        Thread.sleep(monitorInterval);</span><br><span class="line">      &#125; </span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ApplicationMasterService"><a href="#ApplicationMasterService" class="headerlink" title="ApplicationMasterService"></a>ApplicationMasterService</h3><p>实现了ApplicationMasterProtocol协议，负责处理来自AM的注册、心跳和清理请求。启动时，通过<code>ApplicationMasterProtocol#registerApplicationMaster()</code>进行注册。在AM运行过程中，通过<code>ApplicationMasterProtocol#allocate()</code>函数周期性地与RM通信，用于：</p>
+<ul>
+<li>请求资源</li>
+<li>获取新分配的资源</li>
+<li>汇报周期性的心跳</li>
+</ul>
+<p>AM运行结束时，通过<code>ApplicationMasterProtocol#finishApplicationMaster()</code>通知RM，从而回收资源（AM所在的Container）和清理各种数据结果。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ApplicationMasterService</span> <span class="keyword">extends</span> <span class="title class_">AbstractService</span> <span class="keyword">implements</span></span><br><span class="line">    <span class="title class_">ApplicationMasterProtocol</span> &#123;</span><br><span class="line">	<span class="comment">// Update AM last received heatbeat </span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> AMLivelinessMonitor amLivelinessMonitor;</span><br><span class="line">  <span class="comment">// Handle resources allocation requested by AM via allocate()</span></span><br><span class="line">  <span class="keyword">private</span> YarnScheduler rScheduler;</span><br><span class="line">  <span class="keyword">private</span> InetSocketAddress bindAddress;</span><br><span class="line">  <span class="comment">// ApplicationMasterProtocol RPC Server</span></span><br><span class="line">  <span class="keyword">private</span> Server server;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">RecordFactory</span> <span class="variable">recordFactory</span> <span class="operator">=</span></span><br><span class="line">      RecordFactoryProvider.getRecordFactory(<span class="literal">null</span>);</span><br><span class="line">  <span class="comment">// For each ApplicationAttemptId, use a lock to handle requests in a thread-safe way</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ConcurrentMap&lt;ApplicationAttemptId, AllocateResponseLock&gt; responseMap =</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">ConcurrentHashMap</span>&lt;ApplicationAttemptId, AllocateResponseLock&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RMContext rmContext;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ApplicationMasterService</span><span class="params">(RMContext rmContext, YarnScheduler scheduler)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>(ApplicationMasterService.class.getName());</span><br><span class="line">    <span class="built_in">this</span>.amLivelinessMonitor = rmContext.getAMLivelinessMonitor();</span><br><span class="line">    <span class="built_in">this</span>.rScheduler = scheduler;</span><br><span class="line">    <span class="built_in">this</span>.rmContext = rmContext;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="NodeManager管理"><a href="#NodeManager管理" class="headerlink" title="NodeManager管理"></a>NodeManager管理</h2><p>由NMLivenessMonitor、NodesListManager和ResourceTrackerService组成。NMLivenessMonitor继承自AbstractLivenessMonitor，与AMLivenessMonitor实现类似。</p>
+<h3 id="NodesListManager"><a href="#NodesListManager" class="headerlink" title="NodesListManager"></a>NodesListManager</h3><p>NodesListManager管理exclude和include节点列表，此外两个列表可以通过adminService的<code>bin/yarn rmadmin -refreshNodes</code>动态刷新和加载两个文件。NodesListManager还实现了EventHandler接口，负责NodesListManagerEvent事件的处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">NodesListManager</span> <span class="keyword">extends</span> <span class="title class_">AbstractService</span> <span class="keyword">implements</span></span><br><span class="line">    <span class="title class_">EventHandler</span>&lt;NodesListManagerEvent&gt; &#123;</span><br><span class="line">  <span class="keyword">private</span> HostsFileReader hostsReader;</span><br><span class="line">  <span class="keyword">private</span> Configuration conf;</span><br><span class="line">  <span class="keyword">private</span> Set&lt;RMNode&gt; unusableRMNodesConcurrentSet = Collections</span><br><span class="line">      .newSetFromMap(<span class="keyword">new</span> <span class="title class_">ConcurrentHashMap</span>&lt;RMNode,Boolean&gt;());</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RMContext rmContext;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> String includesFile;</span><br><span class="line">  <span class="keyword">private</span> String excludesFile;</span><br><span class="line">  <span class="comment">// Refresh nodes</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">refreshNodes</span><span class="params">(Configuration yarnConf)</span> <span class="keyword">throws</span> IOException,</span><br><span class="line">      YarnException &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (hostsReader) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="literal">null</span> == yarnConf) &#123;</span><br><span class="line">        yarnConf = <span class="keyword">new</span> <span class="title class_">YarnConfiguration</span>();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// Get include and exclude file path</span></span><br><span class="line">      includesFile =</span><br><span class="line">          yarnConf.get(YarnConfiguration.RM_NODES_INCLUDE_FILE_PATH,</span><br><span class="line">              YarnConfiguration.DEFAULT_RM_NODES_INCLUDE_FILE_PATH);</span><br><span class="line">      excludesFile =</span><br><span class="line">          yarnConf.get(YarnConfiguration.RM_NODES_EXCLUDE_FILE_PATH,</span><br><span class="line">              YarnConfiguration.DEFAULT_RM_NODES_EXCLUDE_FILE_PATH);</span><br><span class="line">      hostsReader.updateFileNames(includesFile, excludesFile);</span><br><span class="line">      <span class="comment">// Refresh</span></span><br><span class="line">      hostsReader.refresh(</span><br><span class="line">          includesFile.isEmpty() ? <span class="literal">null</span> : <span class="built_in">this</span>.rmContext</span><br><span class="line">              .getConfigurationProvider().getConfigurationInputStream(</span><br><span class="line">                  <span class="built_in">this</span>.conf, includesFile), excludesFile.isEmpty() ? <span class="literal">null</span></span><br><span class="line">              : <span class="built_in">this</span>.rmContext.getConfigurationProvider()</span><br><span class="line">                  .getConfigurationInputStream(<span class="built_in">this</span>.conf, excludesFile));</span><br><span class="line">      printConfiguredHosts();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ResourceTrackerService"><a href="#ResourceTrackerService" class="headerlink" title="ResourceTrackerService"></a>ResourceTrackerService</h3><p>ResourceTrackerService实现了ResourceTracker接口，该接口使用<code>ResourceTracker.registerNodeManager()</code>和<code>ResourceTracker.nodeHeartbeat()</code>分别处理NM的注册和心跳：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ResourceTrackerService</span> <span class="keyword">extends</span> <span class="title class_">AbstractService</span> <span class="keyword">implements</span></span><br><span class="line">    <span class="title class_">ResourceTracker</span> &#123;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">serviceStart</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="built_in">super</span>.serviceStart();</span><br><span class="line">    <span class="comment">// Start ResourceTrack RPC Server</span></span><br><span class="line">    <span class="type">Configuration</span> <span class="variable">conf</span> <span class="operator">=</span> getConfig();</span><br><span class="line">    <span class="type">YarnRPC</span> <span class="variable">rpc</span> <span class="operator">=</span> YarnRPC.create(conf);</span><br><span class="line">    <span class="built_in">this</span>.server =</span><br><span class="line">      rpc.getServer(ResourceTracker.class, <span class="built_in">this</span>, resourceTrackerAddress, conf, <span class="literal">null</span>, conf.getInt(YarnConfiguration.RM_RESOURCE_TRACKER_CLIENT_THREAD_COUNT, YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_CLIENT_THREAD_COUNT));</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="注册"><a href="#注册" class="headerlink" title="注册"></a>注册</h4><p>NM的注册分为两种，第一种是一个全新的NM进行注册，另外一种是NM的重连导致的注册。在注册前，会根据nodeManagerVersion检查版本信息，之后通过nodesListManager判断是否是有效的节点，然后利用capacity检查NM是否是满足最小内存和vcore数量的NM。之后：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">  response.setContainerTokenMasterKey(containerTokenSecretManager</span><br><span class="line">      .getCurrentKey());</span><br><span class="line">  response.setNMTokenMasterKey(nmTokenSecretManager</span><br><span class="line">      .getCurrentKey());    </span><br><span class="line"><span class="comment">// Construct a new rmNode instance</span></span><br><span class="line">  <span class="type">RMNode</span> <span class="variable">rmNode</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RMNodeImpl</span>(nodeId, rmContext, host, cmPort, httpPort,</span><br><span class="line">      resolve(host), capability, nodeManagerVersion);</span><br><span class="line"></span><br><span class="line">  <span class="type">RMNode</span> <span class="variable">oldNode</span> <span class="operator">=</span> <span class="built_in">this</span>.rmContext.getRMNodes().putIfAbsent(nodeId, rmNode);</span><br><span class="line"><span class="comment">// a new registration</span></span><br><span class="line">  <span class="keyword">if</span> (oldNode == <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="built_in">this</span>.rmContext.getDispatcher().getEventHandler().handle(</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">RMNodeStartedEvent</span>(nodeId, request.getNMContainerStatuses(),</span><br><span class="line">                request.getRunningApplications()));</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="comment">// a reconnected NM</span></span><br><span class="line">    LOG.info(<span class="string">&quot;Reconnect from the node at: &quot;</span> + host);</span><br><span class="line">    <span class="built_in">this</span>.nmLivelinessMonitor.unregister(nodeId);</span><br><span class="line">    <span class="built_in">this</span>.rmContext.getDispatcher().getEventHandler().handle(</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">RMNodeReconnectEvent</span>(nodeId, rmNode,</span><br><span class="line">            request.getRunningApplications()));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// On every node manager register we will be clearing NMToken keys if</span></span><br><span class="line">  <span class="comment">// present for any running application.</span></span><br><span class="line">  <span class="built_in">this</span>.nmTokenSecretManager.removeNodeKey(nodeId);</span><br><span class="line">  <span class="comment">// Register it on nmLivelinessMonitor</span></span><br><span class="line">  <span class="built_in">this</span>.nmLivelinessMonitor.register(nodeId);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Process container status reported by the register NM</span></span><br><span class="line">  <span class="keyword">if</span> (!rmContext.isWorkPreservingRecoveryEnabled()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!request.getNMContainerStatuses().isEmpty()) &#123;</span><br><span class="line">      LOG.info(<span class="string">&quot;received container statuses on node manager register :&quot;</span></span><br><span class="line">          + request.getNMContainerStatuses());</span><br><span class="line">      <span class="comment">// Only process ContainerState.COMPLETE status of managed AM </span></span><br><span class="line">      <span class="keyword">for</span> (NMContainerStatus status : request.getNMContainerStatuses()) &#123;</span><br><span class="line">        handleNMContainerStatus(status, nodeId);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="心跳"><a href="#心跳" class="headerlink" title="心跳"></a>心跳</h4><p>主要步骤：</p>
+<ol>
+<li><p>检查是否是注册的节点（registered），unregistered：resync。</p>
+</li>
+<li><p>检查是否是有效的节点（valid）-&gt; unvalid：关闭并产生RMNodesEventType.DECOMMISSION事件。</p>
+</li>
+<li><p>检查是否是fresh的心跳，而不是重复的心跳。重复心跳，那么直接忽略，并发送上一次的response；如果远程的NM的心跳信息落后，则会产生RMNodeEventType.REBOOTING，并发送resync。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 3. Check if it&#x27;s a &#x27;fresh&#x27; heartbeat i.e. not duplicate heartbeat</span></span><br><span class="line"><span class="type">NodeHeartbeatResponse</span> <span class="variable">lastNodeHeartbeatResponse</span> <span class="operator">=</span> rmNode.getLastNodeHeartBeatResponse();</span><br><span class="line"><span class="keyword">if</span> (remoteNodeStatus.getResponseId() + <span class="number">1</span> == lastNodeHeartbeatResponse</span><br><span class="line">    .getResponseId()) &#123;</span><br><span class="line">  LOG.info(<span class="string">&quot;Received duplicate heartbeat from node &quot;</span></span><br><span class="line">      + rmNode.getNodeAddress()+ <span class="string">&quot; responseId=&quot;</span> + remoteNodeStatus.getResponseId());</span><br><span class="line">  <span class="keyword">return</span> lastNodeHeartbeatResponse;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (remoteNodeStatus.getResponseId() + <span class="number">1</span> &lt; lastNodeHeartbeatResponse</span><br><span class="line">    .getResponseId()) &#123;</span><br><span class="line">  <span class="type">String</span> <span class="variable">message</span> <span class="operator">=</span></span><br><span class="line">      <span class="string">&quot;Too far behind rm response id:&quot;</span></span><br><span class="line">          + lastNodeHeartbeatResponse.getResponseId() + <span class="string">&quot; nm response id:&quot;</span></span><br><span class="line">          + remoteNodeStatus.getResponseId();</span><br><span class="line">  LOG.info(message);</span><br><span class="line">  resync.setDiagnosticsMessage(message);</span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> Just sending reboot is not enough. Think more.</span></span><br><span class="line">  <span class="built_in">this</span>.rmContext.getDispatcher().getEventHandler().handle(</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">RMNodeEvent</span>(nodeId, RMNodeEventType.REBOOTING));</span><br><span class="line">  <span class="keyword">return</span> resync;</span><br><span class="line">&#125;</span><br><span class="line">   </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>给RMNode发送NM的healthStatus</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>.rmContext.getDispatcher().getEventHandler().handle(</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">RMNodeStatusEvent</span>(nodeId, remoteNodeStatus.getNodeHealthStatus(),</span><br><span class="line">        remoteNodeStatus.getContainersStatuses(), </span><br><span class="line">        remoteNodeStatus.getKeepAliveApplications(), nodeHeartBeatResponse));</span><br><span class="line">   </span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="Application管理"><a href="#Application管理" class="headerlink" title="Application管理"></a>Application管理</h2><p>Application管理涉及应用程序的权限管理、启动与关闭和生命周期等。</p>
+<h3 id="ApplicationACLsManager"><a href="#ApplicationACLsManager" class="headerlink" title="ApplicationACLsManager"></a>ApplicationACLsManager</h3><p>负责管理应用程序的访问权限：</p>
+<ul>
+<li>查看权限，用于查看应用程序基本信息</li>
+<li>修改权限，用于修改应用程序优先级、杀死应用程序等</li>
+</ul>
+<p>默认情况下，任意一个普通用户可以查看所有其他用户的应用程序。用户可以通过ContainerLauncherContext为自己的应用程序设置具有访问权限的用户列表。访问权限通过applicationACLS的ConcurrentMap保存：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ApplicationACLsManager</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">AccessControlList</span> <span class="variable">DEFAULT_YARN_APP_ACL</span> </span><br><span class="line">    <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AccessControlList</span>(YarnConfiguration.DEFAULT_YARN_APP_ACL);</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Configuration conf;</span><br><span class="line">  <span class="comment">// Admin ACL Manager</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> AdminACLsManager adminAclsManager;</span><br><span class="line">  <span class="comment">// App -&gt; (Type-&gt;ACL)</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ConcurrentMap&lt;ApplicationId, Map&lt;ApplicationAccessType, AccessControlList&gt;&gt; applicationACLS</span><br><span class="line">    = <span class="keyword">new</span> <span class="title class_">ConcurrentHashMap</span>&lt;ApplicationId, Map&lt;ApplicationAccessType, AccessControlList&gt;&gt;();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>ApplicationACLsManager.checkAccess()</code>首先通过从applicationACLS中获取对应类型的ACL，然后结合adminAclsManager、applicationOwner和ACL来决定用户是否拥有查询的权限：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">checkAccess</span><span class="params">(UserGroupInformation callerUGI,</span></span><br><span class="line"><span class="params">    ApplicationAccessType applicationAccessType, String applicationOwner, ApplicationId applicationId)</span> &#123;</span><br><span class="line"><span class="comment">// Get user short name</span></span><br><span class="line">  <span class="type">String</span> <span class="variable">user</span> <span class="operator">=</span> callerUGI.getShortUserName();</span><br><span class="line">  <span class="keyword">if</span> (!areACLsEnabled()) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">AccessControlList</span> <span class="variable">applicationACL</span> <span class="operator">=</span> DEFAULT_YARN_APP_ACL;</span><br><span class="line">  <span class="comment">// Get application ACL from applicationACLS</span></span><br><span class="line">  ...</span><br><span class="line">  applicationACL = applicationACLInMap;</span><br><span class="line">  ...</span><br><span class="line">  <span class="comment">// Allow application-owner for any type of access on the application</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">this</span>.adminAclsManager.isAdmin(callerUGI)</span><br><span class="line">      || user.equals(applicationOwner)</span><br><span class="line">      || applicationACL.isUserAllowed(callerUGI)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>AdminACLsManager类保存了属于admin的ACL：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">AdminACLsManager</span><span class="params">(Configuration conf)</span> &#123;</span><br><span class="line">  <span class="comment">// DEFAULT_YARN_ADMIN_ACL =  &quot;*&quot;</span></span><br><span class="line">  <span class="built_in">this</span>.adminAcl = <span class="keyword">new</span> <span class="title class_">AccessControlList</span>(conf.get(</span><br><span class="line">        YarnConfiguration.YARN_ADMIN_ACL,</span><br><span class="line">        YarnConfiguration.DEFAULT_YARN_ADMIN_ACL));</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    owner = UserGroupInformation.getCurrentUser();</span><br><span class="line">    <span class="comment">// Add current user to adminACL</span></span><br><span class="line">    adminAcl.addUser(owner.getShortUserName());</span><br><span class="line">  &#125; <span class="keyword">catch</span> (IOException e)&#123;</span><br><span class="line">    LOG.warn(<span class="string">&quot;Could not add current user to admin:&quot;</span> + e);</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">YarnRuntimeException</span>(e);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  aclsEnabled = conf.getBoolean(YarnConfiguration.YARN_ACL_ENABLE,</span><br><span class="line">      YarnConfiguration.DEFAULT_YARN_ACL_ENABLE);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="RMAppManager"><a href="#RMAppManager" class="headerlink" title="RMAppManager"></a>RMAppManager</h3><p>负责应用程序的启动和关闭。ClientRMService收到来自客户端的提交应用程序后，调用RMAppManager#submitApplication()创建一个RMApp对象。RMApp将维护这个应用程序的整个生命周期，当RMApp运行结束后，将向RMAppManager发送一个APP_COMPLETED事件。RMAppManager收到该事件后，通过RMAppManager#finishApplication进行RMApp的清理和收尾工作，包括将该应用程序放入已经完成应用程序列表中以及从RMStateStore中移除。</p>
+<p>已完成应用程序列表的大小默认为10000（yarn.resourcemanager.max-completed-applications)，当超过该大小以后，将会在内存中移除过期的历史应用程序，使得用户只能从History Server中获取过期的应用程序信息。History Server从磁盘中的应用程序运行日志和基本信息文件中获取应用程序的信息。</p>
+<p>RMStateStore记录了运行中的应用程序的运行日志，当集群因故障重启后，ResourceManager可以通过这些日志恢复应用程序运行状态，从而避免全部重新运行所有的应用程序。当应用程序运行结束后，就不需要RMStateStore来保存状态了。</p>
+<p>RMAppManager实现了EventHandler&lt;RMAppManagerEvent&gt;, Recoverable接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RMAppManager</span> <span class="keyword">implements</span> <span class="title class_">EventHandler</span>&lt;RMAppManagerEvent&gt;, </span><br><span class="line">                                        Recoverable &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Log</span> <span class="variable">LOG</span> <span class="operator">=</span> LogFactory.getLog(RMAppManager.class);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="type">int</span> maxCompletedAppsInMemory;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">int</span> maxCompletedAppsInStateStore;</span><br><span class="line">  <span class="keyword">protected</span> <span class="type">int</span> <span class="variable">completedAppsInStateStore</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">  <span class="comment">// Completed Apps in memory, default size is 10000</span></span><br><span class="line">  <span class="keyword">private</span> LinkedList&lt;ApplicationId&gt; completedApps = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;ApplicationId&gt;();</span><br><span class="line">	...</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ApplicationMasterService masterService;</span><br><span class="line">  <span class="keyword">private</span> Configuration conf;</span><br><span class="line">                                          </span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">recover</span><span class="params">(RMState state)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">RMStateStore</span> <span class="variable">store</span> <span class="operator">=</span> rmContext.getStateStore();</span><br><span class="line">    <span class="keyword">assert</span> store != <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">// recover applications</span></span><br><span class="line">    Map&lt;ApplicationId, ApplicationState&gt; appStates = state.getApplicationState();</span><br><span class="line">    LOG.info(<span class="string">&quot;Recovering &quot;</span> + appStates.size() + <span class="string">&quot; applications&quot;</span>);</span><br><span class="line">    <span class="keyword">for</span> (ApplicationState appState : appStates.values()) &#123;</span><br><span class="line">      recoverApplication(appState, state);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handle</span><span class="params">(RMAppManagerEvent event)</span> &#123;</span><br><span class="line">    <span class="type">ApplicationId</span> <span class="variable">applicationId</span> <span class="operator">=</span> event.getApplicationId();</span><br><span class="line">    LOG.debug(<span class="string">&quot;RMAppManager processing event for &quot;</span> </span><br><span class="line">        + applicationId + <span class="string">&quot; of type &quot;</span> + event.getType());</span><br><span class="line">    <span class="keyword">switch</span>(event.getType()) &#123;</span><br><span class="line">      <span class="keyword">case</span> APP_COMPLETED: </span><br><span class="line">      &#123;</span><br><span class="line">        finishApplication(applicationId);</span><br><span class="line">        logApplicationSummary(applicationId);</span><br><span class="line">        checkAppNumCompletedLimit(); </span><br><span class="line">      &#125; </span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">default</span>:</span><br><span class="line">        LOG.error(<span class="string">&quot;Invalid eventtype &quot;</span> + event.getType() + <span class="string">&quot;. Ignoring!&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ContainerAllocationExpirer"><a href="#ContainerAllocationExpirer" class="headerlink" title="ContainerAllocationExpirer"></a>ContainerAllocationExpirer</h3><p>当一个AM获得一个Container后，出于提高利用率的目的，YARN不允许AM长期不使用该Container。如果AM收到RM新分配的Container后，在超过一定时间内，未在对应的NM上启动该Container，那么RM将强制回收该Container。ContainerAllocationExpirer继承自AbstractLivelinenessMonitor：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ContainerAllocationExpirer</span> <span class="keyword">extends</span></span><br><span class="line">    <span class="title class_">AbstractLivelinessMonitor</span>&lt;ContainerId&gt; &#123;</span><br><span class="line">	...</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">serviceInit</span><span class="params">(Configuration conf)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">expireIntvl</span> <span class="operator">=</span> conf.getInt(</span><br><span class="line">            YarnConfiguration.RM_CONTAINER_ALLOC_EXPIRY_INTERVAL_MS,</span><br><span class="line">            YarnConfiguration.DEFAULT_RM_CONTAINER_ALLOC_EXPIRY_INTERVAL_MS);</span><br><span class="line">    setExpireInterval(expireIntvl);</span><br><span class="line">    setMonitorInterval(expireIntvl/<span class="number">3</span>);</span><br><span class="line">    <span class="built_in">super</span>.serviceInit(conf);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">expire</span><span class="params">(ContainerId containerId)</span> &#123;</span><br><span class="line">    dispatcher.handle(<span class="keyword">new</span> <span class="title class_">ContainerExpiredSchedulerEvent</span>(containerId));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="状态机管理"><a href="#状态机管理" class="headerlink" title="状态机管理"></a>状态机管理</h2><p>在RM内部，包括RMApp，RMAppAttempt，RMContainer和RMNode四类状态机。前两者与应用程序的生命周期相关，组织结构如下：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20190627165959.png"></p>
+<p>RMAppAttempt的生命周期与ApplicationMaster的生命周期基本是一致的。</p>
+<h3 id="RMApp状态机"><a href="#RMApp状态机" class="headerlink" title="RMApp状态机"></a>RMApp状态机</h3><p>实现类为RMAppImpl，维护了一个Application的状态机，记录了Application的存在的各个状态RMAppState以及导致状态间转换的事件RMAppEvent。此外，还保存了Application的基本信息和迄今为止所有的Application Attempt信息。</p>
+<h4 id="状态转移"><a href="#状态转移" class="headerlink" title="状态转移"></a>状态转移</h4><p>RMApp状态机的状态转移图如下：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20190627170343.png"></p>
+<p>基本状态：</p>
+<ul>
+<li>NEW</li>
+<li>NEW_SAVING，RM收到用户提交的应用程序后，创建RMAppImpl对象，并通过日志记录该应用程序的基本信息，以便故障重启后可以自动恢复运行。</li>
+<li>SUBMITTED，提交的应用程序通过合法验证以及完成日志记录后，RM会根据RMAppImpl对象创建一个RMAppAttemptImpl对象，进行第一次运行尝试。 </li>
+<li>ACCEPTED，资源调度器同意接受该应用程序，并对应用程序的资源请求进行合法性检查。</li>
+<li>RUNNING，应用程序的ApplicationMaster已经在某个节点上开始运行。</li>
+<li>KILLED</li>
+<li>FAILED，应用程序经历过yarn.resourcemanager.am.max-attempts次数的重试后，依然运行失败。</li>
+<li>FINISHING，ApplicationMaster通过ApplicationMasterProtocol#finishApplicationMaster通知RM即将运行结束。</li>
+<li>FINISHED，通过NM的心跳汇报ApplicationMaster所在的Container运行结束。</li>
+</ul>
+<h4 id="RMAppImpl实现"><a href="#RMAppImpl实现" class="headerlink" title="RMAppImpl实现"></a>RMAppImpl实现</h4><p>实现了RMApp和Recoverable接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RMAppImpl</span> <span class="keyword">implements</span> <span class="title class_">RMApp</span>, Recoverable &#123;</span><br><span class="line">  <span class="comment">// Immutable fields</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ApplicationId applicationId;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RMContext rmContext;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Configuration conf;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String user;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String name;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ApplicationSubmissionContext submissionContext;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Dispatcher dispatcher; <span class="comment">//dispatcher of rmContext</span></span><br><span class="line">  <span class="keyword">private</span> EventHandler handler; <span class="comment">// handler of the dispatcher</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> YarnScheduler scheduler;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ApplicationMasterService masterService;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">StringBuilder</span> <span class="variable">diagnostics</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> maxAppAttempts;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ReadLock readLock;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> WriteLock writeLock;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;ApplicationAttemptId, RMAppAttempt&gt; attempts</span><br><span class="line">      = <span class="keyword">new</span> <span class="title class_">LinkedHashMap</span>&lt;ApplicationAttemptId, RMAppAttempt&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">long</span> submitTime;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Set&lt;RMNode&gt; updatedNodes = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;RMNode&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String applicationType;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Set&lt;String&gt; applicationTags;</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">isNumAttemptsBeyondThreshold</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">  <span class="comment">// Mutable fields</span></span><br><span class="line">  <span class="comment">// This field isn&#x27;t protected by readlock now.</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">volatile</span> RMAppAttempt currentAttempt;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> String queue;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> Set&lt;NodeId&gt; ranNodes = <span class="keyword">new</span> <span class="title class_">ConcurrentSkipListSet</span>&lt;NodeId&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> ResourceRequest amReq;</span><br><span class="line">  Object transitionTodo;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> StateMachineFactory&lt;RMAppImpl,</span><br><span class="line">                                           RMAppState,</span><br><span class="line">                                           RMAppEventType,</span><br><span class="line">                                           RMAppEvent&gt; stateMachineFactory</span><br><span class="line">                               = <span class="keyword">new</span> <span class="title class_">StateMachineFactory</span>&lt;RMAppImpl,</span><br><span class="line">                                           RMAppState,</span><br><span class="line">                                           RMAppEventType,</span><br><span class="line">                                           RMAppEvent&gt;(RMAppState.NEW)</span><br><span class="line">		.addTransition() <span class="comment">//...</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> StateMachine&lt;RMAppState, RMAppEventType, RMAppEvent&gt;                                                                 stateMachine;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>在构造函数中，通过YarnConfiguration.RM_AM_MAX_ATTEMPTS和submissionContext.getMaxAppAttempts来确定maxAppAttempts的值。之后，利用stateMachineFactory构造状态机：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ReentrantReadWriteLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantReadWriteLock</span>();</span><br><span class="line"><span class="built_in">this</span>.readLock = lock.readLock();</span><br><span class="line"><span class="built_in">this</span>.writeLock = lock.writeLock();</span><br><span class="line"></span><br><span class="line"><span class="built_in">this</span>.stateMachine = stateMachineFactory.make(<span class="built_in">this</span>);</span><br></pre></td></tr></table></figure>
+
+<p>readLock和writeLock主要用于保护attempts，updatedNodes，startTime，finishTime等可以对象对象。</p>
+<p>RMAppImpl实现了EventHandler&lt;RMAppEvent&gt;接口，在handle()方法中，对状态机的状态进行转换：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handle</span><span class="params">(RMAppEvent event)</span> &#123;</span><br><span class="line">  <span class="built_in">this</span>.writeLock.lock();</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="type">ApplicationId</span> <span class="variable">appID</span> <span class="operator">=</span> event.getApplicationId();</span><br><span class="line">    LOG.debug(<span class="string">&quot;Processing event for &quot;</span> + appID + <span class="string">&quot; of type &quot;</span></span><br><span class="line">        + event.getType());</span><br><span class="line">    <span class="keyword">final</span> <span class="type">RMAppState</span> <span class="variable">oldState</span> <span class="operator">=</span> getState();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">/* keep the master in sync with the state machine */</span></span><br><span class="line">      <span class="built_in">this</span>.stateMachine.doTransition(event.getType(), event);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InvalidStateTransitonException e) &#123;</span><br><span class="line">      LOG.error(<span class="string">&quot;Can&#x27;t handle this event at current state&quot;</span>, e);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">	...</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.writeLock.unlock();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="RMAppAttempt状态机"><a href="#RMAppAttempt状态机" class="headerlink" title="RMAppAttempt状态机"></a>RMAppAttempt状态机</h3><p>实现是RMAppAttemptImpl，除了维护Application Attempt的生命周期外，还包括当前使用的Container信息，AM的tracking URL等。本质上是维护的ApplicationMaster的生命周期。</p>
+<h4 id="状态转移-1"><a href="#状态转移-1" class="headerlink" title="状态转移"></a>状态转移</h4><p>状态转移图如下：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20190627221542.png"></p>
+<p>状态：</p>
+<ul>
+<li>NEW</li>
+<li>SUBMITTED</li>
+<li>SCHEDULED，RM将RMAppAttempt资源请求提交给ResourceScheduler中，ResourceScheduler开始为AppAttempt的AM分配资源。</li>
+<li>ALLOCATED_SAVING，收到来自ResourceScheduler分配的一个Container，RMAppAttempt会将Container信息写入到磁盘上以便故障恢复，当信息保存完成之前，RMAppAttemptImpl将处于该状态。</li>
+<li>ALLOCATED，分配给AM的Container信息保存到文件中完成。</li>
+<li>LAUNCHED，RM中的ApplicationMasterLauncher与对应的NM通信，启动AM，转变为LAUNCHED。</li>
+<li>RUNNING，AM在NM上成功启动，通过ApplicationMasterProtocol#registerApplicationMaster向RM注册，此时RMAppAttemptImpl状态转变为RUNNING。</li>
+<li>FAILED</li>
+<li>FINISHED</li>
+<li>LAUNCHED_UNMANAGED_SAVING</li>
+<li>RECOVERED</li>
+</ul>
+<h4 id="RMAppAttemptImpl实现"><a href="#RMAppAttemptImpl实现" class="headerlink" title="RMAppAttemptImpl实现"></a>RMAppAttemptImpl实现</h4><p>实现RMAppAttempt，Recoverable接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RMAppAttemptImpl</span> <span class="keyword">implements</span> <span class="title class_">RMAppAttempt</span>, Recoverable &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">RecordFactory</span> <span class="variable">recordFactory</span> <span class="operator">=</span> RecordFactoryProvider</span><br><span class="line">      .getRecordFactory(<span class="literal">null</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> StateMachine&lt;RMAppAttemptState,</span><br><span class="line">                             RMAppAttemptEventType,</span><br><span class="line">                             RMAppAttemptEvent&gt; stateMachine;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RMContext rmContext;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> EventHandler eventHandler;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> YarnScheduler scheduler;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ApplicationMasterService masterService;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ReadLock readLock;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> WriteLock writeLock;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ApplicationAttemptId applicationAttemptId;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ApplicationSubmissionContext submissionContext;</span><br><span class="line">  <span class="keyword">private</span> Token&lt;AMRMTokenIdentifier&gt; amrmToken = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">SecretKey</span> <span class="variable">clientTokenMasterKey</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> ConcurrentMap&lt;NodeId, List&lt;ContainerStatus&gt;&gt;</span><br><span class="line">      justFinishedContainers =</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">ConcurrentHashMap</span>&lt;NodeId, List&lt;ContainerStatus&gt;&gt;();</span><br><span class="line">  <span class="comment">// Tracks the previous finished containers that are waiting to be</span></span><br><span class="line">  <span class="comment">// verified as received by the AM. If the AM sends the next allocate</span></span><br><span class="line">  <span class="comment">// request it implicitly acks this list.</span></span><br><span class="line">  <span class="keyword">private</span> ConcurrentMap&lt;NodeId, List&lt;ContainerStatus&gt;&gt;</span><br><span class="line">      finishedContainersSentToAM =</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">ConcurrentHashMap</span>&lt;NodeId, List&lt;ContainerStatus&gt;&gt;();</span><br><span class="line">  <span class="keyword">private</span> Container masterContainer;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="type">float</span> <span class="variable">progress</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">String</span> <span class="variable">host</span> <span class="operator">=</span> <span class="string">&quot;N/A&quot;</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">int</span> <span class="variable">rpcPort</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">String</span> <span class="variable">originalTrackingUrl</span> <span class="operator">=</span> <span class="string">&quot;N/A&quot;</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">String</span> <span class="variable">proxiedTrackingUrl</span> <span class="operator">=</span> <span class="string">&quot;N/A&quot;</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">long</span> <span class="variable">startTime</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">long</span> <span class="variable">finishTime</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Set to null initially. Will eventually get set </span></span><br><span class="line">  <span class="comment">// if an RMAppAttemptUnregistrationEvent occurs</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">FinalApplicationStatus</span> <span class="variable">finalStatus</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">StringBuilder</span> <span class="variable">diagnostics</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">  <span class="keyword">private</span> <span class="type">int</span> <span class="variable">amContainerExitStatus</span> <span class="operator">=</span> ContainerExitStatus.INVALID;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> Configuration conf;</span><br><span class="line">  <span class="comment">// Since AM preemption, hardware error and NM resync are not counted towards</span></span><br><span class="line">  <span class="comment">// AM failure count, even if this flag is true, a new attempt can still be</span></span><br><span class="line">  <span class="comment">// re-created if this attempt is eventually failed because of preemption,</span></span><br><span class="line">  <span class="comment">// hardware error or NM resync. So this flag indicates that this may be</span></span><br><span class="line">  <span class="comment">// last attempt.</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> maybeLastAttempt;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">ExpiredTransition</span> <span class="variable">EXPIRED_TRANSITION</span> <span class="operator">=</span></span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">ExpiredTransition</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> Object transitionTodo;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> <span class="type">RMAppAttemptMetrics</span> <span class="variable">attemptMetrics</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">ResourceRequest</span> <span class="variable">amReq</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> StateMachineFactory&lt;RMAppAttemptImpl,</span><br><span class="line">                                           RMAppAttemptState,</span><br><span class="line">                                           RMAppAttemptEventType,</span><br><span class="line">                                           RMAppAttemptEvent&gt;</span><br><span class="line">       stateMachineFactory  = <span class="keyword">new</span> <span class="title class_">StateMachineFactory</span>&lt;RMAppAttemptImpl,</span><br><span class="line">                                            RMAppAttemptState,</span><br><span class="line">                                            RMAppAttemptEventType,</span><br><span class="line">                                     RMAppAttemptEvent&gt;(RMAppAttemptState.NEW)</span><br><span class="line"></span><br><span class="line">       <span class="comment">// Transitions from NEW State</span></span><br><span class="line">      .addTransition() <span class="comment">//....</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>RMAppAttemtpImpl也实现了EventHandler&lt;RMAppAttemptEvent&gt;，其handle()函数也是根据收到的事件对状态机进行转移。</p>
+<h3 id="RMContainer状态机"><a href="#RMContainer状态机" class="headerlink" title="RMContainer状态机"></a>RMContainer状态机</h3><p>YARN使用Container来对资源进行描述，RMContainer维护了一个Container的生命周期。</p>
+<h4 id="状态转移-2"><a href="#状态转移-2" class="headerlink" title="状态转移"></a>状态转移</h4><p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20190628101055.png"></p>
+<p>状态包括：</p>
+<ul>
+<li>NEW</li>
+<li>RESERVED，Container包含的资源尚不能满足应用程序需求时，YARN让该节点为其预留资源。</li>
+<li>ALLOCATED，ResourceScheduler将一个Container分配给一个应用程序，此时，Container处于可使用状态，但是AM还未获取该Container。</li>
+<li>ACQUIRED，AM通过ApplicationMasterProtocol#allocate获得RM分配给自己的Container列表，这些Container状态被设置为ACQUIRED。</li>
+<li>RUNNING，AM与对应的NM通信，启动Container。之后，NM通过心跳机制将Container的状态汇报给RM，RM将该Container的状态设置为RUNNING。</li>
+<li>RELEASED，AM通过ApplicationMasterProtocol#allocate向RM发送请求时，会释放部分Container。RM收到释放请求后，会将这些Container的状态设置为RELEASED，并向RMNodeImpl发送RMNodeEventType.CLEAN_CONTAINER事件来清理该Container。</li>
+<li>COMPLETED，NM通过ResourceTracker#nodeHeartbeat告诉RM已经运行完成的Container列表，RM收到信息后会将这些Container的状态设置为COMPLETED。</li>
+<li>EXPIRED，AM在获得Container分配后，在一定时间内并未使用该Container而超时。</li>
+<li>KILLED</li>
+</ul>
+<h3 id="RMNode状态机"><a href="#RMNode状态机" class="headerlink" title="RMNode状态机"></a>RMNode状态机</h3><p>RMNode维护了一个节点的状态机，实习为RMNodeImpl。状态转移如下：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20190627224025.png"></p>
+<p>状态：</p>
+<ul>
+<li>NEW</li>
+<li>RUNNING，NM启动后，通过ResourceTracker#registerNodeManager向RM注册，进入RUNNING状态。</li>
+<li>UNHEALTHY，每个NM上可以配置一个健康状况监控脚本，用于周期性检查NM的健康状态。如果RM发现NM不健康，则会转变到UNHEALTHY状态。处于该状态的节点将不会被分配新的任务，直到变为健康状态为止。</li>
+<li>DECOMMISSIONED，节点被加入到exclude中，NodeManager将会被设置为DECOMMISSIONED状态，使得NM无法与RM通信。</li>
+<li>LOST，如果NM在一定时间间隔没有汇报心跳消息，则认为该节点处于LOST状态，它上面正在运行的所有Container将会被设置为FAILED状态。</li>
+<li>REBOOTED，如果RM发现NM汇报的心跳ID与自己保存的不一致，则会置为REBOOTED状态，从而重新启动完成同步。</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" title= "Hadoop安全管理">
+                    <div class="nextTitle">Hadoop安全管理</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" title= "ResourceManager行为分析">
+                    <div class="prevTitle">ResourceManager行为分析</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "ResourceManager实现"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E6%9E%B6%E6%9E%84"><span class="toc-number">1.1.</span> <span class="toc-text">内部架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ResourceManager%E4%BA%8B%E4%BB%B6%E4%B8%8E%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E5%99%A8"><span class="toc-number">1.2.</span> <span class="toc-text">ResourceManager事件与事件处理器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%9D%97"><span class="toc-number">2.</span> <span class="toc-text">用户交互模块</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ClientRMService"><span class="toc-number">2.1.</span> <span class="toc-text">ClientRMService</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AdminService"><span class="toc-number">2.2.</span> <span class="toc-text">AdminService</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ApplicationMaster%E7%AE%A1%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">ApplicationMaster管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ApplicationMasterLauncher"><span class="toc-number">3.1.</span> <span class="toc-text">ApplicationMasterLauncher</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#AMLauncher"><span class="toc-number">3.1.1.</span> <span class="toc-text">AMLauncher</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AMLivelinessMonitor"><span class="toc-number">3.2.</span> <span class="toc-text">AMLivelinessMonitor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ApplicationMasterService"><span class="toc-number">3.3.</span> <span class="toc-text">ApplicationMasterService</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NodeManager%E7%AE%A1%E7%90%86"><span class="toc-number">4.</span> <span class="toc-text">NodeManager管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#NodesListManager"><span class="toc-number">4.1.</span> <span class="toc-text">NodesListManager</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ResourceTrackerService"><span class="toc-number">4.2.</span> <span class="toc-text">ResourceTrackerService</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E5%86%8C"><span class="toc-number">4.2.1.</span> <span class="toc-text">注册</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BF%83%E8%B7%B3"><span class="toc-number">4.2.2.</span> <span class="toc-text">心跳</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Application%E7%AE%A1%E7%90%86"><span class="toc-number">5.</span> <span class="toc-text">Application管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ApplicationACLsManager"><span class="toc-number">5.1.</span> <span class="toc-text">ApplicationACLsManager</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RMAppManager"><span class="toc-number">5.2.</span> <span class="toc-text">RMAppManager</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ContainerAllocationExpirer"><span class="toc-number">5.3.</span> <span class="toc-text">ContainerAllocationExpirer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E6%9C%BA%E7%AE%A1%E7%90%86"><span class="toc-number">6.</span> <span class="toc-text">状态机管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RMApp%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">6.1.</span> <span class="toc-text">RMApp状态机</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB"><span class="toc-number">6.1.1.</span> <span class="toc-text">状态转移</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RMAppImpl%E5%AE%9E%E7%8E%B0"><span class="toc-number">6.1.2.</span> <span class="toc-text">RMAppImpl实现</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RMAppAttempt%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">6.2.</span> <span class="toc-text">RMAppAttempt状态机</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB-1"><span class="toc-number">6.2.1.</span> <span class="toc-text">状态转移</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RMAppAttemptImpl%E5%AE%9E%E7%8E%B0"><span class="toc-number">6.2.2.</span> <span class="toc-text">RMAppAttemptImpl实现</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RMContainer%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">6.3.</span> <span class="toc-text">RMContainer状态机</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB-2"><span class="toc-number">6.3.1.</span> <span class="toc-text">状态转移</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RMNode%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">6.4.</span> <span class="toc-text">RMNode状态机</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

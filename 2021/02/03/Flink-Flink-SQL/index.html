@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink SQL · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink SQL</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink SQL
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SQL">SQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">2.1k</span>Reading time: <span class="post-count reading-time">9 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/02/03</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在Flink 1.9之前，面向用户的Table API &amp; SQL虽然是统一的，但是针对Stream和Batch任务分别采用了独立的API：DataStream API和 DataSet API。两套API的相对独立，在翻译层具有不同的代码路径，并且在Runtime层也要根据不同的API构造执行计划JobGraph，使得整个架构能够复用的模块有限，不易拓展：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20201230225941.png" alt="Architecture before Flink 1.9"></p>
+<p>在Flink 1.9时，引入了来自阿里贡献的Blink Planner。Blink Planner将批处理作为流处理的一个特列（Bounded Stream），尽量对通用的处理和优化逻辑进行抽象和复用，通过 Flink 内部的 Stream Transformation API 实现流 &amp; 批的统一处理，替代原 Flink Planner 将流 &amp; 批区分处理的方式。新架构通过灵活的插件化方式来兼容旧版本的Planner，从而可以逐渐演化架构。</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20201230230216.png" alt="Architecture 1.9+"></p>
+<p>在Flink 1.11时，Flink将默认的Planner切换到了Blink Planner，最终将逐步淘汰旧版本的Planner：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20201230230816.png" alt="Future Architecture"></p>
+<h2 id="Flink-SQL执行流程"><a href="#Flink-SQL执行流程" class="headerlink" title="Flink SQL执行流程"></a>Flink SQL执行流程</h2><p>High level的流程与Spark SQL等类似，包含：</p>
+<ul>
+<li>将 SQL文本 &#x2F; TableAPI 代码转化为逻辑执行计划（Logical Plan）</li>
+<li>Logical Plan 通过优化器优化后，转化为物理执行计划（Physical Plan）</li>
+<li>通过Code-Gen技术生成 Transformations ，进一步编译为可执行的 JobGraph 提交运行</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20201230231054.png"></p>
+<p>具体地，对于Blink Planner，详细的步骤如下：</p>
+<ol>
+<li>Parsing：语法解析，把 SQL 语句转换成为一个抽象语法树（AST），在 Calcite 中用 SqlNode 来表示</li>
+<li>Validation：语法校验，根据CatalogManager和FunctionManager中的元数据信息进行验证，例如查询的表、使用的函数是否存在等，校验以后产生由Operation构成的逻辑执行计划（Operation DAG）</li>
+<li>RelNode Generation：将Operation DAG转换为RelNode(Relational expression) DAG</li>
+<li>Optimization：优化器利用各种的优化规则和统计信息，对RelNode DAG进行等价变换，优化执行计划。目前，流&amp;批处理共享绝大多数的优化规则，但是批处理没有Stage相关的概念，而流处理则不支持排序等。因此，Blink Planner定义了两个独立的规则集和Physical Rels：BatchPhysicalRel和StreamPhysicalRel。</li>
+<li>Transformation：Blink将Physical Rel DAG转化为ExecNode。在ExecNode中，将会执行CodeGen和non-code的operators。最终，ExecNode DAG将会被转化为Transformation DAG</li>
+<li>Generation of an executable JobGraph：Transformation将会被StreamGraphGenerator转化为StreamGraph、并最终转换为可执行的JobGraph。</li>
+</ol>
+<p><img src="https://yqintl.alicdn.com/5b413ae2c9010be2eae05ea9d3bb2817b890f5e5.png"></p>
+<h2 id="TableEnvironment"><a href="#TableEnvironment" class="headerlink" title="TableEnvironment"></a>TableEnvironment</h2><p>TableEnvironment是用于创建Table&amp;SQL程序的上下文执行环境，是程序的入口。主要功能包含：</p>
+<ul>
+<li>连接外部系统</li>
+<li>表及元数据的注册和检索，依赖于Catalog系统</li>
+<li>执行SQL语句</li>
+<li>提供详细的配置选项</li>
+</ul>
+<p>TableEnvironment接口是面向纯Table程序，如果需要从Flink DataStream和Flink DataSet进行转换，那么需要使用语言相关的各种TableEnvironment实现进行桥接。</p>
+<p>在Flink 1.8以及之前的版本，有多达7个TableEnvironment。从Flink 1.9开始，根据<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-32%3A+Restructure+flink-table+for+future+contributions">FLIP-32</a>，对Flink的Table&amp;SQL部分进行了重构和优化，目前保留了5个TableEnvironment，分别是：</p>
+<ul>
+<li>org&#x2F;apache&#x2F;flink&#x2F;table&#x2F;api&#x2F;TableEnvironment.java：顶层接口，针对不同JVM语言和流批数据的统一。但是，TableEnvironment 由于Java和Scala的类型推导还未统一，所以目前还不支持注册 UDTF 和 UDAF，。</li>
+<li>java&#x2F;BatchTableEnvironment.java和scala&#x2F;BatchTableEnvironment.scala：相比 TableEnvironment，BatchTableEnvironment 提供了 DataSet 和 Table 之间相互转换的接口，如果用户的程序需要额外使用到 DataSet API，则需要使用 BatchTableEnvironment。上文提到，<strong>DataSet API将会被Deprecated掉</strong></li>
+<li>java&#x2F;StreamTableEnvironment.java和scala&#x2F;StreamTableEnvironment.scala：相比 TableEnvironment，StreamTableEnvironment 提供了 DataStream 和 Table 之间相互转换的接口，如果用户的程序需要额外使用到 DataStream API，则需要使用 StreamTableEnvironment。注意，StreamTableEnvironment统一使用Unified DataStream，支持以Unbounded&#x2F;Bounded Stream的方式执行Stream和Batch作业。</li>
+</ul>
+<p><img src="https://ucc.alicdn.com/pic/developer-ecology/44bc0a50ddac498796bc7c90728b4cea.jpg"></p>
+<p>TabelEnvironment中提供了create()用于创建一个具体的TableEnvironment实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Creates a table environment that is the entry point and central context for creating Table</span></span><br><span class="line"><span class="comment"> * and SQL API programs.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;It is unified both on a language level for all JVM-based languages (i.e. there is no</span></span><br><span class="line"><span class="comment"> * distinction between Scala and Java API) and for bounded and unbounded data processing.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> settings The environment settings used to instantiate the &#123;<span class="doctag">@link</span> TableEnvironment&#125;.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> TableEnvironment <span class="title function_">create</span><span class="params">(EnvironmentSettings settings)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> TableEnvironmentImpl.create(settings);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="EnvironmentSettings"><a href="#EnvironmentSettings" class="headerlink" title="EnvironmentSettings"></a>EnvironmentSettings</h3><p>EnvironmentSettings包含了用于初始化TableEnvironment的各种参数，包括：</p>
+<ul>
+<li>Planner Factory Class，默认为<strong>BLINK_PLANNER_FACTORY</strong>（”org.apache.flink.table.planner.delegation.BlinkPlannerFactory”）</li>
+<li>Executor Factory Class，默认为<strong>BLINK_EXECUTOR_FACTORY</strong>（“org.apache.flink.table.planner.delegation.BlinkExecutorFactory”）</li>
+<li>Built-in Catalog Class and Built-in Database Class</li>
+<li>Is Streaming Mode，默认为true</li>
+</ul>
+<p>EnvironmentSettings的Builder用于客户代码构造EnvironmentSettings。</p>
+<h3 id="TableEnvironmentImpl"><a href="#TableEnvironmentImpl" class="headerlink" title="TableEnvironmentImpl"></a>TableEnvironmentImpl</h3><p>TableEnvironmentImpl是TableEnvironmentInternal的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TableEnvironmentImpl</span> <span class="keyword">implements</span> <span class="title class_">TableEnvironmentInternal</span> &#123;&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">TableEnvironmentInternal</span> <span class="keyword">extends</span> <span class="title class_">TableEnvironment</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>TableEnvironmentInternal继承自TableEnvironment是内部接口，主要用于兼容Legacy Planner中的TabelImpl实现，之后会将其中定义的方法移动到TableEnvironmentImpl。</p>
+<p>在TableEnvironmentImpl的create()方法中，根据EnvironmentSettings的配置，通过SPI的方式创建具体的Executor和Planner实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> TableEnvironmentImpl <span class="title function_">create</span><span class="params">(EnvironmentSettings settings)</span> &#123;</span><br><span class="line">	<span class="comment">// Create CatalogManager and FunctionCatalog</span></span><br><span class="line">  <span class="type">ClassLoader</span> <span class="variable">classLoader</span> <span class="operator">=</span> Thread.currentThread().getContextClassLoader();</span><br><span class="line">  <span class="type">TableConfig</span> <span class="variable">tableConfig</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TableConfig</span>();</span><br><span class="line">  <span class="type">ModuleManager</span> <span class="variable">moduleManager</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ModuleManager</span>();</span><br><span class="line">  <span class="type">CatalogManager</span> <span class="variable">catalogManager</span> <span class="operator">=</span></span><br><span class="line">    CatalogManager.newBuilder()</span><br><span class="line">    .classLoader(classLoader)</span><br><span class="line">    .config(tableConfig.getConfiguration())</span><br><span class="line">    .defaultCatalog(</span><br><span class="line">    settings.getBuiltInCatalogName(),</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">GenericInMemoryCatalog</span>(</span><br><span class="line">      settings.getBuiltInCatalogName(),</span><br><span class="line">      settings.getBuiltInDatabaseName()))</span><br><span class="line">    .build();</span><br><span class="line">  <span class="type">FunctionCatalog</span> <span class="variable">functionCatalog</span> <span class="operator">=</span></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">FunctionCatalog</span>(tableConfig, catalogManager, moduleManager);</span><br><span class="line"></span><br><span class="line">  Map&lt;String, String&gt; executorProperties = settings.toExecutorProperties();</span><br><span class="line">  <span class="type">Executor</span> <span class="variable">executor</span> <span class="operator">=</span></span><br><span class="line">    ComponentFactoryService.find(ExecutorFactory.class, executorProperties)</span><br><span class="line">    .create(executorProperties);</span><br><span class="line"></span><br><span class="line">  Map&lt;String, String&gt; plannerProperties = settings.toPlannerProperties();</span><br><span class="line">  <span class="type">Planner</span> <span class="variable">planner</span> <span class="operator">=</span></span><br><span class="line">    ComponentFactoryService.find(PlannerFactory.class, plannerProperties)</span><br><span class="line">    .create(......);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">TableEnvironmentImpl</span>(......);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>TableEnvironmentImpl的成员变量有：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="variable">IS_STREAM_TABLE</span> <span class="operator">=</span> <span class="literal">true</span>; <span class="comment">// Always true for Blink Planner</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> CatalogManager catalogManager;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ModuleManager moduleManager;</span><br><span class="line"><span class="comment">// A Builder for constructing validated QueryOperations</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> OperationTreeBuilder operationTreeBuilder;</span><br><span class="line"><span class="comment">// FLINK-13088: Lazy query transformation and execution</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;ModifyOperation&gt; bufferedModifyOperations = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> TableConfig tableConfig;</span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> Executor execEnv;</span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> FunctionCatalog functionCatalog;</span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> Planner planner;</span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> Parser parser;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> isStreamingMode;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ClassLoader userClassLoader;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** Provides necessary methods for &#123;<span class="doctag">@link</span> ConnectTableDescriptor&#125;. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Registration</span> <span class="variable">registration</span> <span class="operator">=</span></span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">Registration</span>() &#123;</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">createTemporaryTable</span><span class="params">(String path, CatalogBaseTable table)</span> &#123;</span><br><span class="line">    <span class="type">UnresolvedIdentifier</span> <span class="variable">unresolvedIdentifier</span> <span class="operator">=</span> parser.parseIdentifier(path);</span><br><span class="line">    <span class="type">ObjectIdentifier</span> <span class="variable">objectIdentifier</span> <span class="operator">=</span></span><br><span class="line">      catalogManager.qualifyIdentifier(unresolvedIdentifier);</span><br><span class="line">    catalogManager.createTemporaryTable(table, objectIdentifier, <span class="literal">false</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="executeSql"><a href="#executeSql" class="headerlink" title="executeSql"></a>executeSql</h4><p>executeSql(String)用于执行一个Sql语句：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> TableResult <span class="title function_">executeSql</span><span class="params">(String statement)</span> &#123;</span><br><span class="line">  <span class="comment">// parse the Sql statement and get the operations</span></span><br><span class="line">  List&lt;Operation&gt; operations = getParser().parse(statement);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (operations.size() != <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TableException</span>(UNSUPPORTED_QUERY_IN_EXECUTE_SQL_MSG);</span><br><span class="line">  &#125;</span><br><span class="line">	<span class="comment">// executeOperation</span></span><br><span class="line">  <span class="keyword">return</span> executeOperation(operations.get(<span class="number">0</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在通过Parser解析得到Operation以后，通过executeOperation(Operation)执行该Operation。</p>
+<p>整个过程的如下：</p>
+<pre class="mermaid">sequenceDiagram
+  participant UserCode
+    participant TableEnvironmentImpl
+    participant Planner
+    participant Parser
+    participant Optimizer
+    participant Executor
+    
+    UserCode ->> TableEnvironmentImpl: executeSql(statement)
+    TableEnvironmentImpl ->> Planner: getParser()
+    Planner -->> TableEnvironmentImpl: Parser
+    TableEnvironmentImpl ->> Paser: parser(statement)
+    Paser -->> TableEnvironmentImpl: operations
+    TableEnvironmentImpl ->> Planner: translate(operations)
+    Planner -->> TableEnvironmentImpl: transformations
+    TableEnvironmentImpl ->> Executor: createPipeline(transformations, tableConfig, name)
+    Executor ->> TableEnvironmentImpl: pipeline
+    TableEnvironmentImpl ->> Executor: execute(pipeline)/executeAsync(pipeline)
+    Executor ->> TableEnvironmentImpl: jobClient
+    TableEnvironmentImpl ->> UserCode: TableResult</pre>
+
+<h4 id="executeOperation"><a href="#executeOperation" class="headerlink" title="executeOperation"></a>executeOperation</h4><p>executeOperation(Operation)根据不同Operation进行执行，并返回TableResult：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> TableResult <span class="title function_">executeOperation</span><span class="params">(Operation operation)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (operation <span class="keyword">instanceof</span> ModifyOperation) &#123;</span><br><span class="line">    <span class="keyword">return</span> executeInternal(Collections.singletonList((ModifyOperation) operation));</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (operation <span class="keyword">instanceof</span> ...) &#123; <span class="comment">// DDL or catalog operations</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (operation <span class="keyword">instanceof</span> QueryOperation) &#123;</span><br><span class="line">    <span class="keyword">return</span> executeInternal((QueryOperation) operation);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TableException</span>(UNSUPPORTED_QUERY_IN_EXECUTE_SQL_MSG);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>主要分为三类：</p>
+<ul>
+<li><p>Catalog，Module相关的Operation：CatalogManager，FunctionCatalog和ModuleManager进行处理</p>
+</li>
+<li><p>ModifyOperation：调用executeInternal()执行</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> TableResult <span class="title function_">executeInternal</span><span class="params">(List&lt;ModifyOperation&gt; operations)</span> &#123;</span><br><span class="line">  <span class="comment">// Call Planner.translate()</span></span><br><span class="line">  List&lt;Transformation&lt;?&gt;&gt; transformations = translate(operations);</span><br><span class="line">  List&lt;String&gt; sinkIdentifierNames = extractSinkIdentifierNames(operations);</span><br><span class="line">  <span class="keyword">return</span> executeInternal(transformations, sinkIdentifierNames);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Execute the transformations</span></span><br><span class="line"><span class="keyword">private</span> TableResult <span class="title function_">executeInternal</span><span class="params">(</span></span><br><span class="line"><span class="params">  List&lt;Transformation&lt;?&gt;&gt; transformations, List&lt;String&gt; sinkIdentifierNames)</span> &#123;</span><br><span class="line">  <span class="type">String</span> <span class="variable">jobName</span> <span class="operator">=</span> getJobName(<span class="string">&quot;insert-into_&quot;</span> + String.join(<span class="string">&quot;,&quot;</span>, sinkIdentifierNames));</span><br><span class="line">  <span class="type">Pipeline</span> <span class="variable">pipeline</span> <span class="operator">=</span> execEnv.createPipeline(transformations, tableConfig, jobName);</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="type">JobClient</span> <span class="variable">jobClient</span> <span class="operator">=</span> execEnv.executeAsync(pipeline);</span><br><span class="line">    TableSchema.<span class="type">Builder</span> <span class="variable">builder</span> <span class="operator">=</span> TableSchema.builder();</span><br><span class="line">    Object[] affectedRowCounts = <span class="keyword">new</span> <span class="title class_">Long</span>[transformations.size()];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; transformations.size(); ++i) &#123;</span><br><span class="line">      <span class="comment">// use sink identifier name as field name</span></span><br><span class="line">      builder.field(sinkIdentifierNames.get(i), DataTypes.BIGINT());</span><br><span class="line">      affectedRowCounts[i] = -<span class="number">1L</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> TableResultImpl.builder()</span><br><span class="line">      .jobClient(jobClient)</span><br><span class="line">      .resultKind(ResultKind.SUCCESS_WITH_CONTENT)</span><br><span class="line">      .tableSchema(builder.build())</span><br><span class="line">      .data(</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">InsertResultIterator</span>(</span><br><span class="line">        jobClient, Row.of(affectedRowCounts), userClassLoader))</span><br><span class="line">      .build();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TableException</span>(<span class="string">&quot;Failed to execute sql&quot;</span>, e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>QueryOperation：调用executeInternal()执行，QueryOperation用于返回查询的数据，因此需要将QueryOperation额外包装为SelectSinkOperation，并以Pipeline的方式异步执行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> TableResult <span class="title function_">executeInternal</span><span class="params">(QueryOperation operation)</span> &#123;</span><br><span class="line">  <span class="type">SelectSinkOperation</span> <span class="variable">sinkOperation</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SelectSinkOperation</span>(operation);</span><br><span class="line">  List&lt;Transformation&lt;?&gt;&gt; transformations =</span><br><span class="line">    translate(Collections.singletonList(sinkOperation));</span><br><span class="line">  <span class="type">String</span> <span class="variable">jobName</span> <span class="operator">=</span> getJobName(<span class="string">&quot;collect&quot;</span>);</span><br><span class="line">  <span class="type">Pipeline</span> <span class="variable">pipeline</span> <span class="operator">=</span> execEnv.createPipeline(transformations, tableConfig, jobName);</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="type">JobClient</span> <span class="variable">jobClient</span> <span class="operator">=</span> execEnv.executeAsync(pipeline);</span><br><span class="line">    <span class="type">SelectResultProvider</span> <span class="variable">resultProvider</span> <span class="operator">=</span> sinkOperation.getSelectResultProvider();</span><br><span class="line">    resultProvider.setJobClient(jobClient);</span><br><span class="line">    <span class="keyword">return</span> TableResultImpl.builder()</span><br><span class="line">      .jobClient(jobClient)</span><br><span class="line">      .resultKind(ResultKind.SUCCESS_WITH_CONTENT)</span><br><span class="line">      .tableSchema(operation.getTableSchema())</span><br><span class="line">      .data(resultProvider.getResultIterator())</span><br><span class="line">      .setPrintStyle(....)</span><br><span class="line">      .build();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TableException</span>(<span class="string">&quot;Failed to execute sql&quot;</span>, e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="Executor-amp-Pipeline"><a href="#Executor-amp-Pipeline" class="headerlink" title="Executor &amp; Pipeline"></a>Executor &amp; Pipeline</h4><p>Executor用于执行由Planner生成的由Transformation表示的DAG，从而将TableEnvironment与运行时解耦。Executor首先将Transformation DAG转换为Pipeline（由StreamGraph表示，StreamGraph是Pipeline的唯一子类），之后委托对应的TableEnvironment进行执行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Executor</span> &#123;</span><br><span class="line">    Pipeline <span class="title function_">createPipeline</span><span class="params">(</span></span><br><span class="line"><span class="params">            List&lt;Transformation&lt;?&gt;&gt; transformations, TableConfig tableConfig, String jobName)</span>;</span><br><span class="line">    JobExecutionResult <span class="title function_">execute</span><span class="params">(Pipeline pipeline)</span> <span class="keyword">throws</span> Exception;</span><br><span class="line">    JobClient <span class="title function_">executeAsync</span><span class="params">(Pipeline pipeline)</span> <span class="keyword">throws</span> Exception;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于Blink Planner，针对StreamPlanner和BatchPlanner分别实现了StreamExecutor和BatchExecutor，两者主要区别是再createPipeline()时，BatchExecutor会额外对StreamExecutionEnvironment和StreamGraph设置Batch相关的额外属性：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Pipeline <span class="title function_">createPipeline</span><span class="params">(</span></span><br><span class="line"><span class="params">  List&lt;Transformation&lt;?&gt;&gt; transformations, TableConfig tableConfig, String jobName)</span> &#123;</span><br><span class="line">  <span class="type">StreamExecutionEnvironment</span> <span class="variable">execEnv</span> <span class="operator">=</span> getExecutionEnvironment();</span><br><span class="line">  ExecutorUtils.setBatchProperties(execEnv);</span><br><span class="line">  <span class="type">StreamGraph</span> <span class="variable">streamGraph</span> <span class="operator">=</span> ExecutorUtils.generateStreamGraph(execEnv, transformations);</span><br><span class="line">  streamGraph.setJobName(getNonEmptyJobName(jobName));</span><br><span class="line">  ExecutorUtils.setBatchProperties(streamGraph, tableConfig);</span><br><span class="line">  <span class="keyword">return</span> streamGraph;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Pipeline的执行则委托给StreamExecutionEnvironment：</p>
+<pre class="mermaid">classDiagram
+    Executor <|-- ExecutorBase
+    class StreamExecutionEnvironment {
+        execute(StreamGraph)
+        executeAsync(StreamGraph)
+    }
+    ExecutorBase --> StreamExecutionEnvironment
+    ExecutorBase <|-- StreamExecutor
+    ExecutorBase <|-- PlannerExecutor</pre>
+
+
+
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.jrwang.me/2019/flink-source-code-sql-overview/">https://blog.jrwang.me/2019/flink-source-code-sql-overview/</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.aliyun.com/article/765311">https://developer.aliyun.com/article/765311</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.alibabacloud.com/blog/deep-insights-into-flink-sql-flink-advanced-tutorials_596628">https://www.alibabacloud.com/blog/deep-insights-into-flink-sql-flink-advanced-tutorials_596628</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.aliyun.com/article/719760">https://developer.aliyun.com/article/719760</a></li>
+<li><a target="_blank" rel="noopener" href="https://issues.apache.org/jira/browse/FLINK-20435">https://issues.apache.org/jira/browse/FLINK-20435</a> Refactor ExecNode and ExecEdge</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/02/23/Flink-Flink-Planner/" title= "Flink Planner">
+                    <div class="nextTitle">Flink Planner</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" title= "Flink TableSource and TableSink">
+                    <div class="prevTitle">Flink TableSource and TableSink</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2021/02/03/Flink-Flink-SQL/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink SQL"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Flink-SQL%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">Flink SQL执行流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TableEnvironment"><span class="toc-number">3.</span> <span class="toc-text">TableEnvironment</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#EnvironmentSettings"><span class="toc-number">3.1.</span> <span class="toc-text">EnvironmentSettings</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TableEnvironmentImpl"><span class="toc-number">3.2.</span> <span class="toc-text">TableEnvironmentImpl</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#executeSql"><span class="toc-number">3.2.1.</span> <span class="toc-text">executeSql</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#executeOperation"><span class="toc-number">3.2.2.</span> <span class="toc-text">executeOperation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Executor-amp-Pipeline"><span class="toc-number">3.2.3.</span> <span class="toc-text">Executor &amp; Pipeline</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number">4.</span> <span class="toc-text">Ref</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

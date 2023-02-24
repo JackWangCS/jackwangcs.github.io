@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Flink TaskManager · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Flink TaskManager</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Flink TaskManager
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Flink">Flink</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Runtime">Runtime</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">1.4k</span>Reading time: <span class="post-count reading-time">7 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/07/16</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="TaskManager"><a href="#TaskManager" class="headerlink" title="TaskManager"></a>TaskManager</h1><p>TaskManager（Worker）是Flink集群中的负责执行Task，缓存和交换数据流的组件。每个TaskManager是一个JVM进程，可以以多线程的方式执行一个或多个subTasks。为了控制TaskManager上可以执行的subTask的数量，每个TaskManager的资源被固定的（以后会支持具有不同资源量的Slot，<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-56%3A+Dynamic+Slot+Allocation">FLIP-56: Dynamic Slot Allocation</a>）分为了多个Task Slot。Flink允许多个subTasks共享一个Task Slot，从而提高资源利用率，这种机制被称为Slot Sharing。</p>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.13/fig/slot_sharing.svg" alt="TaskManagers with shared Task Slots"></p>
+<h2 id="TaskManagerRunner"><a href="#TaskManagerRunner" class="headerlink" title="TaskManagerRunner"></a>TaskManagerRunner</h2><p>TaskManagerRunner是TaskManager执行的入口，会构造和启动TaskManager中的相关服务，包括：</p>
+<ul>
+<li>RPC Services</li>
+<li>HighAvailabilityServices</li>
+<li>Heartbeat Services</li>
+<li>BlobCacheService</li>
+<li>TaskExecutorService</li>
+</ul>
+<p>Flink在不同的部署环境下，由不同的入口类调用静态方法<code>TaskManagerRunner.runTaskManagerProcessSecurely()</code>进行执行：</p>
+<ul>
+<li>Yarn：YarnTaskExecutorRunner，需要在调用之前设置Hadoop的相关配置，并配置Kerberos的Principal和Keytab配置</li>
+<li>Kubernetes：KubernetesTaskExecutorRunner</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">runTaskManagerProcessSecurely</span><span class="params">(Configuration configuration)</span> &#123;</span><br><span class="line">  FlinkSecurityManager.setFromConfiguration(configuration);</span><br><span class="line">  <span class="keyword">final</span> <span class="type">PluginManager</span> <span class="variable">pluginManager</span> <span class="operator">=</span></span><br><span class="line">    PluginUtils.createPluginManagerFromRootFolder(configuration);</span><br><span class="line">  FileSystem.initialize(configuration, pluginManager);</span><br><span class="line"></span><br><span class="line">  <span class="type">int</span> exitCode;</span><br><span class="line">  <span class="type">Throwable</span> <span class="variable">throwable</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    SecurityUtils.install(<span class="keyword">new</span> <span class="title class_">SecurityConfiguration</span>(configuration));</span><br><span class="line">    exitCode =</span><br><span class="line">      SecurityUtils.getInstalledContext()</span><br><span class="line">      .runSecured(() -&gt; runTaskManager(configuration, pluginManager));</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">    throwable = ExceptionUtils.stripException(t, UndeclaredThrowableException.class);</span><br><span class="line">    exitCode = FAILURE_EXIT_CODE;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// error handling</span></span><br><span class="line">  System.exit(exitCode);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>runTaskManager()</code>会构造TaskManagerRunner实例，并调用<code>start()</code>方法启动执行。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">start</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  taskExecutorService.start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="TaskExecutor"><a href="#TaskExecutor" class="headerlink" title="TaskExecutor"></a>TaskExecutor</h1><p>TaskExecutorService的实现为TaskExecutorToServiceAdapter，TaskExecutorToServiceAdapter将TaskExecutor通过适配器模式转换为一个Service，并无其他逻辑。</p>
+<p>TaskExecutor实现了TaskExecutorGateway，对外提供TaskManager相关的RPC服务：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210711222523.png"></p>
+<p>TaskExecutor包含的组件如下：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/Flink%20TaskManager.png"></p>
+<p>按照负责的功能可以大体分为：</p>
+<ul>
+<li>Job管理相关：<ul>
+<li>JobTable：用于管理在TaskExecutor上执行的Job的生命周期</li>
+<li>JobLeaderService：Flink支持Job的HA，JobLeaderService用于监控管理Job的JobManager的Leadership情况</li>
+</ul>
+</li>
+<li>Slot管理相关：<ul>
+<li>TaskSlotTable：管理TaskExecutor上的TaskSlots，每个TaskSlot表示可以用于执行Task的一个Slot</li>
+</ul>
+</li>
+<li>Shuffle相关：<ul>
+<li>ShuffleEnvironment：TaskExecutor上的Shuffle Service环境</li>
+</ul>
+</li>
+<li>TaskManager公共服务：IOManager，KvStateService，LibaryCacheManager，BlobCacheService等</li>
+</ul>
+<h2 id="TaskExecutorGateway"><a href="#TaskExecutorGateway" class="headerlink" title="TaskExecutorGateway"></a>TaskExecutorGateway</h2><p>核心的RPC包括：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">TaskExecutorGateway</span></span><br><span class="line">        <span class="keyword">extends</span> <span class="title class_">RpcGateway</span>, TaskExecutorOperatorEventGateway, TaskExecutorThreadInfoGateway &#123;</span><br><span class="line">    <span class="comment">// Slot related</span></span><br><span class="line">    CompletableFuture&lt;Acknowledge&gt; <span class="title function_">requestSlot</span><span class="params">(</span></span><br><span class="line"><span class="params">            SlotID slotId,</span></span><br><span class="line"><span class="params">            JobID jobId,</span></span><br><span class="line"><span class="params">            AllocationID allocationId,</span></span><br><span class="line"><span class="params">            ResourceProfile resourceProfile,</span></span><br><span class="line"><span class="params">            String targetAddress,</span></span><br><span class="line"><span class="params">            ResourceManagerId resourceManagerId,</span></span><br><span class="line"><span class="params">            <span class="meta">@RpcTimeout</span> Time timeout)</span>;</span><br><span class="line">    CompletableFuture&lt;Acknowledge&gt; <span class="title function_">freeSlot</span><span class="params">(</span></span><br><span class="line"><span class="params">            <span class="keyword">final</span> AllocationID allocationId, <span class="keyword">final</span> Throwable cause, <span class="meta">@RpcTimeout</span> <span class="keyword">final</span> Time timeout)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">freeInactiveSlots</span><span class="params">(JobID jobId, <span class="meta">@RpcTimeout</span> Time timeout)</span>;</span><br><span class="line">    CompletableFuture&lt;Boolean&gt; <span class="title function_">canBeReleased</span><span class="params">()</span>;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// Task submission and cancellation</span></span><br><span class="line">    CompletableFuture&lt;Acknowledge&gt; <span class="title function_">submitTask</span><span class="params">(</span></span><br><span class="line"><span class="params">            TaskDeploymentDescriptor tdd, JobMasterId jobMasterId, <span class="meta">@RpcTimeout</span> Time timeout)</span>;</span><br><span class="line">    CompletableFuture&lt;Acknowledge&gt; <span class="title function_">cancelTask</span><span class="params">(</span></span><br><span class="line"><span class="params">            ExecutionAttemptID executionAttemptID, <span class="meta">@RpcTimeout</span> Time timeout)</span>;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// Partition management</span></span><br><span class="line">    CompletableFuture&lt;Acknowledge&gt; <span class="title function_">updatePartitions</span><span class="params">(</span></span><br><span class="line"><span class="params">            ExecutionAttemptID executionAttemptID,</span></span><br><span class="line"><span class="params">            Iterable&lt;PartitionInfo&gt; partitionInfos,</span></span><br><span class="line"><span class="params">            <span class="meta">@RpcTimeout</span> Time timeout)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">releaseOrPromotePartitions</span><span class="params">(</span></span><br><span class="line"><span class="params">            JobID jobId,</span></span><br><span class="line"><span class="params">            Set&lt;ResultPartitionID&gt; partitionToRelease,</span></span><br><span class="line"><span class="params">            Set&lt;ResultPartitionID&gt; partitionsToPromote)</span>;</span><br><span class="line">    CompletableFuture&lt;Acknowledge&gt; <span class="title function_">releaseClusterPartitions</span><span class="params">(</span></span><br><span class="line"><span class="params">            Collection&lt;IntermediateDataSetID&gt; dataSetsToRelease, <span class="meta">@RpcTimeout</span> Time timeout)</span>;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// Checkpoint related</span></span><br><span class="line">    CompletableFuture&lt;Acknowledge&gt; <span class="title function_">triggerCheckpoint</span><span class="params">(</span></span><br><span class="line"><span class="params">            ExecutionAttemptID executionAttemptID,</span></span><br><span class="line"><span class="params">            <span class="type">long</span> checkpointID,</span></span><br><span class="line"><span class="params">            <span class="type">long</span> checkpointTimestamp,</span></span><br><span class="line"><span class="params">            CheckpointOptions checkpointOptions)</span>;</span><br><span class="line">    CompletableFuture&lt;Acknowledge&gt; <span class="title function_">confirmCheckpoint</span><span class="params">(</span></span><br><span class="line"><span class="params">            ExecutionAttemptID executionAttemptID, <span class="type">long</span> checkpointId, <span class="type">long</span> checkpointTimestamp)</span>;</span><br><span class="line">    CompletableFuture&lt;Acknowledge&gt; <span class="title function_">abortCheckpoint</span><span class="params">(</span></span><br><span class="line"><span class="params">            ExecutionAttemptID executionAttemptID, <span class="type">long</span> checkpointId, <span class="type">long</span> checkpointTimestamp)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Operator event</span></span><br><span class="line">    CompletableFuture&lt;Acknowledge&gt; <span class="title function_">sendOperatorEventToTask</span><span class="params">(</span></span><br><span class="line"><span class="params">            ExecutionAttemptID task, OperatorID operator, SerializedValue&lt;OperatorEvent&gt; evt)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="JobTable"><a href="#JobTable" class="headerlink" title="JobTable"></a>JobTable</h2><p>JobTable用于管理在TaskExecutor上执行的Job的生命周期。每一个Job都有一个唯一的JobID，并且需要连接到JobManager。</p>
+<pre class="mermaid">classDiagram
+  class Job
+  class Connection
+  class JobServices
+  class JobTable
+  <<interface>> Job
+  <<interface>> Connection
+  <<interface>> JobTable
+  <<interface>> JobServices
+  JobServices <|-- TaskExecutorJobServices
+  Connection <|-- EstablishedConnection
+  JobTable <|-- DefaultJobTable
+  Job  <|-- JobOrConnection
+  Connection  <|--JobOrConnection
+  JobOrConnection -- EstablishedConnection
+  Job --o JobTable
+  JobServices .. JobTable
+  Connection <-- Job</pre>
+
+<p>JobTable负责管理一组Job，包括创建，获取Job的Connection等。Job接口定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Job</span> &#123;</span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">isConnected</span><span class="params">()</span>;</span><br><span class="line">  JobID <span class="title function_">getJobId</span><span class="params">()</span>;</span><br><span class="line">  Optional&lt;Connection&gt; <span class="title function_">asConnection</span><span class="params">()</span>;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Connects the job to a JobManager and associates the provided services with this</span></span><br><span class="line"><span class="comment">  * connection.</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;A job can only be connected iff &#123;<span class="doctag">@code</span> Job#isConnected() == false&#125;.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">  Connection <span class="title function_">connect</span><span class="params">(</span></span><br><span class="line"><span class="params">    ResourceID resourceId,</span></span><br><span class="line"><span class="params">    JobMasterGateway jobMasterGateway,</span></span><br><span class="line"><span class="params">    TaskManagerActions taskManagerActions,</span></span><br><span class="line"><span class="params">    CheckpointResponder checkpointResponder,</span></span><br><span class="line"><span class="params">    GlobalAggregateManager aggregateManager,</span></span><br><span class="line"><span class="params">    ResultPartitionConsumableNotifier resultPartitionConsumableNotifier,</span></span><br><span class="line"><span class="params">    PartitionProducerStateChecker partitionStateChecker)</span>;</span><br><span class="line">  <span class="comment">/** Closes this job and removes it from the owning &#123;<span class="doctag">@link</span> JobTable&#125;. */</span></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Connection表示Job与JobManager的连接。</p>
+<h2 id="TaskSlotTable"><a href="#TaskSlotTable" class="headerlink" title="TaskSlotTable"></a>TaskSlotTable</h2><p>TaskSlotTable用于管理TaskSlots，并且维护了多种用于快速访问Tasks及其分配的Slots的索引。TaskSlot则表示一个物理上的Slot，一个TaskSlot可以包含多个TaskSlotPayload。</p>
+<p>SlotActions封装了用于向ResourceManager释放Slot，通知Slot超时等动作。SlotReport是当前TaskExecutor中所有Slot的状态信息，用于向ResourceManager周期性地通过心跳汇报Slot信息。</p>
+<pre class="mermaid">classDiagram
+  class TaskSlotTable
+  <<interface>> TaskSlotTable
+  class SlotReport
+  class MemoryManager
+  class SlotActions
+  <<interface>> SlotActions
+  class PartitionProducerStateProvider
+  <<interface>> PartitionProducerStateProvider
+  class CheckpointListener
+  <<interface>> CheckpointListener
+  class TaskSlotPayload
+  <<interface>> TaskSlotPayload
+  class TaskActions
+  <<interface>> TaskActions
+  class Task
+  class TaskSlot
+  TaskSlotPayload <|-- Task
+  TaskActions <|-- Task
+  PartitionProducerStateProvider <|-- Task
+  CheckpointListener <|-- Task
+  TaskSlot .. MemoryManager
+  SlotReport <-- TaskSlotTable
+  SlotActions <-- TaskSlotTable
+  TaskSlotTable o-- TaskSlot
+  TaskSlot o-- TaskSlotPayload
+  SlotReport o-- SlotStatus</pre>
+
+<h3 id="TaskSlot"><a href="#TaskSlot" class="headerlink" title="TaskSlot"></a>TaskSlot</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TaskSlot</span>&lt;T <span class="keyword">extends</span> <span class="title class_">TaskSlotPayload</span>&gt; <span class="keyword">implements</span> <span class="title class_">AutoCloseableAsync</span> &#123;</span><br><span class="line">  <span class="comment">/** Index of the task slot. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> index;</span><br><span class="line">  <span class="comment">/** Resource characteristics for this slot. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ResourceProfile resourceProfile;</span><br><span class="line">  <span class="comment">/** Tasks running in this slot. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;ExecutionAttemptID, T&gt; tasks;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> MemoryManager memoryManager;</span><br><span class="line">  <span class="comment">/** State of this slot. */</span></span><br><span class="line">  <span class="keyword">private</span> TaskSlotState state;</span><br><span class="line">  <span class="comment">/** Job id to which the slot has been allocated. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> JobID jobId;</span><br><span class="line">  <span class="comment">/** Allocation id of this slot. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> AllocationID allocationId;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>TaskSlot具有以下状态：</p>
+<pre class="mermaid">stateDiagram-v2
+ [*] --> Active
+ Allocated --> Releasing
+ Allocated --> Active
+ Active --> Allocated
+ Active --> Releasing
+ Releasing --> [*]</pre>
+
+<h3 id="TaskSlotTableImpl"><a href="#TaskSlotTableImpl" class="headerlink" title="TaskSlotTableImpl"></a>TaskSlotTableImpl</h3><p>TaskSlotTableImpl是TaskSlotTable接口的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TaskSlotTableImpl</span>&lt;T <span class="keyword">extends</span> <span class="title class_">TaskSlotPayload</span>&gt; <span class="keyword">implements</span> <span class="title class_">TaskSlotTable</span>&lt;T&gt; &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> numberSlots;</span><br><span class="line">  <span class="comment">/** Slot resource profile for static slot allocation. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ResourceProfile defaultSlotResourceProfile;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> memoryPageSize;</span><br><span class="line">  <span class="comment">/** Timer service used to time out allocated slots. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> TimerService&lt;AllocationID&gt; timerService;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/** The list of all task slots. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;Integer, TaskSlot&lt;T&gt;&gt; taskSlots;</span><br><span class="line">  <span class="comment">/** Mapping from allocation id to task slot. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;AllocationID, TaskSlot&lt;T&gt;&gt; allocatedSlots;</span><br><span class="line">  <span class="comment">/** Mapping from execution attempt id to task and task slot. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;ExecutionAttemptID, TaskSlotMapping&lt;T&gt;&gt; taskSlotMappings;</span><br><span class="line">  <span class="comment">/** Mapping from job id to allocated slots for a job. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;JobID, Set&lt;AllocationID&gt;&gt; slotsPerJob;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Nullable</span> <span class="keyword">private</span> SlotActions slotActions;</span><br><span class="line">  <span class="comment">/** The table state. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">volatile</span> State state;</span><br><span class="line">  <span class="comment">/** Current index for dynamic slot, should always not less than numberSlots */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">int</span> dynamicSlotIndex;</span><br><span class="line">  <span class="comment">/** &#123;<span class="doctag">@link</span> Executor&#125; for background actions, e.g. verify all managed memory released. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Executor memoryVerificationExecutor;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="allocateSlot"><a href="#allocateSlot" class="headerlink" title="allocateSlot()"></a>allocateSlot()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">allocateSlot</span><span class="params">(</span></span><br><span class="line"><span class="params">  <span class="type">int</span> requestedIndex,</span></span><br><span class="line"><span class="params">  JobID jobId,</span></span><br><span class="line"><span class="params">  AllocationID allocationId,</span></span><br><span class="line"><span class="params">  ResourceProfile resourceProfile,</span></span><br><span class="line"><span class="params">  Time slotTimeout)</span> &#123;</span><br><span class="line">  checkRunning();</span><br><span class="line">  Preconditions.checkArgument(requestedIndex &lt; numberSlots);</span><br><span class="line">  <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> requestedIndex &lt; <span class="number">0</span> ? nextDynamicSlotIndex() : requestedIndex;</span><br><span class="line">  <span class="type">ResourceProfile</span> <span class="variable">effectiveResourceProfile</span> <span class="operator">=</span></span><br><span class="line">    resourceProfile.equals(ResourceProfile.UNKNOWN)</span><br><span class="line">    ? defaultSlotResourceProfile</span><br><span class="line">    : resourceProfile;</span><br><span class="line"></span><br><span class="line">  TaskSlot&lt;T&gt; taskSlot = allocatedSlots.get(allocationId);</span><br><span class="line">  <span class="keyword">if</span> (taskSlot != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> isDuplicatedSlot(taskSlot, jobId, effectiveResourceProfile, index);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isIndexAlreadyTaken(index)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!budgetManager.reserve(effectiveResourceProfile)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// bookeeping for new TaskSlot</span></span><br><span class="line">  taskSlot = <span class="keyword">new</span> <span class="title class_">TaskSlot</span>&lt;&gt;(...);</span><br><span class="line">  taskSlots.put(index, taskSlot);</span><br><span class="line">  <span class="comment">// update the allocation id to task slot map</span></span><br><span class="line">  allocatedSlots.put(allocationId, taskSlot);</span><br><span class="line">  <span class="comment">// register a timeout for this slot since it&#x27;s in state allocated</span></span><br><span class="line">  timerService.registerTimeout(allocationId, slotTimeout.getSize(), slotTimeout.getUnit());</span><br><span class="line">  <span class="comment">// add this slot to the set of job slots</span></span><br><span class="line">  Set&lt;AllocationID&gt; slots = slotsPerJob.get(jobId);</span><br><span class="line">  <span class="keyword">if</span> (slots == <span class="literal">null</span>) &#123;</span><br><span class="line">    slots = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;(<span class="number">4</span>);</span><br><span class="line">    slotsPerJob.put(jobId, slots);</span><br><span class="line">  &#125;</span><br><span class="line">  slots.add(allocationId);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="addTask"><a href="#addTask" class="headerlink" title="addTask()"></a>addTask()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">addTask</span><span class="params">(T task)</span> <span class="keyword">throws</span> SlotNotFoundException, SlotNotActiveException &#123;</span><br><span class="line">  checkRunning();</span><br><span class="line">  Preconditions.checkNotNull(task);</span><br><span class="line">  TaskSlot&lt;T&gt; taskSlot = getTaskSlot(task.getAllocationId());</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (taskSlot != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (taskSlot.isActive(task.getJobID(), task.getAllocationId())) &#123;</span><br><span class="line">      <span class="keyword">if</span> (taskSlot.add(task)) &#123;</span><br><span class="line">        taskSlotMappings.put(task.getExecutionId(), <span class="keyword">new</span> <span class="title class_">TaskSlotMapping</span>&lt;&gt;(task, taskSlot));</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">SlotNotActiveException</span>(task.getJobID(), task.getAllocationId());</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">SlotNotFoundException</span>(task.getAllocationId());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="TaskExecutor-Implementation"><a href="#TaskExecutor-Implementation" class="headerlink" title="TaskExecutor Implementation"></a>TaskExecutor Implementation</h2><p>TaskExecutor实现了TaskExecutorGateway，内部通过TaskSlotTable，JobTable跟踪执行的Task和Job信息，并管理执行的Task。</p>
+<h3 id="Start"><a href="#Start" class="headerlink" title="Start()"></a>Start()</h3><p>TaskExecutor启动时，会连接首先尝试连接ResourceManager并注册，并启动TaskSlotTable，JobLeaderService和FileCache组件：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">startTaskExecutorServices</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// start by connecting to the ResourceManager</span></span><br><span class="line">    resourceManagerLeaderRetriever.start(<span class="keyword">new</span> <span class="title class_">ResourceManagerLeaderListener</span>());</span><br><span class="line"></span><br><span class="line">    <span class="comment">// tell the task slot table who&#x27;s responsible for the task slot actions</span></span><br><span class="line">    taskSlotTable.start(<span class="keyword">new</span> <span class="title class_">SlotActionsImpl</span>(), getMainThreadExecutor());</span><br><span class="line"></span><br><span class="line">    <span class="comment">// start the job leader service</span></span><br><span class="line">    jobLeaderService.start(</span><br><span class="line">      getAddress(), getRpcService(), haServices, <span class="keyword">new</span> <span class="title class_">JobLeaderListenerImpl</span>());</span><br><span class="line"></span><br><span class="line">    fileCache =</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">FileCache</span>(</span><br><span class="line">      taskManagerConfiguration.getTmpDirectories(),</span><br><span class="line">      blobCacheService.getPermanentBlobService());</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    handleStartTaskExecutorServicesException(e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在向ResourceManager注册成功以后，  会向ResourceManager发送SlotReport，并启动ResourceManager的HeartbeatManager：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">establishResourceManagerConnection</span><span class="params">(</span></span><br><span class="line"><span class="params">  ResourceManagerGateway resourceManagerGateway,</span></span><br><span class="line"><span class="params">  ResourceID resourceManagerResourceId,</span></span><br><span class="line"><span class="params">  InstanceID taskExecutorRegistrationId,</span></span><br><span class="line"><span class="params">  ClusterInformation clusterInformation)</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> CompletableFuture&lt;Acknowledge&gt; slotReportResponseFuture =</span><br><span class="line">    resourceManagerGateway.sendSlotReport(</span><br><span class="line">    getResourceID(),</span><br><span class="line">    taskExecutorRegistrationId,</span><br><span class="line">    taskSlotTable.createSlotReport(getResourceID()),</span><br><span class="line">    taskManagerConfiguration.getRpcTimeout());</span><br><span class="line"></span><br><span class="line">  slotReportResponseFuture.whenCompleteAsync(&#123;...&#125;, getMainThreadExecutor());</span><br><span class="line"></span><br><span class="line">  <span class="comment">// monitor the resource manager as heartbeat target</span></span><br><span class="line">  resourceManagerHeartbeatManager.monitorTarget(</span><br><span class="line">    resourceManagerResourceId,</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">HeartbeatTarget</span>&lt;TaskExecutorHeartbeatPayload&gt;() &#123;&#125;);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// set the propagated blob server address</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">InetSocketAddress</span> <span class="variable">blobServerAddress</span> <span class="operator">=</span></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">InetSocketAddress</span>(</span><br><span class="line">    clusterInformation.getBlobServerHostname(),</span><br><span class="line">    clusterInformation.getBlobServerPort());</span><br><span class="line"></span><br><span class="line">  blobCacheService.setBlobServerAddress(blobServerAddress);</span><br><span class="line">  </span><br><span class="line">  establishedResourceManagerConnection =</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">EstablishedResourceManagerConnection</span>(</span><br><span class="line">    resourceManagerGateway,</span><br><span class="line">    resourceManagerResourceId,</span><br><span class="line">    taskExecutorRegistrationId);</span><br><span class="line">  <span class="comment">// stop the registration timeout monitor: &quot;taskmanager.registration.timeout&quot;, default 5 mins</span></span><br><span class="line">  stopRegistrationTimeout();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Slot-request-and-allocation"><a href="#Slot-request-and-allocation" class="headerlink" title="Slot request and allocation"></a>Slot request and allocation</h3><p>JobManager使用<code>requestSlot()</code> RPC向TaskExecutor请求新的Slot。整个流程为：</p>
+<pre class="mermaid">sequenceDiagram
+    SlotManager ->> TaskExecutor: requestSlot(slotId, jobId, ...)
+    TaskExecutor ->> TaskSlotTable: allocateSlot()
+    TaskExecutor ->> JobTable: getOrCreateJob()
+    JobTable -->> TaskExecutor: Job
+    TaskExecutor ->> SlotPoolService: offerSlots()
+    SlotPoolService -->> TaskExecutor: Accepted SlotOffers
+    TaskExecutor ->> TaskExecutor: handleAcceptedSlotOffers()
+    TaskExecutor ->> TaskSlotTable: markSlotActive()
+    TaskExecutor ->> SlotManager: ok</pre>
+
+<h4 id="TaskExecutor-requestSlot"><a href="#TaskExecutor-requestSlot" class="headerlink" title="TaskExecutor#requestSlot()"></a>TaskExecutor#requestSlot()</h4><p>JobManager调用requestSlot() RPC向TaskExecutor请求新的Slot，TaskExecutor会通过allocateSlot()分配空闲的Slot。其中AllocationID标志JobManager从ResourceManager中分配的得到的一个Slot，在之后的使用Slot时，会根据AllocationID找到分配的Slot。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> CompletableFuture&lt;Acknowledge&gt; <span class="title function_">requestSlot</span><span class="params">(<span class="keyword">final</span> SlotID slotId,</span></span><br><span class="line"><span class="params">            <span class="keyword">final</span> JobID jobId,</span></span><br><span class="line"><span class="params">            <span class="keyword">final</span> AllocationID allocationId,</span></span><br><span class="line"><span class="params">            <span class="keyword">final</span> ResourceProfile resourceProfile,</span></span><br><span class="line"><span class="params">            <span class="keyword">final</span> String targetAddress,</span></span><br><span class="line"><span class="params">            <span class="keyword">final</span> ResourceManagerId resourceManagerId,</span></span><br><span class="line"><span class="params">            <span class="keyword">final</span> Time timeout)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (!isConnectedToResourceManager(resourceManagerId)) &#123;</span><br><span class="line">    <span class="keyword">return</span> FutureUtils.completedExceptionally(<span class="keyword">new</span> <span class="title class_">TaskManagerException</span>(message));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// Call TaskSlotTable.allocateSlot()</span></span><br><span class="line">    allocateSlot(slotId, jobId, allocationId, resourceProfile);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (SlotAllocationException sae) &#123;</span><br><span class="line">    <span class="keyword">return</span> FutureUtils.completedExceptionally(sae);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> JobTable.Job job;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// if this is a new Job, create it via JobTable</span></span><br><span class="line">    job =</span><br><span class="line">      jobTable.getOrCreateJob(</span><br><span class="line">      jobId, () -&gt; registerNewJobAndCreateServices(jobId, targetAddress));</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="keyword">return</span> FutureUtils.completedExceptionally(</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">SlotAllocationException</span>(<span class="string">&quot;Could not create new job.&quot;</span>, e));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="comment">// Response the offered Slots to JobManager</span></span><br><span class="line">  <span class="keyword">if</span> (job.isConnected()) &#123;</span><br><span class="line">    offerSlotsToJobManager(jobId);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> CompletableFuture.completedFuture(Acknowledge.get());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>offerSlotsToJobManager()</code>会向JobManager发送该Job在TaskExecutor上已经分配的所有Slots到JobManager，JobManager会返回所有的已经接受的SlotOffers。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (taskSlotTable.hasAllocatedSlots(jobId)) &#123;</span><br><span class="line">  <span class="comment">// All allocated slots for jobId</span></span><br><span class="line">  <span class="keyword">final</span> Iterator&lt;TaskSlot&lt;Task&gt;&gt; reservedSlotsIterator =</span><br><span class="line">    taskSlotTable.getAllocatedSlots(jobId);</span><br><span class="line">  <span class="keyword">final</span> Collection&lt;SlotOffer&gt; reservedSlots = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;(<span class="number">2</span>);</span><br><span class="line">  <span class="keyword">while</span> (reservedSlotsIterator.hasNext()) &#123;</span><br><span class="line">    <span class="type">SlotOffer</span> <span class="variable">offer</span> <span class="operator">=</span> reservedSlotsIterator.next().generateSlotOffer();</span><br><span class="line">    reservedSlots.add(offer);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="type">UUID</span> <span class="variable">slotOfferId</span> <span class="operator">=</span> UUID.randomUUID();</span><br><span class="line">  currentSlotOfferPerJob.put(jobId, slotOfferId);</span><br><span class="line"></span><br><span class="line">  CompletableFuture&lt;Collection&lt;SlotOffer&gt;&gt; acceptedSlotsFuture =</span><br><span class="line">    jobMasterGateway.offerSlots(</span><br><span class="line">    getResourceID(),</span><br><span class="line">    reservedSlots,</span><br><span class="line">    taskManagerConfiguration.getRpcTimeout());</span><br><span class="line"></span><br><span class="line">  acceptedSlotsFuture.whenCompleteAsync(</span><br><span class="line">    <span class="comment">// if slot offers are accepted, handle it</span></span><br><span class="line">    handleAcceptedSlotOffers(</span><br><span class="line">      jobId, jobMasterGateway, jobMasterId, reservedSlots, slotOfferId),</span><br><span class="line">    getMainThreadExecutor());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于每个接受的Slot，会标记该Slot为Active状态，表示该Slot已经被使用了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (isJobManagerConnectionValid(jobId, jobMasterId)) &#123;</span><br><span class="line">  <span class="comment">// mark accepted slots active</span></span><br><span class="line">  <span class="keyword">for</span> (SlotOffer acceptedSlot : acceptedSlots) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">AllocationID</span> <span class="variable">allocationId</span> <span class="operator">=</span> acceptedSlot.getAllocationId();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (!taskSlotTable.markSlotActive(allocationId)) &#123;</span><br><span class="line">        <span class="comment">// the slot is either free or releasing at the moment</span></span><br><span class="line">        <span class="keyword">final</span> <span class="type">String</span> <span class="variable">message</span> <span class="operator">=</span></span><br><span class="line">          <span class="string">&quot;Could not mark slot &quot;</span> + allocationId + <span class="string">&quot; active.&quot;</span>;</span><br><span class="line">        log.debug(message);</span><br><span class="line">        jobMasterGateway.failSlot(</span><br><span class="line">          getResourceID(), allocationId, <span class="keyword">new</span> <span class="title class_">FlinkException</span>(message));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (SlotNotFoundException e) &#123;</span><br><span class="line">      <span class="keyword">final</span> <span class="type">String</span> <span class="variable">message</span> <span class="operator">=</span></span><br><span class="line">        <span class="string">&quot;Could not mark slot &quot;</span> + allocationId + <span class="string">&quot; active.&quot;</span>;</span><br><span class="line">      jobMasterGateway.failSlot(</span><br><span class="line">        getResourceID(), allocationId, <span class="keyword">new</span> <span class="title class_">FlinkException</span>(message));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    offeredSlots.remove(acceptedSlot);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="type">Exception</span> <span class="variable">e</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Exception</span>(<span class="string">&quot;The slot was rejected by the JobManager.&quot;</span>);</span><br><span class="line">  <span class="keyword">for</span> (SlotOffer rejectedSlot : offeredSlots) &#123;</span><br><span class="line">    freeSlotInternal(rejectedSlot.getAllocationId(), e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Task-submission-and-execution"><a href="#Task-submission-and-execution" class="headerlink" title="Task submission and execution"></a>Task submission and execution</h3><p>Task通过<code>submitTask()</code>进行提交，Task的部署信息由TaskDeploymentDescriptor进行描述。TaskDeploymentDescriptor中包含了AllocationID，用于标志提交的Task将要使用的Slot。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> CompletableFuture&lt;Acknowledge&gt; <span class="title function_">submitTask</span><span class="params">(</span></span><br><span class="line"><span class="params">  TaskDeploymentDescriptor tdd, JobMasterId jobMasterId, Time timeout)</span> &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// ..., get connection to JobManager</span></span><br><span class="line">    <span class="keyword">final</span> JobTable.<span class="type">Connection</span> <span class="variable">jobManagerConnection</span> <span class="operator">=</span></span><br><span class="line">      jobTable.getConnection(jobId)</span><br><span class="line">      .orElseThrow(..);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// check the Task has an allocated slot</span></span><br><span class="line">    <span class="keyword">if</span> (!taskSlotTable.tryMarkSlotActive(jobId, tdd.getAllocationId())) &#123;</span><br><span class="line">   <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TaskSubmissionException</span>(message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// re-integrate offloaded data:</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      tdd.loadBigData(blobCacheService.getPermanentBlobService());</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException | ClassNotFoundException e) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// deserialize the pre-serialized information</span></span><br><span class="line">    <span class="keyword">final</span> JobInformation jobInformation;</span><br><span class="line">    <span class="keyword">final</span> TaskInformation taskInformation;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      jobInformation =</span><br><span class="line">        tdd.getSerializedJobInformation()</span><br><span class="line">        .deserializeValue(getClass().getClassLoader());</span><br><span class="line">      taskInformation =</span><br><span class="line">        tdd.getSerializedTaskInformation()</span><br><span class="line">        .deserializeValue(getClass().getClassLoader());</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException | ClassNotFoundException e) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TaskSubmissionException</span>(</span><br><span class="line">        <span class="string">&quot;Could not deserialize the job or task information.&quot;</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">   </span><br><span class="line">    <span class="comment">// construct the Task</span></span><br><span class="line">    <span class="type">Task</span> <span class="variable">task</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Task</span>(...);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// notify the TaskSlotTable to add new Task</span></span><br><span class="line">    <span class="type">boolean</span> taskAdded;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      taskAdded = taskSlotTable.addTask(task);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (SlotNotFoundException | SlotNotActiveException e) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// then, start to execute the task</span></span><br><span class="line">    <span class="keyword">if</span> (taskAdded) &#123;</span><br><span class="line">      task.startTaskThread();</span><br><span class="line">      </span><br><span class="line">      setupResultPartitionBookkeeping(</span><br><span class="line">        tdd.getJobId(), tdd.getProducedPartitions(), task.getTerminationFuture());</span><br><span class="line">      <span class="keyword">return</span> CompletableFuture.completedFuture(Acknowledge.get());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TaskSubmissionException</span>(message);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (TaskSubmissionException e) &#123;</span><br><span class="line">    <span class="keyword">return</span> FutureUtils.completedExceptionally(e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是，每个Task都对应一个线程，并且Task自己管理线程。在task.startTaskThread()调用后，Task会启动一个线程执行实际的Task任务。</p>
+<h1 id="References"><a href="#References" class="headerlink" title="References"></a>References</h1><ol>
+<li><p><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-master/docs/internals/task_lifecycle/">Flink official doc: Task Lifecyle</a></p>
+</li>
+<li></li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/08/09/Flink-Failure-Recovery/" title= "Flink Restart and Recovery">
+                    <div class="nextTitle">Flink Restart and Recovery</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/05/03/Flink-Flink-ClassLoader/" title= "Flink ClassLoader">
+                    <div class="prevTitle">Flink ClassLoader</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2021/07/16/Flink-Flink-TaskManager/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Flink TaskManager"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#TaskManager"><span class="toc-number">1.</span> <span class="toc-text">TaskManager</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TaskManagerRunner"><span class="toc-number">1.1.</span> <span class="toc-text">TaskManagerRunner</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#TaskExecutor"><span class="toc-number">2.</span> <span class="toc-text">TaskExecutor</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TaskExecutorGateway"><span class="toc-number">2.1.</span> <span class="toc-text">TaskExecutorGateway</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JobTable"><span class="toc-number">2.2.</span> <span class="toc-text">JobTable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TaskSlotTable"><span class="toc-number">2.3.</span> <span class="toc-text">TaskSlotTable</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#TaskSlot"><span class="toc-number">2.3.1.</span> <span class="toc-text">TaskSlot</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TaskSlotTableImpl"><span class="toc-number">2.3.2.</span> <span class="toc-text">TaskSlotTableImpl</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#allocateSlot"><span class="toc-number">2.3.2.1.</span> <span class="toc-text">allocateSlot()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#addTask"><span class="toc-number">2.3.2.2.</span> <span class="toc-text">addTask()</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TaskExecutor-Implementation"><span class="toc-number">2.4.</span> <span class="toc-text">TaskExecutor Implementation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Start"><span class="toc-number">2.4.1.</span> <span class="toc-text">Start()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Slot-request-and-allocation"><span class="toc-number">2.4.2.</span> <span class="toc-text">Slot request and allocation</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#TaskExecutor-requestSlot"><span class="toc-number">2.4.2.1.</span> <span class="toc-text">TaskExecutor#requestSlot()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Task-submission-and-execution"><span class="toc-number">2.4.3.</span> <span class="toc-text">Task submission and execution</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#References"><span class="toc-number">3.</span> <span class="toc-text">References</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

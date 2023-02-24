@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Calcite Planner · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Calcite Planner</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Calcite Planner
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SQL">SQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Calclite">Calclite</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.7k</span>Reading time: <span class="post-count reading-time">23 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/12/01</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="Planner-Overview"><a href="#Planner-Overview" class="headerlink" title="Planner Overview"></a>Planner Overview</h2><p>Planner采用了facade设计模式，将Calcite的SQL处理过程：解析、验证、转换和优化过程都统一的用Planner接口表示。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Planner</span> <span class="keyword">extends</span> <span class="title class_">AutoCloseable</span> &#123;</span><br><span class="line">  <span class="comment">// Parses and validates a SQL statement.</span></span><br><span class="line">  <span class="keyword">default</span> SqlNode <span class="title function_">parse</span><span class="params">(String sql)</span> <span class="keyword">throws</span> SqlParseException &#123;</span><br><span class="line">    <span class="keyword">return</span> parse(<span class="keyword">new</span> <span class="title class_">SourceStringReader</span>(sql));</span><br><span class="line">  &#125;</span><br><span class="line">  SqlNode <span class="title function_">parse</span><span class="params">(Reader source)</span> <span class="keyword">throws</span> SqlParseException;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Validates a SQL statement.</span></span><br><span class="line">  SqlNode <span class="title function_">validate</span><span class="params">(SqlNode sqlNode)</span> <span class="keyword">throws</span> ValidationException;</span><br><span class="line">  Pair&lt;SqlNode, RelDataType&gt; <span class="title function_">validateAndGetType</span><span class="params">(SqlNode sqlNode)</span> <span class="keyword">throws</span> ValidationException;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Converts a SQL parse tree into a tree of relational expressions.</span></span><br><span class="line">  RelRoot <span class="title function_">rel</span><span class="params">(SqlNode sql)</span> <span class="keyword">throws</span> RelConversionException;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Deprecated</span> <span class="comment">// to removed before 2.0</span></span><br><span class="line">  RelNode <span class="title function_">convert</span><span class="params">(SqlNode sql)</span> <span class="keyword">throws</span> RelConversionException;</span><br><span class="line"></span><br><span class="line">  RelDataTypeFactory <span class="title function_">getTypeFactory</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Converts one relational expression tree into another relational expression</span></span><br><span class="line">  <span class="comment">// based on a particular rule set and requires set of traits.</span></span><br><span class="line">  RelNode <span class="title function_">transform</span><span class="params">(<span class="type">int</span> ruleSetIndex,</span></span><br><span class="line"><span class="params">      RelTraitSet requiredOutputTraits, RelNode rel)</span></span><br><span class="line">      <span class="keyword">throws</span> RelConversionException;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Resets this &#123;@code Planner&#125; to be used with a new query</span></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">reset</span><span class="params">()</span>;</span><br><span class="line">  <span class="meta">@Override</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span>;</span><br><span class="line">  RelTraitSet <span class="title function_">getEmptyTraitSet</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Calcite提供了默认的Planner实现：PlannerImpl，各个过程所对应的组件：</p>
+<ul>
+<li>解析：SqlParser，SqlParser.Config</li>
+<li>验证：SqlValidator，SqlValidator.Config</li>
+<li>转换：SqlToRelConverter，SqlToRelConverter.Config</li>
+<li>优化：RelOptPlanner</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PlannerImpl</span> <span class="keyword">implements</span> <span class="title class_">Planner</span>, ViewExpander &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> SqlOperatorTable operatorTable;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ImmutableList&lt;Program&gt; programs;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> RelOptCostFactory costFactory;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Context context;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> CalciteConnectionConfig connectionConfig;</span><br><span class="line">  <span class="comment">/** Holds the trait definitions to be registered with planner. May be null. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> ImmutableList&lt;RelTraitDef&gt; traitDefs;</span><br><span class="line">	<span class="comment">// Configs...</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> State state;</span><br><span class="line">  <span class="comment">// set in STATE_1_RESET</span></span><br><span class="line">  <span class="meta">@SuppressWarnings(&quot;unused&quot;)</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">boolean</span> open;</span><br><span class="line">  <span class="comment">// set in STATE_2_READY</span></span><br><span class="line">  <span class="keyword">private</span> <span class="meta">@Nullable</span> SchemaPlus defaultSchema;</span><br><span class="line">  <span class="keyword">private</span> <span class="meta">@Nullable</span> JavaTypeFactory typeFactory;</span><br><span class="line">  <span class="keyword">private</span> <span class="meta">@Nullable</span> RelOptPlanner planner;</span><br><span class="line">  <span class="keyword">private</span> <span class="meta">@Nullable</span> RexExecutor executor;</span><br><span class="line">  <span class="comment">// set in STATE_4_VALIDATE</span></span><br><span class="line">  <span class="keyword">private</span> <span class="meta">@Nullable</span> SqlValidator validator;</span><br><span class="line">  <span class="keyword">private</span> <span class="meta">@Nullable</span> SqlNode validatedSqlNode;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>Planner的状态State共有六种：</p>
+<p> <img src="https://documents.lucid.app/documents/9350ff51-6b7d-4697-a4df-6e85d212ea17/pages/0_0?a=285&x=208&y=272&w=1155&h=168&store=1&accept=image/*&auth=LCA%2072e571176b38de9056ceab104ce7fba935e92960-ts=1611494985" alt="img"></p>
+<ul>
+<li><p>STATE_0_CLOSED</p>
+</li>
+<li><p>STATE_1_RESET</p>
+</li>
+<li><p>STATE_2_READY：</p>
+<ul>
+<li>准备阶段将会创建类型系统：RelDataTypeSystem和JavaTypeFactoryImpl</li>
+<li>创建Planner实例RelOptPlanner，使用VolcanoPlanner</li>
+<li>向Planner中注册RelOptRules</li>
+<li>向Planner中添加RelTraitDefs</li>
+</ul>
+</li>
+<li><p>STATE_3_PARSED</p>
+<ul>
+<li>创建SqlParser</li>
+<li>利用SqlParser解析Statement，构建以SqlNode表示的语法解析树</li>
+</ul>
+</li>
+<li><p>STATE_4_VALIDATED：创建SqlValidator，并对sqlNode的语法解析树进行验证，得到validatedSqlNode</p>
+</li>
+<li><p>STATE_5_CONVERTED</p>
+<ul>
+<li>创建RexBuilder、RelOptCluster、SqlToRelConverter</li>
+<li>利用SqlToRelConverter将validatedSqlNode转换为RelRoot表示的RelNode树</li>
+<li>创建RelBuilder，并对RelRoot中的Correlated expressions进行去关联性。Correlated expressions可以参考<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Correlated_subquery">Correlated Subquery</a></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> RelRoot <span class="title function_">rel</span><span class="params">(SqlNode sql)</span> &#123;</span><br><span class="line">  ensure(State.STATE_4_VALIDATED);</span><br><span class="line">  <span class="keyword">final</span> <span class="type">RexBuilder</span> <span class="variable">rexBuilder</span> <span class="operator">=</span> createRexBuilder();</span><br><span class="line">  <span class="keyword">final</span> <span class="type">RelOptCluster</span> <span class="variable">cluster</span> <span class="operator">=</span> RelOptCluster.create(requireNonNull(planner, <span class="string">&quot;planner&quot;</span>), rexBuilder);</span><br><span class="line">  <span class="keyword">final</span> SqlToRelConverter.<span class="type">Config</span> <span class="variable">config</span> <span class="operator">=</span></span><br><span class="line">    sqlToRelConverterConfig.withTrimUnusedFields(<span class="literal">false</span>);</span><br><span class="line">  <span class="keyword">final</span> <span class="type">SqlToRelConverter</span> <span class="variable">sqlToRelConverter</span> <span class="operator">=</span></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">SqlToRelConverter</span>(<span class="built_in">this</span>, validator,</span><br><span class="line">                          createCatalogReader(), cluster, convertletTable, config);</span><br><span class="line">  <span class="comment">// Convert sqlNode to RelNode tree</span></span><br><span class="line">  <span class="type">RelRoot</span> <span class="variable">root</span> <span class="operator">=</span> sqlToRelConverter.convertQuery(validatedSqlNode, <span class="literal">false</span>, <span class="literal">true</span>);</span><br><span class="line">  root = root.withRel(sqlToRelConverter.flattenTypes(root.rel, <span class="literal">true</span>));</span><br><span class="line">  <span class="comment">// Decorrelating the RelRoot tree</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">RelBuilder</span> <span class="variable">relBuilder</span> <span class="operator">=</span></span><br><span class="line">    config.getRelBuilderFactory().create(cluster, <span class="literal">null</span>);</span><br><span class="line">  root = root.withRel(RelDecorrelator.decorrelateQuery(root.rel, relBuilder));</span><br><span class="line">  state = State.STATE_5_CONVERTED;</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="SqlParser"><a href="#SqlParser" class="headerlink" title="SqlParser"></a>SqlParser</h2><p>Calcite中的SqlParserImpl由JavaCC根据Parser.jj自动生成，用户可以对生成的SqlParser的语法解析器的属性进行定制，主要分为两类：</p>
+<ol>
+<li>词法解析相关Lex：Quoting、Casing、CharLiteralStyle；标志符的最大长度：DEFAULT_IDENTIFIER_MAX_LENGTH</li>
+<li>SqlConformance：支持的SQL语法种类和风格，例如MYSQL_5、ORACLE_12、PRESTO等</li>
+</ol>
+<h2 id="SqlValidator"><a href="#SqlValidator" class="headerlink" title="SqlValidator"></a>SqlValidator</h2><p>SqlValidator有两个目的，第一是对语法解析树进行验证，第二是为语法解析树提供语义信息。在对以SqlNode表示的语法解析树进行验证时，采用了Visitor设计模式。SqlValidator的继承结构如下：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210124221801.png"></p>
+<p>在CalciteSQLValidator的构造需要：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CalciteSqlValidator(SqlOperatorTable opTab, <span class="comment">// Directory for enumerating and looking up SQL operators and functions</span></span><br><span class="line">                    CalciteCatalogReader catalogReader, <span class="comment">// Provide tables and functions defined schemas</span></span><br><span class="line">                    JavaTypeFactory typeFactory, <span class="comment">// Type factory</span></span><br><span class="line">                    Config config) &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在验证时，需要将各种标志符解析为对应的语义对象，validator内部使用了Map结构来保存SQL语句的这些信息。该结构包含两种类型的对象：</p>
+<ul>
+<li>SqlValidatorScope：描述在query中某处的可以访问的（accessible）tables和columns</li>
+<li>SqlValidatorNamespace：描述query中使用的数据源</li>
+</ul>
+<p>在query的不同地方，可以拥有不同种类的namespaces。Validator可以将namespace包装成另外一个namespace：SqlValidatorNamespace.unwrap(Class)。Validator在创建Map结构时，会首先对以SqlNode为根节点的语法解析树进行一次快速扫描。之后，会在对各个节点调用validate()方法时，设置正确的scope和namespace对象。</p>
+<h3 id="SqlValidatorScope"><a href="#SqlValidatorScope" class="headerlink" title="SqlValidatorScope"></a>SqlValidatorScope</h3><p>SqlValidatorScope是指名字解析的范围（name-resolution scope）。</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20220303165347.png" alt="20220303165347.png"></p>
+<p>比如，验证”foo.bar”时，需要首先调用resolve()方法解析该标志符的类型的Scope，如果解析成功，那么就会返回一个SqlValidatorNamespace来描述该标志符的类型。核心的resolve()方法定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Looks up a node with a given name. Returns null if none is found.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> names       Name of node to find, maybe partially or fully qualified</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> nameMatcher Name matcher</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> deep        Whether to look more than one level deep</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> resolved    Callback wherein to write the match(es) we find</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">resolve</span><span class="params">(List&lt;String&gt; names, SqlNameMatcher nameMatcher, <span class="type">boolean</span> deep, Resolved resolved)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>例如查询：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span></span><br><span class="line"> <span class="keyword">FROM</span> foo</span><br><span class="line"> <span class="keyword">WHERE</span> <span class="keyword">EXISTS</span> (</span><br><span class="line">   <span class="keyword">SELECT</span> deptno <span class="keyword">AS</span> x</span><br><span class="line">   <span class="keyword">FROM</span> emp</span><br><span class="line">   <span class="keyword">JOIN</span> dept <span class="keyword">ON</span> emp.deptno <span class="operator">=</span> dept.deptno</span><br><span class="line">   <span class="keyword">WHERE</span> emp.deptno <span class="operator">=</span> <span class="number">5</span></span><br><span class="line">   <span class="keyword">GROUP</span> <span class="keyword">BY</span> deptno</span><br><span class="line">   <span class="keyword">ORDER</span> <span class="keyword">BY</span> x)</span><br></pre></td></tr></table></figure>
+
+<p>每个子句能够访问的对象不一样：</p>
+<ul>
+<li>在第一个FROM(getFromScope(sqlSelect))子句中，可以看到“foo”</li>
+<li>在EXISTS子句中的WHERE(getFromScope(sqlSelect))、GROUP BY(getGroupScope(sqlSelect))、SELECT(getSelectScope())和JOIN的ON(getJoinScope(SqlNode))中，可以看到“emp”，“dept”和“foo”</li>
+<li>在ORDER BY中，可以看到别名“x”以及表“emp”，“dept”和“foo”</li>
+</ul>
+<p>SqlValidatorScope的子类：</p>
+<ul>
+<li>EmptyScope：用于表示Scope栈中最顶层的Scope，从而避免检查某个Scope的parent scope是否为null</li>
+<li>AggregatingScope：用于表示Aggregating的Scope，提供了checkAggregateExpr(SqlNode, deep)来检查经过Aggregating以后，对应的SqlNode是否合法。比如<code>SELECT a, b FROM t GROUP BY a</code>这是一个非法的语句，如果某些标志符不在GROUP BY中，那么这些标志符就不能访问</li>
+<li>DelegatingScope：DelegatingScope将所有请求委托给它的parent scope，DelegatingScope可以用来构造嵌套的Scope，是最常用的基类</li>
+</ul>
+<p><em>SqlValidatorScope通过addChild()的方式将各个Scope以树形方式进行组织</em>。</p>
+<h3 id="SqlValidatorNamespace"><a href="#SqlValidatorNamespace" class="headerlink" title="SqlValidatorNamespace"></a>SqlValidatorNamespace</h3><p>SqlValidatorNamespace描述一段SQL查询中的关系（relation）。例如，<code>SELECT emp.deptno, age FROM emp, dept</code>中，FROM子句构成了一个namespace，该namespace包含emp和dept两个表，以及<strong>一个包含了两个表所有列的行类型（row type）</strong>。</p>
+<p>SqlValidatorNamespace有多种实现，常用的有用于表示表名字的IdentifierNamespace、针对SELECT查询的SelectNamespace、针对集合操作的SetopNamespace等。SqlValidatorNamespace接口提供了AbstractNamespace抽象类实现。</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20220303164933.png" alt="20220303164933.png"></p>
+<p>例如TableNamespace，它可以持有的Table以及一个扩展字段列表，那么TableNamespace的RowType类型由Table的所有列加上扩展字段列表：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">protected</span> RelDataType <span class="title function_">validateImpl</span><span class="params">(RelDataType targetRowType)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (extendedFields.isEmpty()) &#123;</span><br><span class="line">    <span class="keyword">return</span> table.getRowType();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">final</span> RelDataTypeFactory.<span class="type">Builder</span> <span class="variable">builder</span> <span class="operator">=</span></span><br><span class="line">    validator.getTypeFactory().builder();</span><br><span class="line">  builder.addAll(table.getRowType().getFieldList());</span><br><span class="line">  builder.addAll(extendedFields);</span><br><span class="line">  <span class="keyword">return</span> builder.build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>SqlValidatorNamespace通过wrap的方式进行嵌套，被嵌套的Namespace根据规则可以访问外部的Namespace的标识符。</p>
+<p>此外，SqlValidatorNamespace还有一个重要的角色：<strong>记录该Namespace的RelDataType，用于对属于该Namespace的SqlNode的RelDataType的验证</strong>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AbstractNamespace</span></span><br><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">validate</span><span class="params">(RelDataType targetRowType)</span> &#123;</span><br><span class="line">  <span class="keyword">switch</span> (status) &#123;</span><br><span class="line">    <span class="keyword">case</span> UNVALIDATED:</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        status = SqlValidatorImpl.Status.IN_PROGRESS;</span><br><span class="line">        Preconditions.checkArgument(rowType == <span class="literal">null</span>,</span><br><span class="line">                                    <span class="string">&quot;Namespace.rowType must be null before validate has been called&quot;</span>);</span><br><span class="line">        <span class="type">RelDataType</span> <span class="variable">type</span> <span class="operator">=</span> validateImpl(targetRowType);</span><br><span class="line">        Preconditions.checkArgument(type != <span class="literal">null</span>,</span><br><span class="line">                                    <span class="string">&quot;validateImpl() returned null&quot;</span>);</span><br><span class="line">        setType(type);</span><br><span class="line">      &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        status = SqlValidatorImpl.Status.VALID;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> IN_PROGRESS:</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">AssertionError</span>(<span class="string">&quot;Cycle detected during type-checking&quot;</span>);</span><br><span class="line">    <span class="keyword">case</span> VALID:</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="keyword">throw</span> Util.unexpected(status);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>具体的验证过程，由子类实现validateImpl()方法确定，并且validateImpl()会返回该Namespace的实际的RelDataType。SqlValidatorNamespace还维护了验证的状态，用于检测在类型检查是否出现循环：</p>
+<ul>
+<li>UNVALIDATED：还未开始验证，如果此时获取该Namespace的RowType，会触发Namespace的验证</li>
+<li>IN_PROGRESS：验证正在进行中。因为Namespace是嵌套的结构，需要递归调用子Namespace进行验证，所以需要记录Namespace是否被访问过，从而避免循环</li>
+<li>VALID：已完成</li>
+</ul>
+<h3 id="Validation-Process"><a href="#Validation-Process" class="headerlink" title="Validation Process"></a>Validation Process</h3><p>整个验证过程如下；</p>
+<ol>
+<li>创建一个EmptyScope作为最顶层的Scope，然后创建CatalogScope作为此顶层的Scope</li>
+<li>验证解析树中的所有Expressions</li>
+<li>获取验证后的SqlNode的类型信息</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> SqlNode <span class="title function_">validate</span><span class="params">(SqlNode topNode)</span> &#123;</span><br><span class="line">  <span class="comment">// Step 1</span></span><br><span class="line">  <span class="type">SqlValidatorScope</span> <span class="variable">scope</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">EmptyScope</span>(<span class="built_in">this</span>);</span><br><span class="line">  scope = <span class="keyword">new</span> <span class="title class_">CatalogScope</span>(scope, ImmutableList.of(<span class="string">&quot;CATALOG&quot;</span>));</span><br><span class="line">  <span class="comment">// Step 2</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">SqlNode</span> <span class="variable">topNode2</span> <span class="operator">=</span> validateScopedExpression(topNode, scope);</span><br><span class="line">  <span class="comment">// Step 3</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">RelDataType</span> <span class="variable">type</span> <span class="operator">=</span> getValidatedNodeType(topNode2);</span><br><span class="line">  Util.discard(type);</span><br><span class="line">  <span class="keyword">return</span> topNode2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在验证过程中，不断的填充下面的Map数据结构：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SqlNode&#x27;s scope</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> Map&lt;SqlNode, SqlValidatorScope&gt; scopes = <span class="keyword">new</span> <span class="title class_">IdentityHashMap</span>&lt;&gt;();</span><br><span class="line"><span class="comment">// SqlNode&#x27;s namespaces</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> Map&lt;SqlNode, SqlValidatorNamespace&gt; namespaces =</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">IdentityHashMap</span>&lt;&gt;();</span><br><span class="line"><span class="comment">// Dedicated for SqlSelect&#x27;s Clause</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;IdPair&lt;SqlSelect, Clause&gt;, SqlValidatorScope&gt;</span><br><span class="line">  clauseScopes = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"><span class="comment">// Map of derived RelDataType for each node</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;SqlNode, RelDataType&gt; nodeToTypeMap =</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">IdentityHashMap</span>&lt;&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>validateScopedExpression()是整个验证过程的核心：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> SqlNode <span class="title function_">validateScopedExpression</span><span class="params">(</span></span><br><span class="line"><span class="params">  SqlNode topNode,</span></span><br><span class="line"><span class="params">  SqlValidatorScope scope)</span> &#123;</span><br><span class="line">  <span class="comment">// Rewrite the Sqlnode to a standard form so that the rest of the validation logic can be simpler</span></span><br><span class="line">  <span class="type">SqlNode</span> <span class="variable">outermostNode</span> <span class="operator">=</span> performUnconditionalRewrites(topNode, <span class="literal">false</span>);</span><br><span class="line">  cursorSet.add(outermostNode);</span><br><span class="line">  top = outermostNode;</span><br><span class="line">	<span class="comment">// For TOP_LEVEL SqlNode, registerQuery() will build the SqlValidatorScope hierarchy </span></span><br><span class="line">  <span class="keyword">if</span> (outermostNode.isA(SqlKind.TOP_LEVEL)) &#123;</span><br><span class="line">    registerQuery(scope, <span class="literal">null</span>, outermostNode, outermostNode, <span class="literal">null</span>, <span class="literal">false</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Start to validate the SqlNode tree</span></span><br><span class="line">  outermostNode.validate(<span class="built_in">this</span>, scope);</span><br><span class="line">  <span class="keyword">if</span> (!outermostNode.isA(SqlKind.TOP_LEVEL)) &#123;</span><br><span class="line">    <span class="comment">// force type derivation so that we can provide it to the</span></span><br><span class="line">    <span class="comment">// caller later without needing the scope</span></span><br><span class="line">    deriveType(scope, outermostNode);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> outermostNode;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="注册Scope和Namespace"><a href="#注册Scope和Namespace" class="headerlink" title="注册Scope和Namespace"></a>注册Scope和Namespace</h4><p>registerQuery()会根据SqlNode的不同类型，分别自顶向下的创建对应的Scope和Namespace。例如，对于SqlSelect，会首先创建SelectNamespace和SelectScope，并将两者加入到scopes和namespaces两个Map中。之后，会分别为SELECT语句的WHERE、FROM、GROUP、ORDERLIST等部分，以SelectNamespace和SelectScope为父亲**递归调用registerQuery()**创建对应的Scope和Namespace，最终形成一个Scope的树形层级结构。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">SqlSelect</span> <span class="variable">select</span> <span class="operator">=</span> (SqlSelect) node;</span><br><span class="line"><span class="keyword">final</span> <span class="type">SelectNamespace</span> <span class="variable">selectNs</span> <span class="operator">=</span> createSelectNamespace(select, enclosingNode);</span><br><span class="line">registerNamespace(usingScope, alias, selectNs, forceNullable);</span><br><span class="line"><span class="keyword">final</span> <span class="type">SqlValidatorScope</span> <span class="variable">windowParentScope</span> <span class="operator">=</span> (usingScope != <span class="literal">null</span>) ? usingScope : parentScope;</span><br><span class="line"><span class="type">SelectScope</span> <span class="variable">selectScope</span> <span class="operator">=</span></span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">SelectScope</span>(parentScope, windowParentScope, select);</span><br><span class="line">scopes.put(select, selectScope);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Start by registering the WHERE clause</span></span><br><span class="line">clauseScopes.put(IdPair.of(select, Clause.WHERE), selectScope);</span><br><span class="line">registerOperandSubQueries(</span><br><span class="line">  selectScope,</span><br><span class="line">  select,</span><br><span class="line">  SqlSelect.WHERE_OPERAND); <span class="comment">// operand&#x27;s index</span></span><br><span class="line"><span class="comment">// Code for FROM, ORDERLIST and so on...</span></span><br></pre></td></tr></table></figure>
+
+<p>registerOperandSubQueries()用于注册SubQuery的操作数，内部会调用registerSubQueries()：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">registerSubQueries</span><span class="params">(</span></span><br><span class="line"><span class="params">  SqlValidatorScope parentScope,</span></span><br><span class="line"><span class="params">  <span class="meta">@Nullable</span> SqlNode node)</span> &#123;</span><br><span class="line">  ....</span><br><span class="line">  <span class="keyword">if</span> (node.getKind().belongsTo(SqlKind.QUERY)</span><br><span class="line">      || node.getKind() == SqlKind.MULTISET_QUERY_CONSTRUCTOR</span><br><span class="line">      || node.getKind() == SqlKind.MULTISET_VALUE_CONSTRUCTOR) &#123;</span><br><span class="line">    <span class="comment">// Recursively call registerQuery() if it&#x27;s not a sub query</span></span><br><span class="line">    registerQuery(parentScope, <span class="literal">null</span>, node, node, <span class="literal">null</span>, <span class="literal">false</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (node <span class="keyword">instanceof</span> SqlCall) &#123;</span><br><span class="line">   	<span class="comment">// Register each operand of SqlCall</span></span><br><span class="line">    <span class="type">SqlCall</span> <span class="variable">call</span> <span class="operator">=</span> (SqlCall) node;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; call.operandCount(); i++) &#123;</span><br><span class="line">      registerOperandSubQueries(parentScope, call, i);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (node <span class="keyword">instanceof</span> SqlNodeList) &#123;</span><br><span class="line">    <span class="comment">// Register each node for SqlNodeList</span></span><br><span class="line">    <span class="type">SqlNodeList</span> <span class="variable">list</span> <span class="operator">=</span> (SqlNodeList) node;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>, count = list.size(); i &lt; count; i++) &#123;</span><br><span class="line">      <span class="type">SqlNode</span> <span class="variable">listNode</span> <span class="operator">=</span> list.get(i);</span><br><span class="line">      <span class="comment">// Special case for SCALAR_QUERY</span></span><br><span class="line">      <span class="keyword">if</span> (listNode.getKind().belongsTo(SqlKind.QUERY)) &#123;</span><br><span class="line">        listNode =</span><br><span class="line">          SqlStdOperatorTable.SCALAR_QUERY.createCall(</span><br><span class="line">          listNode.getParserPosition(),</span><br><span class="line">          listNode);</span><br><span class="line">        list.set(i, listNode);</span><br><span class="line">      &#125;</span><br><span class="line">      registerSubQueries(parentScope, listNode);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// atomic node -- can be ignored</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h4><p>SqlNode接口定义了用于验证该SqlNode的validate()方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Validates this node.</span></span><br><span class="line"><span class="comment"> * The typical implementation of this method will make a callback to the</span></span><br><span class="line"><span class="comment"> * validator appropriate to the node type and context. The validator has</span></span><br><span class="line"><span class="comment"> * methods such as &#123;@link SqlValidator#validateLiteral&#125; for these purposes.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">validate</span><span class="params">(SqlValidator validator, SqlValidatorScope scope)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>validate()方法实现时，会根据自身的种类，通过回调SqlValidator对应的validateXX()方法进行验证。例如，对于SqlSelect，会调用validator的validateQuery()方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">validate</span><span class="params">(SqlValidator validator, SqlValidatorScope scope)</span> &#123;</span><br><span class="line">  validator.validateQuery(<span class="built_in">this</span>, scope, validator.getUnknownType());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>验证的步骤一般包含：</p>
+<ol>
+<li><p>获取SqlNode的Namespace，并根据Namespace的validate()方法对SqlNode的RelDataType进行验证：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Validates this namespace. If the scope has already been validated, does nothing.</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;Please call &#123;<span class="doctag">@link</span> SqlValidatorImpl#validateNamespace&#125; rather than</span></span><br><span class="line"><span class="comment"> * calling this method directly.&lt;/p&gt;</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> targetRowType Desired row type, must not be null, may be the data type &#x27;unknown&#x27;.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">validate</span><span class="params">(RelDataType targetRowType)</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果是TOP_LEVEL的查询，对查询的模态（Modality）进行验证。Modality有两种：RELATION和STREAM，分别表示普通的关系以及流</p>
+</li>
+<li><p>验证对SqlValidatorTable的访问权限</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">validateAccess</span><span class="params">(</span></span><br><span class="line"><span class="params">  SqlNode node,</span></span><br><span class="line"><span class="params">  <span class="meta">@Nullable</span> SqlValidatorTable table,</span></span><br><span class="line"><span class="params">  SqlAccessEnum requiredAccess)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (table != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="type">SqlAccessType</span> <span class="variable">access</span> <span class="operator">=</span> table.getAllowedAccess();</span><br><span class="line">    <span class="keyword">if</span> (!access.allowsAccess(requiredAccess)) &#123;</span><br><span class="line">      <span class="keyword">throw</span> newValidationError(node, RESOURCE.accessNotAllowed(requiredAccess.name(), table.getQualifiedName().toString()));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果是SNAPSHOT类型的查询，通过validateSnapshot()验证对访问的TemporalTable的Timestamp进行验证</p>
+</li>
+</ol>
+<p>在验证的过程中，SqlNode的RelDataType可能未知。此时，可以通过deriveType()进行推导：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> RelDataType <span class="title function_">deriveType</span><span class="params">(</span></span><br><span class="line"><span class="params">    SqlValidatorScope scope,</span></span><br><span class="line"><span class="params">    SqlNode expr)</span> &#123;</span><br><span class="line">  requireNonNull(scope);</span><br><span class="line">  requireNonNull(expr);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// if we already know the type, no need to re-derive</span></span><br><span class="line">  <span class="type">RelDataType</span> <span class="variable">type</span> <span class="operator">=</span> nodeToTypeMap.get(expr);</span><br><span class="line">  <span class="keyword">if</span> (type != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> type;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// If the Namespace is known, for examples, for tables</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">SqlValidatorNamespace</span> <span class="variable">ns</span> <span class="operator">=</span> getNamespace(expr);</span><br><span class="line">  <span class="keyword">if</span> (ns != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> ns.getType();</span><br><span class="line">  &#125;</span><br><span class="line">  type = deriveTypeImpl(scope, expr);</span><br><span class="line">  Preconditions.checkArgument(</span><br><span class="line">      type != <span class="literal">null</span>,</span><br><span class="line">      <span class="string">&quot;SqlValidator.deriveTypeInternal returned null&quot;</span>);</span><br><span class="line">  setValidatedNodeType(expr, type);</span><br><span class="line">  <span class="keyword">return</span> type;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>deriveType()如果不能从nodeToTypeMap中获取，并且该SqlNode的Namespace，会尝试使用deriveTypeImpl()去推导：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">RelDataType <span class="title function_">deriveTypeImpl</span><span class="params">(</span></span><br><span class="line"><span class="params">  SqlValidatorScope scope,</span></span><br><span class="line"><span class="params">  SqlNode operand)</span> &#123;</span><br><span class="line">  <span class="type">DeriveTypeVisitor</span> <span class="variable">v</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DeriveTypeVisitor</span>(scope);</span><br><span class="line">  <span class="keyword">final</span> <span class="type">RelDataType</span> <span class="variable">type</span> <span class="operator">=</span> operand.accept(v);</span><br><span class="line">  <span class="keyword">return</span> requireNonNull(scope.nullifyType(operand, type));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>DeriveTypeVisitor采用了Visitor模式，根据不同的SqlNode调用不同的visit(SqlXX)方法。DeriveTypeVisitor的主要逻辑针对：</p>
+<ul>
+<li><p>SqlLiteral</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> RelDataType <span class="title function_">visit</span><span class="params">(SqlLiteral literal)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> literal.createSqlType(typeFactory);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SqlCall</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> RelDataType <span class="title function_">visit</span><span class="params">(SqlCall call)</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">SqlOperator</span> <span class="variable">operator</span> <span class="operator">=</span> call.getOperator();</span><br><span class="line">  <span class="keyword">return</span> operator.deriveType(SqlValidatorImpl.<span class="built_in">this</span>, scope, call);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SqlIdentifier：对Identifier进行解析，并尝试从OperatorTable和Catalog中寻找对应的Table或者View， 获取RelDataType</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> RelDataType <span class="title function_">visit</span><span class="params">(SqlIdentifier id)</span> &#123;</span><br><span class="line">  <span class="comment">// First check for builtin functions which don&#x27;t have parentheses,</span></span><br><span class="line">  <span class="comment">// like &quot;LOCALTIME&quot;.</span></span><br><span class="line">  <span class="keyword">final</span> <span class="type">SqlCall</span> <span class="variable">call</span> <span class="operator">=</span> makeNullaryCall(id);</span><br><span class="line">  <span class="keyword">if</span> (call != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> call.getOperator().validateOperands(</span><br><span class="line">        SqlValidatorImpl.<span class="built_in">this</span>,</span><br><span class="line">        scope,</span><br><span class="line">        call);</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Resolve the longest prefix of id that we can</span></span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line">  <span class="keyword">for</span> (i = id.names.size() - <span class="number">1</span>; i &gt; <span class="number">0</span>; i--) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">SqlNameMatcher</span> <span class="variable">nameMatcher</span> <span class="operator">=</span> catalogReader.nameMatcher();</span><br><span class="line">    <span class="keyword">final</span> SqlValidatorScope.<span class="type">ResolvedImpl</span> <span class="variable">resolved</span> <span class="operator">=</span></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">SqlValidatorScope</span>.ResolvedImpl();</span><br><span class="line">    scope.resolve(id.names.subList(<span class="number">0</span>, i), nameMatcher, <span class="literal">false</span>, resolved);</span><br><span class="line">    <span class="keyword">if</span> (resolved.count() == <span class="number">1</span>) &#123;</span><br><span class="line">      <span class="comment">// There&#x27;s a namespace with the name we seek.</span></span><br><span class="line">      <span class="keyword">final</span> SqlValidatorScope.<span class="type">Resolve</span> <span class="variable">resolve</span> <span class="operator">=</span> resolved.only();</span><br><span class="line">      type = resolve.rowType();</span><br><span class="line">      <span class="keyword">for</span> (SqlValidatorScope.Step p : Util.skip(resolve.path.steps())) &#123;</span><br><span class="line">        type = type.getFieldList().get(p.i).getType();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Give precedence to namespace found, unless there</span></span><br><span class="line">  <span class="comment">// are no more identifier components.</span></span><br><span class="line">  <span class="keyword">if</span> (type == <span class="literal">null</span> || id.names.size() == <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="comment">// See if there&#x27;s a column with the name we seek in</span></span><br><span class="line">    <span class="comment">// precisely one of the namespaces in this scope.</span></span><br><span class="line">    <span class="type">RelDataType</span> <span class="variable">colType</span> <span class="operator">=</span> scope.resolveColumn(id.names.get(<span class="number">0</span>), id);</span><br><span class="line">    <span class="keyword">if</span> (colType != <span class="literal">null</span>) &#123;</span><br><span class="line">      type = colType;</span><br><span class="line">    &#125;</span><br><span class="line">    ++i;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (type == <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">SqlIdentifier</span> <span class="variable">last</span> <span class="operator">=</span> id.getComponent(i - <span class="number">1</span>, i);</span><br><span class="line">    <span class="keyword">throw</span> newValidationError(last,</span><br><span class="line">        RESOURCE.unknownIdentifier(last.toString()));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Resolve rest of identifier</span></span><br><span class="line">  <span class="keyword">for</span> (; i &lt; id.names.size(); i++) &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> id.names.get(i);</span><br><span class="line">    <span class="keyword">final</span> RelDataTypeField field;</span><br><span class="line">    <span class="keyword">if</span> (name.equals(<span class="string">&quot;&quot;</span>)) &#123;</span><br><span class="line">      <span class="comment">// The wildcard &quot;*&quot; is represented as an empty name. It never</span></span><br><span class="line">      <span class="comment">// resolves to a field.</span></span><br><span class="line">      name = <span class="string">&quot;*&quot;</span>;</span><br><span class="line">      field = <span class="literal">null</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">final</span> <span class="type">SqlNameMatcher</span> <span class="variable">nameMatcher</span> <span class="operator">=</span> catalogReader.nameMatcher();</span><br><span class="line">      field = nameMatcher.field(type, name);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (field == <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> newValidationError(id.getComponent(i),</span><br><span class="line">          RESOURCE.unknownField(name));</span><br><span class="line">    &#125;</span><br><span class="line">    type = field.getType();</span><br><span class="line">  &#125;</span><br><span class="line">  type =</span><br><span class="line">      SqlTypeUtil.addCharsetAndCollation(</span><br><span class="line">          type,</span><br><span class="line">          getTypeFactory());</span><br><span class="line">  <span class="keyword">return</span> type;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="SqlToRelConverter"><a href="#SqlToRelConverter" class="headerlink" title="SqlToRelConverter"></a>SqlToRelConverter</h2><p>SqlToRelConverter用于将SqlNode表示的解析树转换成以SqlRel表示的关系代数表达式，提供了两个公共接口：</p>
+<ul>
+<li>RelRoot convertQuery(SqlNode, …)：用于转换Query，返回RelNode</li>
+<li>RexNode convertExpression(SqlNode)：用于转换Expression，返回RexNode</li>
+</ul>
+<h3 id="convertQuery"><a href="#convertQuery" class="headerlink" title="convertQuery"></a>convertQuery</h3><p>convertQuery()的核心步骤：</p>
+<ol>
+<li>调用convertQueryRecursive()对query递归地转换为RelNode表示的关系表达式</li>
+<li>针对DML类型的query，检查转换后的结果是否有序，并构造对应的collation</li>
+<li>验证转换后的RelDataType</li>
+<li>对于SELECT类型的query，设置query hints</li>
+<li>构造返回的RelRoot</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> RelRoot <span class="title function_">convertQuery</span><span class="params">(SqlNode query, <span class="keyword">final</span> <span class="type">boolean</span> needsValidation, <span class="keyword">final</span> <span class="type">boolean</span> top)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (needsValidation) &#123;</span><br><span class="line">    query = validator().validate(query);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// The core step, convert the query recursively</span></span><br><span class="line">  <span class="type">RelNode</span> <span class="variable">result</span> <span class="operator">=</span> convertQueryRecursive(query, top, <span class="literal">null</span>).rel;</span><br><span class="line">  <span class="keyword">if</span> (top) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isStream(query)) &#123;</span><br><span class="line">      result = <span class="keyword">new</span> <span class="title class_">LogicalDelta</span>(cluster, result.getTraitSet(), result);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Handle the collation </span></span><br><span class="line">  <span class="type">RelCollation</span> <span class="variable">collation</span> <span class="operator">=</span> RelCollations.EMPTY;</span><br><span class="line">  <span class="keyword">if</span> (!query.isA(SqlKind.DML)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isOrdered(query)) &#123;</span><br><span class="line">      collation = requiredCollation(result);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Validate the converted type</span></span><br><span class="line">  checkConvertedType(query, result);</span><br><span class="line">  <span class="keyword">final</span> <span class="type">RelDataType</span> <span class="variable">validatedRowType</span> <span class="operator">=</span> validator().getValidatedNodeType(query);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// Handle query hints for Select statement</span></span><br><span class="line">  List&lt;RelHint&gt; hints = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">  <span class="keyword">if</span> (query.getKind() == SqlKind.SELECT) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">SqlSelect</span> <span class="variable">select</span> <span class="operator">=</span> (SqlSelect) query;</span><br><span class="line">    <span class="keyword">if</span> (select.hasHints()) &#123;</span><br><span class="line">      hints = SqlUtil.getRelHint(hintStrategies, select.getHints());</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// propagate the hints.</span></span><br><span class="line">  result = RelOptUtil.propagateRelHints(result, <span class="literal">false</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> RelRoot.of(result, validatedRowType, query.getKind())</span><br><span class="line">    .withCollation(collation)</span><br><span class="line">    .withHints(hints);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="convertQueryRecursive"><a href="#convertQueryRecursive" class="headerlink" title="convertQueryRecursive"></a>convertQueryRecursive</h4><p>convertQueryRecursive()根据query的不同类型（SqlKind）分别进行转换，转换函数有：</p>
+<ul>
+<li>convertSelect()</li>
+<li>convertInsert()</li>
+<li>convertDelete()</li>
+<li>convertUpdate()</li>
+<li>convertMerge()</li>
+<li>convertSetOp()</li>
+<li>SqlWith()</li>
+<li>convertValues()</li>
+</ul>
+<h2 id="Transformation-and-Optimization"><a href="#Transformation-and-Optimization" class="headerlink" title="Transformation and Optimization"></a>Transformation and Optimization</h2><p>PlannerImpl中，通过transform()方法对以RelNode表示的关系表达式进行转换：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> RelNode <span class="title function_">transform</span><span class="params">(<span class="type">int</span> ruleSetIndex, RelTraitSet requiredOutputTraits,</span></span><br><span class="line"><span class="params">                                   RelNode rel)</span> &#123;</span><br><span class="line">  ensure(State.STATE_5_CONVERTED);</span><br><span class="line">  rel.getCluster().setMetadataProvider(</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">CachingRelMetadataProvider</span>(</span><br><span class="line">      requireNonNull(rel.getCluster().getMetadataProvider(), <span class="string">&quot;metadataProvider&quot;</span>),</span><br><span class="line">      rel.getCluster().getPlanner()));</span><br><span class="line">	<span class="comment">// programs are stored in FrameworkConfig, specified when building the FrameworkConfig</span></span><br><span class="line">  <span class="type">Program</span> <span class="variable">program</span> <span class="operator">=</span> programs.get(ruleSetIndex);</span><br><span class="line">  <span class="keyword">return</span> program.run(requireNonNull(planner, <span class="string">&quot;planner&quot;</span>),</span><br><span class="line">                     rel, requiredOutputTraits, ImmutableList.of(),</span><br><span class="line">                     ImmutableList.of());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="RelOptPlanner"><a href="#RelOptPlanner" class="headerlink" title="RelOptPlanner"></a>RelOptPlanner</h3><p>RelOptPlanner定义了查询优化器（Optimizer）：根据给定的优化规则结合和Cost模型，将关系表达式转换成一个语义等价的关系表达式。RelOptPlanner定义了</p>
+<ul>
+<li>用于管理RelNode、RelTraitDefs、RelRule、RelOptMaterialization、RelOptLattice的方法</li>
+<li>用于管理RelOptCostFactory、RelOptSchema、RexExecutor的方法</li>
+<li>用于计算RelOptCost的getCost()方法</li>
+<li>用于获取最有表达式的findBestExp()、和减枝的prune()方法</li>
+</ul>
+<p>Calcite提供的Planner主要有两种：</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210219111814.png"></p>
+<ul>
+<li>HelPlanner：基于规则的优化器（Rule-Based Optimizer，RBO）实现，与Spark中的Optimizer实现相似。RBO利用一系列的优化规则对关系表达式进行转换，生成优化后的关系表达式。HelPlanner是一个启发式的优化器，按照优化规则进行匹配，直到优化规则的应用次数达到阈值或者没有匹配的优化规则时，优化结束。</li>
+<li>VolcanoPlanner：基于代价的优化器（Cost-Based Optimizer，CBO)实现，CBO根据统计信息和代价模型计算每个执行计划的代价，从中选择具有最小代价的执行计划。</li>
+</ul>
+<h3 id="Program"><a href="#Program" class="headerlink" title="Program"></a>Program</h3><p>Program表示查询优化中的一个阶段（phase）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Program</span> &#123;</span><br><span class="line">  RelNode <span class="title function_">run</span><span class="params">(RelOptPlanner planner, RelNode rel,</span></span><br><span class="line"><span class="params">      RelTraitSet requiredOutputTraits,</span></span><br><span class="line"><span class="params">      List&lt;RelOptMaterialization&gt; materializations,</span></span><br><span class="line"><span class="params">      List&lt;RelOptLattice&gt; lattices)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Program接口的子类实现都在Programs工具类中：<br><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210219110009.png"></p>
+<p>RuleSetProgram是用户可以扩展的Program，其他三种Program的实现则是在内部使用。RuleSetProgram包含了一个RuleSet，具体的run()实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> RelNode <span class="title function_">run</span><span class="params">(RelOptPlanner planner, RelNode rel,</span></span><br><span class="line"><span class="params">                             RelTraitSet requiredOutputTraits,</span></span><br><span class="line"><span class="params">                             List&lt;RelOptMaterialization&gt; materializations,</span></span><br><span class="line"><span class="params">                             List&lt;RelOptLattice&gt; lattices)</span> &#123;</span><br><span class="line">  planner.clear();</span><br><span class="line">  <span class="keyword">for</span> (RelOptRule rule : ruleSet) &#123;</span><br><span class="line">    planner.addRule(rule);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (RelOptMaterialization materialization : materializations) &#123;</span><br><span class="line">    planner.addMaterialization(materialization);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (RelOptLattice lattice : lattices) &#123;</span><br><span class="line">    planner.addLattice(lattice);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!rel.getTraitSet().equals(requiredOutputTraits)) &#123;</span><br><span class="line">    rel = planner.changeTraits(rel, requiredOutputTraits);</span><br><span class="line">  &#125;</span><br><span class="line">  planner.setRoot(rel);</span><br><span class="line">  <span class="keyword">return</span> planner.findBestExp();</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在Programs工具类中， 提供了用于创建Program的各种工厂方法，以及与Planner实现相关的Program。</p>
+<h3 id="RelOptRule"><a href="#RelOptRule" class="headerlink" title="RelOptRule"></a>RelOptRule</h3><p>RelOptRule表示具体的一条优化规则，用于将关系表达式转换成另一个关系表达式。每个RelOptRule有一个RelOptRuleOperand列表，用于决定该RelOptRule是否可以应用到关系表达式树的某部分。如果一条RelOptRule是可以应用的，那么Planner将会调用onMatch()方法，执行该规则。</p>
+<p>RelOptRule接口的核心方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> String description;</span><br><span class="line"><span class="comment">// Root of operand tree.</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> RelOptRuleOperand operand;</span><br><span class="line"><span class="comment">// Flattened list of operands.</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> List&lt;RelOptRuleOperand&gt; operands;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Factory for a builder for relational expressions.</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> RelBuilderFactory relBuilderFactory;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Returns whether this rule could possibly match the given operands.</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">matches</span><span class="params">(RelOptRuleCall call)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Receives notification about a rule match. At the time that this method is</span></span><br><span class="line"><span class="comment"> * called, &#123;<span class="doctag">@link</span> RelOptRuleCall#rels call.rels&#125; holds the set of relational</span></span><br><span class="line"><span class="comment"> * expressions which match the operands to the rule; &lt;code&gt;</span></span><br><span class="line"><span class="comment"> * call.rels[0]&lt;/code&gt; is the root expression.</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;Typically a rule would check that the nodes are valid matches, creates</span></span><br><span class="line"><span class="comment"> * a new expression, then calls back &#123;<span class="doctag">@link</span> RelOptRuleCall#transformTo&#125; to</span></span><br><span class="line"><span class="comment"> * register the expression.&lt;/p&gt;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">onMatch</span><span class="params">(RelOptRuleCall call)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>在RelOptRules工具类中，定义了Calcite中内部实现的多个RelOptRule的集合。</p>
+<p>Calcite提供了RelOptRule的抽象类实现RelRule，用户自定义的优化规则需要继承RelRule。在RelRule中，用户可以定义RelRule.Config的子类来管理规则的配置，并通过toRule()方法返回规则的一个实例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// An example of how to define a CONFIG and using the config&#x27;s toRule() to obtain a rule instance</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">EnumerableTableScanRule</span> <span class="variable">ENUMERABLE_TABLE_SCAN_RULE</span> <span class="operator">=</span></span><br><span class="line">  EnumerableTableScanRule.DEFAULT_CONFIG</span><br><span class="line">          .toRule(EnumerableTableScanRule.class);</span><br></pre></td></tr></table></figure>
+
+<p><strong>ConverterRule</strong>是一种特殊的优化规则，其作用转换RelNode的calling convention，并不会进行优化。在Calcite中，提供了一个默认的EnumerableConvention，对应的转换规则在EnumerableRules。</p>
+<h4 id="RelOptRuleOperand"><a href="#RelOptRuleOperand" class="headerlink" title="RelOptRuleOperand"></a>RelOptRuleOperand</h4><p>RelOptRuleOperand需要描述RelOptRule可以应用的关系表达式结构：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="meta">@Nullable</span> RelOptRuleOperand parent;</span><br><span class="line"><span class="keyword">private</span> <span class="meta">@NotOnlyInitialized</span> RelOptRule rule;</span><br><span class="line"><span class="comment">// predicate to test a RelNode matches this RelOptRuleOperand</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Predicate&lt;RelNode&gt; predicate;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="meta">@MonotonicNonNull</span> [] solveOrder;</span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> ordinalInParent;</span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> ordinalInRule;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> RelTrait trait;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Class&lt;? <span class="keyword">extends</span> <span class="title class_">RelNode</span>&gt; clazz;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ImmutableList&lt;RelOptRuleOperand&gt; children;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Whether child operands can be matched in any order.</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> RelOptRuleOperandChildPolicy childPolicy;</span><br></pre></td></tr></table></figure>
+
+<p>RelOptRuleOperandChildPolicy用于描述child operands的匹配结构，有：</p>
+<ul>
+<li>ANY：operand可以有任意数量的孩子</li>
+<li>LEAF：operand必须是叶子节点，没有孩子</li>
+<li>SOME：operand的孩子必须精确地按照顺序匹配优化规则</li>
+<li>UNORDERED：operand的孩子只需存在一个匹配优化规则</li>
+</ul>
+<p>在RelOptRuleOperand构造的时候，会根据RelOptRuleOperandChildPolicy对children的个数进行检查。</p>
+<p>RelOptRuleOperand提供了match()方法用于判断某个RelNode是可以匹配该RelOptRuleOperand：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">matches</span><span class="params">(RelNode rel)</span> &#123;</span><br><span class="line">  <span class="comment">// Same class with the trait and predicate matched</span></span><br><span class="line">  <span class="keyword">if</span> (!clazz.isInstance(rel)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> ((trait != <span class="literal">null</span>) &amp;&amp; !rel.getTraitSet().contains(trait)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> predicate.test(rel);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="RelOptRuleCall"><a href="#RelOptRuleCall" class="headerlink" title="RelOptRuleCall"></a>RelOptRuleCall</h4><p>RelOptRuleCall表示对一组RelNode调用RelOptRule。其子类有HepRuleCall和VolcanoRuleCall。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> RelOptRuleOperand operand0; <span class="comment">// root operand</span></span><br><span class="line"><span class="keyword">protected</span> Map&lt;RelNode, List&lt;RelNode&gt;&gt; nodeInputs;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> RelOptRule rule;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> RelNode[] rels;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> RelOptPlanner planner;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> List&lt;RelNode&gt; parents</span><br></pre></td></tr></table></figure>
+
+
+
+<p>&#x2F;&#x2F; TODO Analyse mulitple specific optimization rules</p>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><ul>
+<li><p><a target="_blank" rel="noopener" href="http://matt33.com/2019/03/07/apache-calcite-process-flow/">Apache Calcite 处理流程详解（一）</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://matt33.com/2019/03/17/apache-calcite-planner">Apache Calcite 优化器详解（二）</a></p>
+</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" title= "Calcite Volcano Planner">
+                    <div class="nextTitle">Calcite Volcano Planner</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/11/23/Calcite-Calcite/" title= "Calcite Overview">
+                    <div class="prevTitle">Calcite Overview</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2021/12/01/Calcite-Calcite-Planner/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Calcite Planner"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Planner-Overview"><span class="toc-number">1.</span> <span class="toc-text">Planner Overview</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SqlParser"><span class="toc-number">2.</span> <span class="toc-text">SqlParser</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SqlValidator"><span class="toc-number">3.</span> <span class="toc-text">SqlValidator</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SqlValidatorScope"><span class="toc-number">3.1.</span> <span class="toc-text">SqlValidatorScope</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SqlValidatorNamespace"><span class="toc-number">3.2.</span> <span class="toc-text">SqlValidatorNamespace</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Validation-Process"><span class="toc-number">3.3.</span> <span class="toc-text">Validation Process</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E5%86%8CScope%E5%92%8CNamespace"><span class="toc-number">3.3.1.</span> <span class="toc-text">注册Scope和Namespace</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81"><span class="toc-number">3.3.2.</span> <span class="toc-text">验证</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SqlToRelConverter"><span class="toc-number">4.</span> <span class="toc-text">SqlToRelConverter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#convertQuery"><span class="toc-number">4.1.</span> <span class="toc-text">convertQuery</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#convertQueryRecursive"><span class="toc-number">4.1.1.</span> <span class="toc-text">convertQueryRecursive</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Transformation-and-Optimization"><span class="toc-number">5.</span> <span class="toc-text">Transformation and Optimization</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RelOptPlanner"><span class="toc-number">5.1.</span> <span class="toc-text">RelOptPlanner</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Program"><span class="toc-number">5.2.</span> <span class="toc-text">Program</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RelOptRule"><span class="toc-number">5.3.</span> <span class="toc-text">RelOptRule</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#RelOptRuleOperand"><span class="toc-number">5.3.1.</span> <span class="toc-text">RelOptRuleOperand</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RelOptRuleCall"><span class="toc-number">5.3.2.</span> <span class="toc-text">RelOptRuleCall</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number">6.</span> <span class="toc-text">Ref</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

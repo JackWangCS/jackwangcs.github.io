@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Jie Wang">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Jie Wang">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="Jack's personel blog">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>Calcite Overview · Jack Wang&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Jack Wang&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Calcite Overview</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Jack Wang's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Calcite Overview
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SQL">SQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Calclite">Calclite</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">2.8k</span>Reading time: <span class="post-count reading-time">14 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/11/23</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>Calcite Overview</p>
+<h1 id="Parse-and-SQL-Tree"><a href="#Parse-and-SQL-Tree" class="headerlink" title="Parse and SQL Tree"></a>Parse and SQL Tree</h1><h2 id="SqlNode"><a href="#SqlNode" class="headerlink" title="SqlNode"></a>SqlNode</h2><p>SqlNode表示一个SQL解析树。SqlNode由SqlParser通过解析SQL语句创建得到，SqlNode因此会持有相关SqlParser解析的位置信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">SqlNode</span> <span class="keyword">implements</span> <span class="title class_">Cloneable</span> &#123;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> SqlParserPos pos;</span><br><span class="line">  <span class="comment">// Usee SqlValidator to validate this node</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">validate</span><span class="params">(</span></span><br><span class="line"><span class="params">    SqlValidator validator,</span></span><br><span class="line"><span class="params">    SqlValidatorScope scope)</span>;</span><br><span class="line">	<span class="comment">// Unparse this node back to String</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">unparse</span><span class="params">(</span></span><br><span class="line"><span class="params">    SqlWriter writer,</span></span><br><span class="line"><span class="params">    <span class="type">int</span> leftPrec,</span></span><br><span class="line"><span class="params">    <span class="type">int</span> rightPrec)</span>;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> &lt;R&gt; R <span class="title function_">accept</span><span class="params">(SqlVisitor&lt;R&gt; visitor)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因此，解析后的SqlNode可以利用SqlValidator对SqlNode进行验证，结合Catalog等信息保证SqlNode的语义正确性。</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210123211201.png"></p>
+<p>SqlNode的子类主要有：</p>
+<ul>
+<li>SqlLiteral，字面量相关：SqlNumericLiteral、SqlIntervalLiteral、SqlAbstractStringLiteral、SqlAbstractDateTimeLiteral</li>
+<li>SqlDynamicParam</li>
+<li>SqlIdenetifier</li>
+<li>SqlCall：包含DML、DDL以及其他子句等<ul>
+<li>DML：SqlSelect、SqlDelete、SqlUpdate、SqlInsert、SqlMerge、SqlJoin、SqlOrderBy</li>
+<li>DDL：SqlDdl、SqlCreate、SqlDrop</li>
+<li>Subquery和Window：SqlWith、SqlAtler、SqlWindow</li>
+<li>其他：SqlCase、SqlTableRef、SqlHint、SqlPivot、SqlExplain</li>
+</ul>
+</li>
+<li>SqlNodeList</li>
+<li>SqlDataTypeSepc</li>
+<li>SqlIntervalQualifier</li>
+</ul>
+<h2 id="SqlOperator"><a href="#SqlOperator" class="headerlink" title="SqlOperator"></a>SqlOperator</h2><p>SqlOperator表示SqlNode中SqlCall的类型，每个Operator有其对应的operands。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">SqlOperator</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String name;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> SqlKind kind;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// associative precedences，left-associative or right-associative</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> leftPrec;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> rightPrec;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> SqlReturnTypeInference returnTypeInference;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> SqlOperandTypeInference operandTypeInference;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> SqlOperandTypeChecker operandTypeChecker;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Calcite使用SqlOperatorTable来管理和查找SqlOperator：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public interface SqlOperatorTable &#123;</span><br><span class="line">  // Find a list of operators with a given name and syntax</span><br><span class="line">  void lookupOperatorOverloads(SqlIdentifier opName,</span><br><span class="line">      @Nullable SqlFunctionCategory category,</span><br><span class="line">      SqlSyntax syntax,</span><br><span class="line">      List&lt;SqlOperator&gt; operatorList, // mutable list to which append matches</span><br><span class="line">      SqlNameMatcher nameMatcher);</span><br><span class="line">  List&lt;SqlOperator&gt; getOperatorList();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="SqlKind"><a href="#SqlKind" class="headerlink" title="SqlKind"></a>SqlKind</h2><p>SqlKind枚举了SqlNode的可能类型，可以通过SqlNode.isA()来判断SQL的类型。通过阅读SqlKind，可以对SQL支持的语法和类型有一定理解。所有的SQL语句可以大概分为三类（TOP_LEVEL）：</p>
+<ul>
+<li><p>QUERY</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> EnumSet&lt;SqlKind&gt; QUERY =</span><br><span class="line">  EnumSet.of(SELECT, UNION, INTERSECT, EXCEPT, VALUES, WITH, ORDER_BY,</span><br><span class="line">             EXPLICIT_TABLE);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>DML</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> EnumSet&lt;SqlKind&gt; DML =</span><br><span class="line">  EnumSet.of(INSERT, DELETE, UPDATE, MERGE, PROCEDURE_CALL);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>DDL</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> EnumSet&lt;SqlKind&gt; DDL =</span><br><span class="line">  EnumSet.of(COMMIT, ROLLBACK, ALTER_SESSION,</span><br><span class="line">             CREATE_SCHEMA, CREATE_FOREIGN_SCHEMA, DROP_SCHEMA,</span><br><span class="line">             CREATE_TABLE, ALTER_TABLE, DROP_TABLE,</span><br><span class="line">             CREATE_FUNCTION, DROP_FUNCTION,</span><br><span class="line">             CREATE_VIEW, ALTER_VIEW, DROP_VIEW,</span><br><span class="line">             CREATE_MATERIALIZED_VIEW, ALTER_MATERIALIZED_VIEW,</span><br><span class="line">             DROP_MATERIALIZED_VIEW,</span><br><span class="line">             CREATE_SEQUENCE, ALTER_SEQUENCE, DROP_SEQUENCE,</span><br><span class="line">             CREATE_INDEX, ALTER_INDEX, DROP_INDEX,</span><br><span class="line">             CREATE_TYPE, DROP_TYPE,</span><br><span class="line">             SET_OPTION, OTHER_DDL);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>除了此外，SqlKind还定义包含Expression、SET、Functions等其他类型。</p>
+<h2 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h2><h3 id="SqlSelect"><a href="#SqlSelect" class="headerlink" title="SqlSelect"></a>SqlSelect</h3><p>SqlSelect在语法解析树中表示一个SELECT语句。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SqlSelect</span> <span class="keyword">extends</span> <span class="title class_">SqlCall</span> &#123;</span><br><span class="line">  <span class="comment">// constants representing operand positions</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">FROM_OPERAND</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">WHERE_OPERAND</span> <span class="operator">=</span> <span class="number">3</span>;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">HAVING_OPERAND</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line"></span><br><span class="line">  SqlNodeList keywordList;</span><br><span class="line">  <span class="meta">@Nullable</span> SqlNodeList selectList;</span><br><span class="line">  <span class="meta">@Nullable</span> SqlNode from;</span><br><span class="line">  <span class="meta">@Nullable</span> SqlNode where;</span><br><span class="line">  <span class="meta">@Nullable</span> SqlNodeList groupBy;</span><br><span class="line">  <span class="meta">@Nullable</span> SqlNode having;</span><br><span class="line">  SqlNodeList windowDecls;</span><br><span class="line">  <span class="meta">@Nullable</span> SqlNodeList orderBy;</span><br><span class="line">  <span class="meta">@Nullable</span> SqlNode offset;</span><br><span class="line">  <span class="meta">@Nullable</span> SqlNode fetch;</span><br><span class="line">  <span class="meta">@Nullable</span> SqlNodeList hints;</span><br><span class="line">  </span><br><span class="line">  <span class="meta">@Override</span> <span class="keyword">public</span> SqlOperator <span class="title function_">getOperator</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> SqlSelectOperator.INSTANCE;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span> <span class="keyword">public</span> SqlKind <span class="title function_">getKind</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> SqlKind.SELECT;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SqlCreateTable"><a href="#SqlCreateTable" class="headerlink" title="SqlCreateTable"></a>SqlCreateTable</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SqlCreateTable</span> <span class="keyword">extends</span> <span class="title class_">SqlCreate</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> SqlIdentifier name;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> SqlNodeList columnList;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> SqlNode query;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">SqlOperator</span> <span class="variable">OPERATOR</span> <span class="operator">=</span></span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">SqlSpecialOperator</span>(<span class="string">&quot;CREATE TABLE&quot;</span>, SqlKind.CREATE_TABLE);</span><br><span class="line">  <span class="comment">// Unparse to generate the sql string</span></span><br><span class="line">  <span class="meta">@Override</span> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">unparse</span><span class="params">(SqlWriter writer, <span class="type">int</span> leftPrec, <span class="type">int</span> rightPrec)</span> &#123;</span><br><span class="line">    writer.keyword(<span class="string">&quot;CREATE&quot;</span>);</span><br><span class="line">    writer.keyword(<span class="string">&quot;TABLE&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (ifNotExists) &#123;</span><br><span class="line">      writer.keyword(<span class="string">&quot;IF NOT EXISTS&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    name.unparse(writer, leftPrec, rightPrec);</span><br><span class="line">    <span class="keyword">if</span> (columnList != <span class="literal">null</span>) &#123;</span><br><span class="line">      SqlWriter.<span class="type">Frame</span> <span class="variable">frame</span> <span class="operator">=</span> writer.startList(<span class="string">&quot;(&quot;</span>, <span class="string">&quot;)&quot;</span>);</span><br><span class="line">      <span class="keyword">for</span> (SqlNode c : columnList) &#123;</span><br><span class="line">        writer.sep(<span class="string">&quot;,&quot;</span>);</span><br><span class="line">        c.unparse(writer, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      writer.endList(frame);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (query != <span class="literal">null</span>) &#123;</span><br><span class="line">      writer.keyword(<span class="string">&quot;AS&quot;</span>);</span><br><span class="line">      writer.newlineAndIndent();</span><br><span class="line">      query.unparse(writer, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Algebra"><a href="#Algebra" class="headerlink" title="Algebra"></a>Algebra</h1><h2 id="RelNode"><a href="#RelNode" class="headerlink" title="RelNode"></a>RelNode</h2><p>RelNode的定义如下：</p>
+<blockquote>
+<p>A RelNode is a relational expresion</p>
+</blockquote>
+<p>表示一个关系表达式。关系表达式描述如何处理数据，因此名字通常为动词。核心的RelNode包括：TableScan, TableModify, Values, Project, Filter, Aggregate, Join, Sort, Union, Intersect, Minus, Window and Match等。</p>
+<p>有两种方式创建一个RelNode：</p>
+<ul>
+<li>通过SqlToRelConverter将由SqlNode组成的SQL语法解析树转换而来</li>
+<li>通过RelBuilder构造一个RelNode</li>
+</ul>
+<p>当RelNode要进行实现时，Calcite将会创建一个RelImplementor来管理该过程。每个可实现的RelNode都包含一个RelTraitSet来描述它的物理属性（physical attributes）。RelTraitSet总是包含一个名为Convention的Trait，用于描述述该RelNode如何将数据传递到其使用的RelNode。对于每一种calling-convention，有一个与之对应的RelNode的子接口。例如，EnumerableRel有EnumerableConvention与之对应，并由EnumerableRelImplementor实现。在实现RelNode时，RelNode必须实现它的calling-convetions的接口。</p>
+<p>RelNode接口继承自RelOptNode, RelOptNode是Planner中的节点表示。提供了AbstractRelNode的抽象实现，具体的RelNode需继承AbstractRelNode。</p>
+<p>RelOptNode：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">RelOptNode</span> &#123;</span><br><span class="line">  <span class="type">int</span> <span class="title function_">getId</span><span class="params">()</span>;</span><br><span class="line">  String <span class="title function_">getDigest</span><span class="params">()</span>;</span><br><span class="line">  RelTraitSet <span class="title function_">getTraitSet</span><span class="params">()</span>;</span><br><span class="line">  RelDataType <span class="title function_">getRowType</span><span class="params">()</span>; <span class="comment">// It may not be known at planning time</span></span><br><span class="line">  List&lt;? <span class="keyword">extends</span> <span class="title class_">RelOptNode</span>&gt; getInputs();</span><br><span class="line">  RelOptCluster <span class="title function_">getCluster</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>RelNode额外定义了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">RelNode</span> <span class="keyword">extends</span> <span class="title class_">RelOptNode</span>, Cloneable &#123;</span><br><span class="line">  <span class="meta">@Nullable</span> Convention <span class="title function_">getConvention</span><span class="params">()</span>;</span><br><span class="line">  <span class="comment">// Metadata, Statistics and Opt Cost</span></span><br><span class="line">	<span class="type">double</span> <span class="title function_">estimateRowCount</span><span class="params">(RelMetadataQuery mq)</span>;</span><br><span class="line">  <span class="meta">@Nullable</span> RelOptCost <span class="title function_">computeSelfCost</span><span class="params">(RelOptPlanner planner, RelMetadataQuery mq)</span>;</span><br><span class="line">  &lt;<span class="meta">@Nullable</span> M extends <span class="meta">@Nullable</span> Metadata&gt; M <span class="title function_">metadata</span><span class="params">(Class&lt;M&gt; metadataClass, RelMetadataQuery mq)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Nullable</span> RelOptTable <span class="title function_">getTable</span><span class="params">()</span>; <span class="comment">//  If this relational expression represents an access to a table, returns that table, otherwise returns null.</span></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">explain</span><span class="params">(RelWriter pw)</span>;</span><br><span class="line">  <span class="comment">// Variables related...</span></span><br><span class="line">  Set&lt;CorrelationId&gt; <span class="title function_">getVariablesSet</span><span class="params">()</span>;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// Vistor pattern:</span></span><br><span class="line">  RelNode <span class="title function_">accept</span><span class="params">(RelShuttle shuttle)</span>;</span><br><span class="line">  RelNode <span class="title function_">accept</span><span class="params">(RexShuttle shuttle)</span>;</span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">childrenAccept</span><span class="params">(RelVisitor visitor)</span>;</span><br><span class="line">  </span><br><span class="line">	<span class="comment">// Used to register particular planner rules for this RelNode</span></span><br><span class="line">  RelNode <span class="title function_">onRegister</span><span class="params">(RelOptPlanner planner)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="RelTrait"><a href="#RelTrait" class="headerlink" title="RelTrait"></a>RelTrait</h3><p>RelTrait用于表示RelNode的Trait（特征，物理特征），如RelNode的convention（用于描述如何接收和传输底层数据），数据的是否有序RelCollation，数据的物理分布RelDistribution等特征。</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210117230238.png"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">RelTrait</span> &#123;</span><br><span class="line">  RelTraitDef <span class="title function_">getTraitDef</span><span class="params">()</span>;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Returns whether this trait satisfies a given trait.</span></span><br><span class="line"><span class="comment">	 * A trait satisfies another if it is the same or stricter. For example,</span></span><br><span class="line"><span class="comment">   * &#123;<span class="doctag">@code</span> ORDER BY x, y&#125; satisfies &#123;<span class="doctag">@code</span> ORDER BY x&#125;.</span></span><br><span class="line"><span class="comment">   * &lt;p&gt;A trait&#x27;s &#123;<span class="doctag">@code</span> satisfies&#125; relation must be a partial order (reflexive,</span></span><br><span class="line"><span class="comment">   * anti-symmetric, transitive). </span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">satisfies</span><span class="params">(RelTrait trait)</span>;</span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">register</span><span class="params">(RelOptPlanner planner)</span>;</span><br><span class="line">  <span class="keyword">default</span> &lt;T <span class="keyword">extends</span> <span class="title class_">RelTrait</span>&gt; T <span class="title function_">apply</span><span class="params">(Mappings.TargetMapping mapping)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (T) <span class="built_in">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>RelTrait的定义由RelTraitDef来描述，多个RelTrait可能会共用一个RelTraitDef。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">RelTraitDef</span>&lt;T <span class="keyword">extends</span> <span class="title class_">RelTrait</span>&gt; &#123;</span><br><span class="line">	<span class="comment">// Cache of traits.</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Interner&lt;T&gt; interner = Interners.newWeakInterner();</span><br><span class="line">  <span class="comment">// Whether a relational expression may possess more than one instance of this trait simultaneously.</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">multiple</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/** Returns the specific RelTrait type associated with this RelTraitDef. */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> Class&lt;T&gt; <span class="title function_">getTraitClass</span><span class="params">()</span>;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> T <span class="title function_">canonize</span><span class="params">(T trait)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!(trait <span class="keyword">instanceof</span> RelCompositeTrait)) &#123;</span><br><span class="line">      <span class="keyword">assert</span> ....</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> interner.intern(trait);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Converts the given RelNode to the given RelTrait.</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="meta">@Nullable</span> RelNode <span class="title function_">convert</span><span class="params">(</span></span><br><span class="line"><span class="params">      RelOptPlanner planner,</span></span><br><span class="line"><span class="params">      RelNode rel,</span></span><br><span class="line"><span class="params">      T toTrait,</span></span><br><span class="line"><span class="params">      <span class="type">boolean</span> allowInfiniteCostConverters)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Tests whether the given RelTrait can be converted to another RelTrait.</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="type">boolean</span> <span class="title function_">canConvert</span><span class="params">(</span></span><br><span class="line"><span class="params">      RelOptPlanner planner,</span></span><br><span class="line"><span class="params">      T fromTrait,</span></span><br><span class="line"><span class="params">      T toTrait)</span>;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> T <span class="title function_">getDefault</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ConverterRule registration</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">registerConverterRule</span><span class="params">(</span></span><br><span class="line"><span class="params">      RelOptPlanner planner,</span></span><br><span class="line"><span class="params">      ConverterRule converterRule)</span> &#123;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">deregisterConverterRule</span><span class="params">(</span></span><br><span class="line"><span class="params">      RelOptPlanner planner,</span></span><br><span class="line"><span class="params">      ConverterRule converterRule)</span> &#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="RelTraitSet"><a href="#RelTraitSet" class="headerlink" title="RelTraitSet"></a>RelTraitSet</h3><p>RelTraitSet表示一个有序的RelTrait集合，内部了维护一个RelTrait构成的数组：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">RelTraitSet</span> <span class="keyword">extends</span> <span class="title class_">AbstractList</span>&lt;RelTrait&gt; &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RelTrait[] traits;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>RelTraitSet除了提供对单个RelTrait的获取，替换和转换等操作以外，还以整个RelTrait集合的视角提供了：</p>
+<ul>
+<li><p>判断RelTraitSet是否满足另外一个RelTraitSet</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">satisfies</span><span class="params">(RelTraitSet that)</span> &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span></span><br><span class="line">    Math.min(</span><br><span class="line">    <span class="built_in">this</span>.size(),</span><br><span class="line">    that.size());</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">    <span class="type">RelTrait</span> <span class="variable">thisTrait</span> <span class="operator">=</span> <span class="built_in">this</span>.traits[i];</span><br><span class="line">    <span class="type">RelTrait</span> <span class="variable">thatTrait</span> <span class="operator">=</span> that.traits[i];</span><br><span class="line">    <span class="keyword">if</span> (!thisTrait.satisfies(thatTrait)) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>判断两个RelTraitSet是否匹配</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">matches</span><span class="params">(RelTraitSet that)</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="Convention"><a href="#Convention" class="headerlink" title="Convention"></a>Convention</h3><p>Convention是一种特殊的RelTrait，用于说明RelNode转换成为PhysicalNode时采用的Convention。Calling Convention可以理解为一个特定数据引擎协议（数据源），拥有相同Convention的RelNode可以直接操作。比如JDBC的<code>JDBCRel</code>都有<code>JdbcConvention</code>，Calcite的内建的Enumerable算子<code>EnumerableXXX</code>都有<code>EnumerableConvention</code>，表示数据是Java变量。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Convention</span> <span class="keyword">extends</span> <span class="title class_">RelTrait</span> &#123;</span><br><span class="line">  <span class="comment">// Given an input and required traits, returns the corresponding enforcer rel nodes, like physical Sort, Exchange etc.</span></span><br><span class="line">  <span class="keyword">default</span> <span class="meta">@Nullable</span> RelNode <span class="title function_">enforce</span><span class="params">(RelNode input, RelTraitSet required)</span> </span><br><span class="line">  <span class="comment">// Returns whether we should convert from this convention to &#123;@code toConvention&#125;. Used by &#123;@link ConventionTraitDef&#125;.</span></span><br><span class="line">  <span class="keyword">default</span> <span class="type">boolean</span> <span class="title function_">canConvertConvention</span><span class="params">(Convention toConvention)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Returns whether we should convert from this trait set to the other trait set.</span></span><br><span class="line">  <span class="keyword">default</span> <span class="type">boolean</span> <span class="title function_">useAbstractConvertersForConversion</span><span class="params">(RelTraitSet fromTraits,</span></span><br><span class="line"><span class="params">      RelTraitSet toTraits)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Convention之间可以通过ConverterRule进行转换。ConventionTraitDef中将这些转换信息存储在ConversionData。ConversionData包含了一个以Convention为顶点，ConverterRule为边的转换图conversionGraph：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> DirectedGraph&lt;Convention, DefaultEdge&gt; conversionGraph =</span><br><span class="line">  DefaultDirectedGraph.create();</span><br><span class="line"><span class="comment">// For a given source/target convention, there may be several possible conversion rules.</span></span><br><span class="line"><span class="keyword">final</span> Multimap&lt;Pair&lt;Convention, Convention&gt;, ConverterRule&gt; mapArcToConverterRule =</span><br><span class="line">  HashMultimap.create();</span><br></pre></td></tr></table></figure>
+
+<p>ConventionTraitDef中，定义了一个conversionCache，用于缓存ConversionData：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Planner -&gt; Conversion</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> LoadingCache&lt;RelOptPlanner, ConversionData&gt; conversionCache =</span><br><span class="line">  CacheBuilder.newBuilder().weakKeys()</span><br><span class="line">  .build(CacheLoader.from(ConversionData::<span class="keyword">new</span>));</span><br></pre></td></tr></table></figure>
+
+<p>ConventionTraitDef中，通过registerConverterRule()和deregisterConverterRule()两种方法来添加ConverterRule，从而对底层的ConversionData进行维护。</p>
+<p>当对一个RelNode的节点的Convention进行转换时，记该RelNode的Convention为fromConvention，则从conversionGraph寻找以fromConvention到toConvention的一条以ConverterRule构造的路径，然后通过应用该路径上的ConverterRule对RelNode依次进行转换，得到转换后的RelNode。在此过程中：</p>
+<ol>
+<li>转换过程中的中间节点RelNode(i)的RelOptCost可能未知或者无穷大，此时可以根据allowInfiniteCostConverters来判断路径是否有效</li>
+<li>对于一对(fromConvention, toConvention)，可能存在多条ConverterRule都可以使用，选择第一条ConverterRule</li>
+</ol>
+<p>ConventionTraitDef中，实现了canConvert()用于判断两个Convention是否可以转换：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">canConvert</span><span class="params">(</span></span><br><span class="line"><span class="params">    RelOptPlanner planner,</span></span><br><span class="line"><span class="params">    Convention fromConvention,</span></span><br><span class="line"><span class="params">    Convention toConvention)</span> &#123;</span><br><span class="line">  <span class="type">ConversionData</span> <span class="variable">conversionData</span> <span class="operator">=</span> getConversionData(planner);</span><br><span class="line">  <span class="keyword">return</span> fromConvention.canConvertConvention(toConvention)</span><br><span class="line">    	<span class="comment">// Path with least ConverterRules</span></span><br><span class="line">      || conversionData.getShortestDistance(fromConvention, toConvention) != -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="RexNode"><a href="#RexNode" class="headerlink" title="RexNode"></a>RexNode</h2><p>RexNode表示一个行表达式（row expression），每一个行表达式的类型（type）都必须是已知的。一些常见的RexNode包括：RexLiteral、RexVariable，RexCall（调用算子）等，所有RexNode的子类都是不可变的。</p>
+<p>RexNode由RelBuilder创建。</p>
+<p><img src="https://raw.githubusercontent.com/JackWangCS/RawImages/master/20210118231035.png"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">RexNode</span> &#123;</span><br><span class="line">  <span class="comment">// Effectively final.</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="meta">@MonotonicNonNull</span> String digest;</span><br><span class="line">	<span class="comment">// Data Type of this RexNode</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> RelDataType <span class="title function_">getType</span><span class="params">()</span>;</span><br><span class="line">  <span class="comment">// SqlKind</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isA</span><span class="params">(SqlKind kind)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> getKind() == kind;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isA</span><span class="params">(Collection&lt;SqlKind&gt; kinds)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> getKind().belongsTo(kinds);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> SqlKind <span class="title function_">getKind</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> SqlKind.OTHER;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//  Returns the number of nodes in this expression.</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">nodeCount</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Visitor pattern</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> &lt;R&gt; R <span class="title function_">accept</span><span class="params">(RexVisitor&lt;R&gt; visitor)</span>;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> &lt;R, P&gt; R <span class="title function_">accept</span><span class="params">(RexBiVisitor&lt;R, P&gt; visitor, P arg)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>SqlKind的是一个表示SqlNode类型的枚举类型，当将SqlNode转换为RexNode时，保留了SqlKind。</p>
+<h3 id="RexLiteral"><a href="#RexLiteral" class="headerlink" title="RexLiteral"></a>RexLiteral</h3><p>RexLiteral表示一个常量表达式，通过RexBuilder.makeLiteral()方法创建。一个RexLiteral定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RexLiteral</span> <span class="keyword">extends</span> <span class="title class_">RexNode</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> Comparable value;  <span class="comment">// Must be consistent with its type</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RelDataType type;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> SqlTypeName typeName; <span class="comment">// An indication of the broad type of this literal, Like SqlTypeName.DECIMAL</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>RexLiteral可以是表示多种类型的常量：NULL、BOOLEAN、DECIMAL、DATE、TIME、INTERVAL、CHAR、BINARY和SYSMBOL等，提供了：</p>
+<ul>
+<li><p>用于构造RexLiteral的toLiteral(RelDataType type, Comparable&lt;?&gt; value)、fromJdbcString(RelDataType type, SqlTypeName typeName, @PolyNull String literal)静态方法</p>
+</li>
+<li><p>用于比较值与类型是否匹配的静态方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">boolean</span> <span class="title function_">valueMatchesType</span><span class="params">(</span></span><br><span class="line"><span class="params">    <span class="meta">@Nullable</span> Comparable value,</span></span><br><span class="line"><span class="params">    SqlTypeName typeName,</span></span><br><span class="line"><span class="params">    <span class="type">boolean</span> strict)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>用于将值进行转换的public &lt;T&gt; @Nullable T getValueAs(Class&lt;T&gt; clazz)方法</p>
+</li>
+</ul>
+<h3 id="RexVariable"><a href="#RexVariable" class="headerlink" title="RexVariable"></a>RexVariable</h3><p>RexVariable主要有三种实现：</p>
+<ul>
+<li>RexSlot：子类为RexInputRef和RexLocalRef。RexInputRef是对输入关系表达式的一个field的引用。<ul>
+<li>RexInputRef支持多个输入，比如输入的#0: EMP(EMPNO, ENAME, DEPTNO) #1: DEPT(DEPTNO AS DEPTNO2, DNAME)，那么field #4则为DEPTNO2。</li>
+<li>RexLocalRef用于表示局部变量，RexLocalRef持有一个自增的基于CopyOnWriteList的SelfPopulatingList用于保存局部变量的名字，局部变量的命令规则为$t + n（n为自增的序号）</li>
+</ul>
+</li>
+<li>RexDynamicParam：表示行表达式中的一个动态参数，用?n表示</li>
+<li>RexCorrelVariable：主要用于Nested Loop Join中，用于表示来自Join的另一个关系表达式的行输入变量</li>
+</ul>
+<h3 id="RexCall"><a href="#RexCall" class="headerlink" title="RexCall"></a>RexCall</h3><p>RexCall表示由一个算子（SqlOperator）构成的表达式（可以理解为UDF）。算子可以有零个或者多个行表达式作为为输入（operands）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RexCall</span> <span class="keyword">extends</span> <span class="title class_">RexNode</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> SqlOperator op;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> ImmutableList&lt;RexNode&gt; operands;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> RelDataType type;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> nodeCount;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于RexCall，有下面几个子类：</p>
+<ul>
+<li><p>RexSubQuery：表示标量表达式，比如IN，EXISTS的等子句。RexSubQuery持有一个RelNode来表示相关的关系表达式，并且根据不同的子句类型，拥有不同的SqlOperator：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RexSubQuery</span> <span class="keyword">extends</span> <span class="title class_">RexCall</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> RelNode rel;</span><br><span class="line">  <span class="keyword">private</span> <span class="title function_">RexSubQuery</span><span class="params">(RelDataType type, SqlOperator op,</span></span><br><span class="line"><span class="params">      ImmutableList&lt;RexNode&gt; operands, RelNode rel)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>(type, op, operands);</span><br><span class="line">    <span class="built_in">this</span>.rel = rel;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/** Creates an IN sub-query. */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> RexSubQuery <span class="title function_">in</span><span class="params">(RelNode rel, ImmutableList&lt;RexNode&gt; nodes)</span> &#123;</span><br><span class="line">		<span class="comment">//...</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RexSubQuery</span>(type, SqlStdOperatorTable.IN, nodes, rel);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/** Creates an EXISTS sub-query. */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> RexSubQuery <span class="title function_">exists</span><span class="params">(RelNode rel)</span> &#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RexSubQuery</span>(type, SqlStdOperatorTable.EXISTS, ImmutableList.of(), rel);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/** Creates a scalar sub-query. */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> RexSubQuery <span class="title function_">scalar</span><span class="params">(RelNode rel)</span> &#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RexSubQuery</span>(type, SqlStdOperatorTable.SCALAR_QUERY,</span><br><span class="line">                           ImmutableList.of(), rel);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>RexWinAggCall：表示Window聚集函数</p>
+</li>
+<li><p>RexOver：用于在Window上调用一个聚集函数</p>
+</li>
+<li><p>RexMRAggCall：主要用于实现MATCH_RECOGNIZE RexNode。</p>
+</li>
+</ul>
+<h1 id="Planner"><a href="#Planner" class="headerlink" title="Planner"></a>Planner</h1><p>See other posts</p>
+<h2 id="Metadata-Management"><a href="#Metadata-Management" class="headerlink" title="Metadata Management"></a>Metadata Management</h2><ul>
+<li>SchemaFactory</li>
+<li>Schema, SchemaPlus<ul>
+<li>AbstractSchema</li>
+</ul>
+</li>
+<li>Table, TablePlus, TableFactory<ul>
+<li>EnumerableTableScan, if a table is not TranslatableTable, this is the default implementation and is translated into EnumerableTableScan</li>
+<li>TranslatableTable, translate a table expression to RelNode</li>
+</ul>
+</li>
+<li>TableType</li>
+<li>RelDataType, RelDataTypeFactory, RelDataTypeField</li>
+<li>Statistic </li>
+<li>Function</li>
+<li>RelNode, AbstractRelNode, RelOptNode<ul>
+<li>PhysicalNode<ul>
+<li>EnumerableRel<ul>
+<li>EnumerableRel<ul>
+<li>TableScan</li>
+</ul>
+</li>
+</ul>
+</li>
+<li></li>
+</ul>
+</li>
+<li></li>
+</ul>
+</li>
+<li>Convention, RelTrait, RelTraitSet</li>
+<li>RexNode</li>
+<li>RelRule, RelRule.Config, RelOptRule, <ul>
+<li>RelOptRuleOperand</li>
+<li>RelOptRuleCall</li>
+</ul>
+</li>
+<li>RelBuilder, RelBuilderFactory</li>
+<li>DataContext</li>
+</ul>
+<h1 id="Schema"><a href="#Schema" class="headerlink" title="Schema"></a>Schema</h1><p>  TODO</p>
+<h1 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/144129698">https://zhuanlan.zhihu.com/p/144129698</a></li>
+<li><a target="_blank" rel="noopener" href="https://matt33.com/2019/03/07/apache-calcite-process-flow/">https://matt33.com/2019/03/07/apache-calcite-process-flow/</a></li>
+<li></li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/12/01/Calcite-Calcite-Planner/" title= "Calcite Planner">
+                    <div class="nextTitle">Calcite Planner</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/08/09/Flink-Failure-Recovery/" title= "Flink Restart and Recovery">
+                    <div class="prevTitle">Flink Restart and Recovery</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        
+        var disqus_config = function () {
+        this.page.url = "http://jackwangcs.github.io/2021/11/23/Calcite-Calcite/";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "Calcite Overview"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://https-jackwangcs-github-io.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    </script>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:jackwangcs@outlook.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/jackwangcs" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- mermaid support  -->
+    
+    <script src='https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js'></script>
+    <script>
+        mermaid.initialize({ theme: 'dark' });
+    </script>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Parse-and-SQL-Tree"><span class="toc-number">1.</span> <span class="toc-text">Parse and SQL Tree</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#SqlNode"><span class="toc-number">1.1.</span> <span class="toc-text">SqlNode</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SqlOperator"><span class="toc-number">1.2.</span> <span class="toc-text">SqlOperator</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SqlKind"><span class="toc-number">1.3.</span> <span class="toc-text">SqlKind</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Examples"><span class="toc-number">1.4.</span> <span class="toc-text">Examples</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SqlSelect"><span class="toc-number">1.4.1.</span> <span class="toc-text">SqlSelect</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SqlCreateTable"><span class="toc-number">1.4.2.</span> <span class="toc-text">SqlCreateTable</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Algebra"><span class="toc-number">2.</span> <span class="toc-text">Algebra</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#RelNode"><span class="toc-number">2.1.</span> <span class="toc-text">RelNode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RelTrait"><span class="toc-number">2.1.1.</span> <span class="toc-text">RelTrait</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RelTraitSet"><span class="toc-number">2.1.2.</span> <span class="toc-text">RelTraitSet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Convention"><span class="toc-number">2.1.3.</span> <span class="toc-text">Convention</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RexNode"><span class="toc-number">2.2.</span> <span class="toc-text">RexNode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RexLiteral"><span class="toc-number">2.2.1.</span> <span class="toc-text">RexLiteral</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RexVariable"><span class="toc-number">2.2.2.</span> <span class="toc-text">RexVariable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RexCall"><span class="toc-number">2.2.3.</span> <span class="toc-text">RexCall</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Planner"><span class="toc-number">3.</span> <span class="toc-text">Planner</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Metadata-Management"><span class="toc-number">3.1.</span> <span class="toc-text">Metadata Management</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Schema"><span class="toc-number">4.</span> <span class="toc-text">Schema</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Ref"><span class="toc-number">5.</span> <span class="toc-text">Ref</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 51
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2023 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/16</span><a class="archive-post-title" href= "/2023/01/16/Flink-Flink-Unified-Sink/" >Flink Unified Sink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/16</span><a class="archive-post-title" href= "/2022/11/16/Flink-Flink-Deduplicate-Functions/" >Flink DeduplicateFunction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2022/06/19/Flink-Flink-MiniBatch/" >Flink MiniBatch</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/15</span><a class="archive-post-title" href= "/2022/02/15/Yarn-YarnSchedulerAdvances/" >Yarn 3.0 Scheduling Advances</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span><a class="archive-post-title" href= "/2022/02/13/Yarn-Yarn3-0-Features/" >Yarn 3.0+ New Features</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href= "/2022/01/15/Hudi-Flink-Write/" >Flink Integration with Hudi</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href= "/2021/12/23/Hudi/" >Hudi Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span><a class="archive-post-title" href= "/2021/12/03/Calcite-Calcite-VolcanoPlanner/" >Calcite Volcano Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2021/12/01/Calcite-Calcite-Planner/" >Calcite Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span><a class="archive-post-title" href= "/2021/11/23/Calcite-Calcite/" >Calcite Overview</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2021/08/09/Flink-Failure-Recovery/" >Flink Restart and Recovery</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2021/07/16/Flink-Flink-TaskManager/" >Flink TaskManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/Flink-Flink-ClassLoader/" >Flink ClassLoader</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/23</span><a class="archive-post-title" href= "/2021/02/23/Flink-Flink-Planner/" >Flink Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span><a class="archive-post-title" href= "/2021/02/03/Flink-Flink-SQL/" >Flink SQL</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href= "/2021/01/07/Flink-Flink-TableSource-and-TableSink/" >Flink TableSource and TableSink</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2020/11/10/Spark-spark-sql/" >Spark SQL Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/03</span><a class="archive-post-title" href= "/2020/11/03/Flink-Flink-Scheduler/" >Flink Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2020/11/02/Flink-flink-file-system-connector/" >Flink FileSystem Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Calcite-Planner/" >Calcite SQL Planner</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-Flink-DataStream/" >Flink DataStream</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/Flink-FlinkUnifiedMemory/" >Flink Unified Memory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2020/09/10/Spark-Spark-Context-and-Env/" >Spark Context and Env</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-ExecutionGraph/" >Flink ExecutionGraph</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Flink-Flink-JobManager/" >Flink JobManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span><a class="archive-post-title" href= "/2020/08/23/Spark-Spark-Shuffle/" >Spark Shuffle</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2020/08/15/Flink-Hive-integration-of-Flink/" >Flink Hive Integration</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2020/07/23/Spark-Spark-Broadcast/" >Spark Broadcast</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/Spark-Spark-TaskScheduler-and-Backend/" >Spark TaskScheduler and Backend</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2020/05/10/Spark-SparkQueryExecution/" >Spark Query Execution</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2020/04/15/Spark-Spark-RDD/" >Spark RDD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/11</span><a class="archive-post-title" href= "/2020/02/11/Spark-Spark-UnifiedMemoryManager/" >Spark Unified Memory Manager</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/20</span><a class="archive-post-title" href= "/2019/10/20/Spark-spark-internal/" >Spark Internals Basics</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2019/10/18/Spark-Spark-BlockManager/" >Spark BlockManager</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Spark-Spark-Tungsten/" >Spark Tungsten</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2019/09/10/Streaming-Window/" >Streaming Windows</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Yarn-CapacityScheduler/" >CapacityScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-ResourceScheduler/" >Yarn Resource Scheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2019/07/16/Yarn-%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6%E5%99%A8/" >Yarn ResourceScheduler</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/13</span><a class="archive-post-title" href= "/2019/07/13/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93/" >Linux常用命令总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2019/07/01/Yarn-%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86/" >Hadoop安全管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E5%AE%9E%E7%8E%B0/" >ResourceManager实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2019/06/28/Yarn-ResourceManager%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" >ResourceManager行为分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/19</span><a class="archive-post-title" href= "/2019/06/19/Streaming-What-where-when-and-how-of-data-processing/" >What, where, when and how of data processing</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2019/06/11/Streaming-watermarks/" >Watermarks</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2019/05/25/Streaming-Exactly-Once-and-Side-Effects/" >Streaming Exactly Once</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/24</span><a class="archive-post-title" href= "/2019/05/24/Yarn-%E5%9F%BA%E7%A1%80%E5%BA%93/" >Yarn 基础库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/HDFS-NameNode%E7%9A%84%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2/" >NameNode的启动和停止</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span><a class="archive-post-title" href= "/2019/05/21/Yarn-%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3%E5%92%8C%E6%9E%B6%E6%9E%84/" >Yarn架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span><a class="archive-post-title" href= "/2019/05/18/Streaming-Streaming-101/" >Streaming 101</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2019/05/08/streaming-101/" >Streaming 101</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Streaming System"><span class="iconfont-archer">&#xe606;</span>Streaming System</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calcite"><span class="iconfont-archer">&#xe606;</span>Calcite</span>
+    
+        <span class="sidebar-tag-name" data-tags="SQL"><span class="iconfont-archer">&#xe606;</span>SQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hudi"><span class="iconfont-archer">&#xe606;</span>Hudi</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataLake"><span class="iconfont-archer">&#xe606;</span>DataLake</span>
+    
+        <span class="sidebar-tag-name" data-tags="Flink"><span class="iconfont-archer">&#xe606;</span>Flink</span>
+    
+        <span class="sidebar-tag-name" data-tags="Calclite"><span class="iconfont-archer">&#xe606;</span>Calclite</span>
+    
+        <span class="sidebar-tag-name" data-tags="Linux"><span class="iconfont-archer">&#xe606;</span>Linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="Commands"><span class="iconfont-archer">&#xe606;</span>Commands</span>
+    
+        <span class="sidebar-tag-name" data-tags="Runtime"><span class="iconfont-archer">&#xe606;</span>Runtime</span>
+    
+        <span class="sidebar-tag-name" data-tags="Core"><span class="iconfont-archer">&#xe606;</span>Core</span>
+    
+        <span class="sidebar-tag-name" data-tags="Connector"><span class="iconfont-archer">&#xe606;</span>Connector</span>
+    
+        <span class="sidebar-tag-name" data-tags="Table"><span class="iconfont-archer">&#xe606;</span>Table</span>
+    
+        <span class="sidebar-tag-name" data-tags="Planner"><span class="iconfont-archer">&#xe606;</span>Planner</span>
+    
+        <span class="sidebar-tag-name" data-tags="Memory"><span class="iconfont-archer">&#xe606;</span>Memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="HDFS"><span class="iconfont-archer">&#xe606;</span>HDFS</span>
+    
+        <span class="sidebar-tag-name" data-tags="NameNode"><span class="iconfont-archer">&#xe606;</span>NameNode</span>
+    
+        <span class="sidebar-tag-name" data-tags="Hadoop"><span class="iconfont-archer">&#xe606;</span>Hadoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Streaming"><span class="iconfont-archer">&#xe606;</span>Streaming</span>
+    
+        <span class="sidebar-tag-name" data-tags="Exactly-Once"><span class="iconfont-archer">&#xe606;</span>Exactly-Once</span>
+    
+        <span class="sidebar-tag-name" data-tags="Watermarks"><span class="iconfont-archer">&#xe606;</span>Watermarks</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spark"><span class="iconfont-archer">&#xe606;</span>Spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduler"><span class="iconfont-archer">&#xe606;</span>Scheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="DataFrame"><span class="iconfont-archer">&#xe606;</span>DataFrame</span>
+    
+        <span class="sidebar-tag-name" data-tags="Yarn"><span class="iconfont-archer">&#xe606;</span>Yarn</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceScheduler"><span class="iconfont-archer">&#xe606;</span>ResourceScheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceManager"><span class="iconfont-archer">&#xe606;</span>ResourceManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="NodeManager"><span class="iconfont-archer">&#xe606;</span>NodeManager</span>
+    
+        <span class="sidebar-tag-name" data-tags="ResourceSheduler"><span class="iconfont-archer">&#xe606;</span>ResourceSheduler</span>
+    
+        <span class="sidebar-tag-name" data-tags="Scheduling"><span class="iconfont-archer">&#xe606;</span>Scheduling</span>
+    
+        <span class="sidebar-tag-name" data-tags="RPC"><span class="iconfont-archer">&#xe606;</span>RPC</span>
+    
+        <span class="sidebar-tag-name" data-tags="StateMachine"><span class="iconfont-archer">&#xe606;</span>StateMachine</span>
+    
+        <span class="sidebar-tag-name" data-tags="Security"><span class="iconfont-archer">&#xe606;</span>Security</span>
+    
+        <span class="sidebar-tag-name" data-tags="Architecture"><span class="iconfont-archer">&#xe606;</span>Architecture</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Streaming-Systemfalse"><span class="iconfont-archer">&#xe60a;</span>Streaming-Systemfalse</span>
+    
+        <span class="sidebar-category-name" data-categories="Calcite"><span class="iconfont-archer">&#xe60a;</span>Calcite</span>
+    
+        <span class="sidebar-category-name" data-categories="DataLake"><span class="iconfont-archer">&#xe60a;</span>DataLake</span>
+    
+        <span class="sidebar-category-name" data-categories="SQL"><span class="iconfont-archer">&#xe60a;</span>SQL</span>
+    
+        <span class="sidebar-category-name" data-categories="Linux"><span class="iconfont-archer">&#xe60a;</span>Linux</span>
+    
+        <span class="sidebar-category-name" data-categories="Flink"><span class="iconfont-archer">&#xe60a;</span>Flink</span>
+    
+        <span class="sidebar-category-name" data-categories="HDFS"><span class="iconfont-archer">&#xe60a;</span>HDFS</span>
+    
+        <span class="sidebar-category-name" data-categories="Streaming-System"><span class="iconfont-archer">&#xe60a;</span>Streaming-System</span>
+    
+        <span class="sidebar-category-name" data-categories="Spark"><span class="iconfont-archer">&#xe60a;</span>Spark</span>
+    
+        <span class="sidebar-category-name" data-categories="Yarn"><span class="iconfont-archer">&#xe60a;</span>Yarn</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Jie Wang"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
